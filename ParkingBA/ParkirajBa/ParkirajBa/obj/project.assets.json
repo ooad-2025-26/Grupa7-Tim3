@@ -4449,23 +4449,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Korisnik\\.nuget\\packages\\": {},
+    "C:\\Users\\tarik\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
+      "projectUniqueName": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
       "projectName": "ParkirajBa",
-      "projectPath": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
-      "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
-      "outputPath": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\obj\\",
+      "projectPath": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
+      "packagesPath": "C:\\Users\\tarik\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Korisnik\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\tarik\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
