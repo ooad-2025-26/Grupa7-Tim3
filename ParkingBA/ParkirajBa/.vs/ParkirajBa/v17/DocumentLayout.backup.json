@@ -3,6 +3,7 @@
   "WorkspaceRootPath": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\",
   "Documents": [
     {
+<<<<<<< Updated upstream
       "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\pc\\programming projects\\ooad\\grupa7-tim3\\parkingba\\parkirajba\\parkirajba\\views\\home\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|solutionrelative:parkirajba\\views\\home\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -12,6 +13,25 @@
     },
     {
       "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\pc\\programming projects\\ooad\\grupa7-tim3\\parkingba\\parkirajba\\parkirajba\\views\\home\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+=======
+      "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\users\\tarik\\onedrive\\desktop\\ooadrep\\parkingba\\parkirajba\\parkirajba\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|solutionrelative:parkirajba\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\users\\tarik\\onedrive\\desktop\\ooadrep\\parkingba\\parkirajba\\parkirajba\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|solutionrelative:parkirajba\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\users\\tarik\\onedrive\\desktop\\ooadrep\\parkingba\\parkirajba\\parkirajba\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|solutionrelative:parkirajba\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\users\\tarik\\onedrive\\desktop\\ooadrep\\parkingba\\parkirajba\\parkirajba\\views\\home\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|solutionrelative:parkirajba\\views\\home\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|c:\\users\\tarik\\onedrive\\desktop\\ooadrep\\parkingba\\parkirajba\\parkirajba\\views\\home\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+>>>>>>> Stashed changes
       "RelativeMoniker": "D:0:0:{3851E38D-8A4B-4D24-8287-2D5C188BD31E}|ParkirajBa\\ParkirajBa.csproj|solutionrelative:parkirajba\\views\\home\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
@@ -30,7 +50,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
+<<<<<<< Updated upstream
           "SelectedChildIndex": 1,
+=======
+          "SelectedChildIndex": 4,
+>>>>>>> Stashed changes
           "Children": [
             {
               "$type": "Bookmark",
@@ -38,7 +62,24 @@
             },
             {
               "$type": "Document",
+<<<<<<< Updated upstream
               "DocumentIndex": 0,
+=======
+              "DocumentIndex": 1,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "ParkirajBa\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "ParkirajBa\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAABgAAAAAAAAAAAAUwCgAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-28T09:43:29.94Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+>>>>>>> Stashed changes
               "Title": "Register.cshtml",
               "DocumentMoniker": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Home\\Register.cshtml",
               "RelativeDocumentMoniker": "ParkirajBa\\Views\\Home\\Register.cshtml",
@@ -59,6 +100,7 @@
               "RelativeToolTip": "ParkirajBa\\Views\\Home\\Privacy.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+<<<<<<< Updated upstream
               "WhenOpened": "2026-04-28T09:24:27.628Z",
               "EditorCaption": ""
             },
@@ -91,6 +133,38 @@
             {
               "$type": "Document",
               "DocumentIndex": 3,
+=======
+              "WhenOpened": "2026-04-28T09:24:27.628Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "ParkirajBa\\Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "ParkirajBa\\Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-28T09:24:23.819Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Home\\Login.cshtml",
+              "RelativeDocumentMoniker": "ParkirajBa\\Views\\Home\\Login.cshtml",
+              "ToolTip": "C:\\Users\\tarik\\OneDrive\\Desktop\\OOADRep\\ParkingBA\\ParkirajBa\\ParkirajBa\\Views\\Home\\Login.cshtml",
+              "RelativeToolTip": "ParkirajBa\\Views\\Home\\Login.cshtml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAsAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-28T09:12:25.989Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+>>>>>>> Stashed changes
               "Title": "HomeController.cs",
               "DocumentMoniker": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "ParkirajBa\\Controllers\\HomeController.cs",
