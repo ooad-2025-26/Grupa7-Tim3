@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ParkirajBa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e552f4865936d4bf10309a27b0c93b20a783f072")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+67f631a1a798cafbdea003ca78f97cf3618cd4f5")]
 [assembly: System.Reflection.AssemblyProductAttribute("ParkirajBa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ParkirajBa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
