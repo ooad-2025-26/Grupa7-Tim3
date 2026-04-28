@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-container">
+    <h2>Registracija</h2>
+
+    <form>
+        <input type="text" placeholder="Ime" />
+        <input type="email" placeholder="Email" />
+        <input type="password" placeholder="Password" />
+        <input type="password" placeholder="Potvrdi password" />
+
+        <button type="submit">Registruj se</button>
+    </form>
+
+    <p>Već imate račun?</p>
+    <a href="/Home/Login">Login</a>
+</div>
+
+<style>
+    .auth-container {
+        width: 320px;
+        margin: 100px auto;
+        text-align: center;
+    }
+
+    input {
+        width: 100%;
+        margin: 8px 0;
+        padding: 10px;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+    }
+</style>

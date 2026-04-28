@@ -1,8 +1,52 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "ParkirajBa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="home-container">
+    <h1>ParkirajBa</h1>
+
+    <p>Dobrodošli u aplikaciju za upravljanje parkingom.</p>
+
+    <div class="buttons">
+        <a class="btn" href="/Home/Login">Login</a>
+        <a class="btn secondary" href="/Home/Register">Registracija</a>
+    </div>
 </div>
+
+<style>
+    .home-container {
+        text-align: center;
+        margin-top: 120px;
+    }
+
+    h1 {
+        font-size: 48px;
+    }
+
+    p {
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+    }
+
+        .btn.secondary {
+            background: #28a745;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+</style>
