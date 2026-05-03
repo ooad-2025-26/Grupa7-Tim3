@@ -16,11 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ParkirajBa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-<<<<<<< HEAD
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e552f4865936d4bf10309a27b0c93b20a783f072")]
-=======
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc79ee03631f48c68e6da3fbbf7cab5f34739184")]
->>>>>>> origin/TarikBranch
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5e26031d5b29d5f6068d8de517e2a917921a470")]
 [assembly: System.Reflection.AssemblyProductAttribute("ParkirajBa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ParkirajBa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

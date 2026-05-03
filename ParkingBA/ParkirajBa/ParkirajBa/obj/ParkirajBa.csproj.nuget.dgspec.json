@@ -1,23 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj": {}
+    "C:\\Users\\User\\Desktop\\ParkirajBa\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj": {}
   },
   "projects": {
-    "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj": {
+    "C:\\Users\\User\\Desktop\\ParkirajBa\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Desktop\\ParkirajBa\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
         "projectName": "ParkirajBa",
-        "projectPath": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
-        "packagesPath": "C:\\Users\\Korisnik\\.nuget\\packages\\",
-        "outputPath": "C:\\PC\\Programming Projects\\OOAD\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\obj\\",
+        "projectPath": "C:\\Users\\User\\Desktop\\ParkirajBa\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\ParkirajBa.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\User\\Desktop\\ParkirajBa\\Grupa7-Tim3\\ParkingBA\\ParkirajBa\\ParkirajBa\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\Korisnik\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -44,7 +45,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -90,7 +91,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
