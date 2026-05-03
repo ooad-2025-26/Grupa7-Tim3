@@ -20,3 +20,80 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.custom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-self: center;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+    .logo img {
+        height: 120px !important;
+        width: auto !important;
+        max-height: none !important;
+    }
+.right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user {
+    background: #f1f1f1;
+    padding: 8px 15px;
+    border-radius: 20px;
+}
+
+.btn {
+    padding: 8px 15px;
+    background: #1e5cc3;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+    .btn.secondary {
+        background: #28a745;
+    }
+
+.tabs {
+    display: flex;
+    background: #eaeaea;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    cursor: pointer;
+}
+
+    .tab.active {
+        background: #1e5cc3;
+        color: white;
+    }
+
+.header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 15px 30px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.profile {
+    justify-self: end;
+}
