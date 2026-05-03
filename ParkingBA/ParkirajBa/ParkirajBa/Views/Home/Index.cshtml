@@ -1,52 +1,220 @@
 ﻿@{
     ViewData["Title"] = "ParkirajBa";
+
+    var isLoggedIn = false;
+    var username = isLoggedIn ? "Ime Korisnika" : "Guest";
 }
 
-<div class="home-container">
-    <h1>ParkirajBa</h1>
+<div class="app-container">
 
-    <p>Dobrodošli u aplikaciju za upravljanje parkingom.</p>
+    <!-- HEADER -->
+    <div class="header">
 
-    <div class="buttons">
-        <a class="btn" href="/Home/Login">Login</a>
-        <a class="btn secondary" href="/Home/Register">Registracija</a>
+        <div class="left"></div>
+
+        <div class="logo">
+            <img src="~/images/logo.png" alt="logo" />
+        </div>
+
+        <div class="profile" onclick="toggleDropdown()">
+            <span>@username</span>
+            <div class="profile-icon">👤</div>
+
+            <div id="dropdown" class="dropdown">
+                @if (!isLoggedIn)
+                {
+                    <a href="/Home/Login">Login</a>
+                    <a href="/Home/Register">Registracija</a>
+                }
+                else
+                {
+                    <a href="/Home/Profile">Profil</a>
+                    <a href="/Home/Logout">Logout</a>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAV -->
+    <div class="tabs">
+        <div class="tab active">Mapa</div>
+        <div class="tab">Objekti</div>
+        <div class="tab">Rezervacije</div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filters">
+        <input type="text" placeholder="Search..." />
+
+        <label><input type="checkbox" /> Garaža</label>
+        <label><input type="checkbox" checked /> EV punjač</label>
+        <label><input type="checkbox" checked /> Video nadzor</label>
+
+        <div class="price">
+            Cijena
+            <input type="range" />
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+        <!-- LEFT LIST -->
+        <div class="sidebar">
+            @for (int i = 0; i < 5; i++)
+            {
+                <div class="card">
+                    <img src="~/images/parking.jpg" />
+                    <div>
+                        <h4>Parking @i</h4>
+                        <p>Kratki opis parkinga...</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- MAP -->
+        <div class="map">
+            <img src="~/images/map.png" alt="mapa" />
+        </div>
+
     </div>
 </div>
 
+<script>
+    function toggleDropdown() {
+        var d = document.getElementById("dropdown");
+        d.style.display = d.style.display === "block" ? "none" : "block";
+    }
+
+    window.onclick = function (e) {
+        if (!e.target.closest('.profile')) {
+            document.getElementById("dropdown").style.display = "none";
+        }
+    }
+</script>
+
 <style>
-    .home-container {
-        text-align: center;
-        margin-top: 120px;
+    body {
+        margin: 0;
+        font-family: Arial;
+        background: #f5f5f5;
     }
 
-    h1 {
-        font-size: 48px;
-    }
-
-    p {
-        color: #555;
-        margin-bottom: 30px;
-    }
-
-    .buttons {
+    .header {
         display: flex;
-        justify-content: center;
-        gap: 15px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
     }
 
-    .btn {
-        padding: 12px 20px;
-        background: #007bff;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 20px;
     }
 
-        .btn.secondary {
-            background: #28a745;
+        .logo img {
+            height: 40px;
         }
 
-        .btn:hover {
-            opacity: 0.85;
+    .profile {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 20px;
+        background: #f1f1f1;
+    }
+
+    .dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 45px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+        min-width: 120px;
+    }
+
+        .dropdown a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+            .dropdown a:hover {
+                background: #eee;
+            }
+
+    .nav {
+        display: flex;
+        background: #eaeaea;
+    }
+
+    .nav-item {
+        flex: 1;
+        text-align: center;
+        padding: 12px;
+        cursor: pointer;
+    }
+
+        .nav-item.active {
+            background: #1e5cc3;
+            color: white;
+        }
+
+    .filters {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        background: white;
+        align-items: center;
+    }
+
+    .content {
+        display: flex;
+        height: calc(100vh - 160px);
+    }
+
+    .sidebar {
+        width: 300px;
+        overflow-y: auto;
+        background: #fff;
+        border-right: 1px solid #ddd;
+    }
+
+    .card {
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+        .card img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+    .map {
+        flex: 1;
+    }
+
+        .map img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 </style>
