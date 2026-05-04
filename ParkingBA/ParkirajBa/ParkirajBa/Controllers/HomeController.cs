@@ -2,6 +2,8 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using System.Net;
+using System.Net.Mail;
 
 namespace ParkirajBa.Controllers
 {
@@ -79,6 +81,64 @@ namespace ParkirajBa.Controllers
         public IActionResult Register()
         {
             return View();
+        }
+
+
+        public IActionResult Placanje()
+        {
+            return View();
+        }
+        public IActionResult Potvrda(string ime)
+        {
+            ViewBag.ImeKorisnika = ime;
+            return View();
+        }
+        public IActionResult Uspjeh()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PosaljiEmail(string ime)
+        {
+            try
+            {
+                string korisnikEmail = User.Identity.Name;
+
+                if (string.IsNullOrEmpty(korisnikEmail))
+                {
+                    return RedirectToAction("Login");
+                }
+
+                var mojiEmail = "parkirajba.service@gmail.com";
+                var mojiLozinka = "iplx fham rnwz oajz";
+
+                var smtpClient = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential(mojiEmail, mojiLozinka),
+                    EnableSsl = true,
+                };
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(mojiEmail, "ParkirajBa"),
+                    Subject = "Potvrda rezervacije - ParkirajBa",
+                    Body = $"Poštovani {ime},\n\nVaša rezervacija je uspješno potvrđena! Hvala Vam što koristite ParkirajBa.",
+                    IsBodyHtml = false,
+                };
+
+                mailMessage.To.Add(korisnikEmail);
+
+                await smtpClient.SendMailAsync(mailMessage);
+
+                return RedirectToAction("Uspjeh");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Greška pri slanju emaila");
+                return Content("Greška: " + ex.Message);
+            }
         }
     }
 }
