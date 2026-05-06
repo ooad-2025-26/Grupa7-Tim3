@@ -5,15 +5,15 @@
 <div class="auth-container">
     <h2>Login</h2>
 
-    <form>
-        <input type="email" placeholder="Email" />
-        <input type="password" placeholder="Password" />
+    <form method="post" action="/User/Login">
+        <input type="email" name= "email" placeholder="Email" />
+        <input type="password" name="password" placeholder="Password" />
 
         <button type="submit">Login</button>
     </form>
 
     <p>Nemate račun?</p>
-    <a href="/Home/Register">Registruj se</a>
+    <a href="/User/Register">Registruj se</a>
 </div>
 
 <style>
