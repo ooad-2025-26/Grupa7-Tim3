@@ -8,19 +8,31 @@ namespace ParkirajBa
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-            {
-                ContentRootPath = AppContext.BaseDirectory
-            });
+            var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // 1. Database Connection
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            // 2. Identity Settings
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => {
+                options.SignIn.RequireConfirmedAccount = false; // Isključeno radi lakšeg testiranja
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 3; // Labavija pravila za razvojnu fazu
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/User/Login"; 
+                options.AccessDeniedPath = "/User/AccessDenied";
+                options.LogoutPath = "/User/Logout";
+            });
+
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
@@ -33,7 +45,6 @@ namespace ParkirajBa
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -42,6 +53,7 @@ namespace ParkirajBa
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
