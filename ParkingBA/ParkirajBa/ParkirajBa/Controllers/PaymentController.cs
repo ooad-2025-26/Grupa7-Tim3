@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using System.Net;
 using System.Net.Mail;
+using QRCoder;
+using System.IO;
 
 namespace ParkirajBa.Controllers
 {
@@ -24,7 +26,10 @@ namespace ParkirajBa.Controllers
         {
             // Email ulogovanog korisnika
             // string korisnikEmail = User.Identity.Name; zakomentarisano radi testiranja, zamijenjeno sa test emailom
-            string korisnikEmail = "unesitesvojmail@gmail.com";
+            string korisnikEmail = "dzejjlaa@gmail.com";
+
+            //Generisanje unikatnog ID-a za rampu
+            string unikatniKod = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
             try
             {
@@ -33,14 +38,28 @@ namespace ParkirajBa.Controllers
                     mail.From = new MailAddress(mojEmail);
                     mail.To.Add(korisnikEmail);
                     mail.Subject = "Potvrda rezervacije - ParkirajBa";
-                    mail.Body = $"Poštovani/a {ime},\n\nVaša uplata je uspješna. Pristup parkingu vam je omogućen.\n\nHvala što koristite ParkirajBa!";
+                    mail.Body = $"Poštovani/a {ime},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {unikatniKod}\n\nHvala što koristite ParkirajBa!";
                     mail.IsBodyHtml = false;
 
-                    using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                    using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+                    using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(unikatniKod, QRCodeGenerator.ECCLevel.Q))
+                    using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                     {
-                        smtp.Credentials = new NetworkCredential(mojEmail, mojaLozinka);
-                        smtp.EnableSsl = true;
-                        smtp.Send(mail);
+                        byte[] qrCodeBytes = qrCode.GetGraphic(20); 
+
+                        
+                        using (MemoryStream ms = new MemoryStream(qrCodeBytes))
+                        {
+                            Attachment attachment = new Attachment(ms, "ParkirajBa-QR.png", "image/png");
+                            mail.Attachments.Add(attachment);
+
+                            using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
+                            {
+                                smtp.Credentials = new NetworkCredential(mojEmail, mojaLozinka);
+                                smtp.EnableSsl = true;
+                                smtp.Send(mail);
+                            }
+                        }
                     }
                 }
                 return RedirectToAction("Uspjeh");
