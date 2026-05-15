@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
+using ParkirajBa.Models;
 
 namespace ParkirajBa
 {
@@ -17,14 +18,15 @@ namespace ParkirajBa
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // 2. Identity Settings
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => {
+            builder.Services.AddIdentity<RegisteredUser, IdentityRole>(options => {
                 options.SignIn.RequireConfirmedAccount = false; // Isključeno radi lakšeg testiranja
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 3; // Labavija pravila za razvojnu fazu
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = false;
             })
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
