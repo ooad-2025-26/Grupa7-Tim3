@@ -1,14 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace ParkirajBa.Models
 {
-    public class RegisteredUser: User
+    public class RegisteredUser : IdentityUser
     {
-        public string phoneNumber { get; set; }
-        public RegisteredUser():base()
-        {
-            phoneNumber = string.Empty;
-        }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
     }
 }
