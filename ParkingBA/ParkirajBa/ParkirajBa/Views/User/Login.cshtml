@@ -3,38 +3,52 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="auth-container">
-    <h2>Login</h2>
+<div class="auth-page">
 
-    <form method="post" action="/User/Login">
-        <input type="email" name= "email" placeholder="Email" />
-        <input type="password" name="password" placeholder="Password" />
+    <div class="auth-overlay"></div>
 
-        <button type="submit">Login</button>
-    </form>
+    <div class="auth-content">
 
-    <p>Nemate račun?</p>
-    <a href="/User/Register">Registruj se</a>
+        <img class="auth-logo" src="/images/logo.png" />
+
+        <div class="auth-card">
+
+            <h2>Prijavi se</h2>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="error-message">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form method="post" action="/User/Login">
+
+                <input type="email"
+                       name="email"
+                       placeholder="Email" />
+
+                <input type="password"
+                       name="password"
+                       placeholder="Password" />
+
+                <button type="submit">
+                    Prijava putem Email-a
+                </button>
+
+            </form>
+
+            <div class="auth-divider">
+                <span>ili</span>
+            </div>
+
+            <a class="secondary-auth-btn"
+               href="/User/Register">
+
+                Registracija putem Email-a
+
+            </a>
+
+        </div>
+    </div>
 </div>
-
-<style>
-    .auth-container {
-        width: 320px;
-        margin: 100px auto;
-        text-align: center;
-    }
-
-    input {
-        width: 100%;
-        margin: 8px 0;
-        padding: 10px;
-    }
-
-    button {
-        width: 100%;
-        padding: 10px;
-        background: #007bff;
-        color: white;
-        border: none;
-    }
-</style>
