@@ -14,14 +14,14 @@ namespace ParkirajBa.Models
         [MaxLength(50)]
         public string LastName { get; set; }
 
-        // opcionalno: da znaš kad je user kreiran
+        //kad je kreiran 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ApplicationUser()
         {
         }
 
-        // pomoćno svojstvo (nije u bazi, samo za prikaz)
+        // pomocna metoda da prikaze ime i prezime
         public string FullName => $"{FirstName} {LastName}";
     }
 }
