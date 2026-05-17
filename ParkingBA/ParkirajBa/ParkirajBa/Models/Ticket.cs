@@ -1,10 +1,9 @@
 ﻿using ParkirajBa.Models;
-using ParkirajBA.Models; // <-- veliko B, konzistentno sa ApplicationUser
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ParkirajBA.Models
+namespace ParkirajBa.Models
 {
     public class Ticket
     {

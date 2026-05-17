@@ -4,12 +4,18 @@
 
 <div class="auth-container">
     <h2>Registracija</h2>
-
-    <form>
-        <input type="text" placeholder="Ime" />
-        <input type="email" placeholder="Email" />
-        <input type="password" placeholder="Password" />
-        <input type="password" placeholder="Potvrdi password" />
+    @if (ViewBag.Error != null)
+    {
+        <div style="color:red; margin-bottom:10px;">
+            @ViewBag.Error
+        </div>
+    }
+    <form method="post" action="/User/Register">
+        <input type="text" name="ime" placeholder="Ime" />
+        <input type="text" name="prezime" placeholder="Prezime" />
+        <input type="email" name="email" placeholder="Email" />
+        <input type="password" name="password" placeholder="Password" />
+        <input type="password" name="confirmPassword" placeholder="Potvrdi password" />
 
         <button type="submit">Registruj se</button>
     </form>
