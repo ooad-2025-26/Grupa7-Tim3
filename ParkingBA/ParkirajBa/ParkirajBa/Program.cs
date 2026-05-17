@@ -20,7 +20,7 @@ namespace ParkirajBa
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // 2. Identity Settings
-            builder.Services.AddIdentity<RegisteredUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.Password.RequireDigit = false;

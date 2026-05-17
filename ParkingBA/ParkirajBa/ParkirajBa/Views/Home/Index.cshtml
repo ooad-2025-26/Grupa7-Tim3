@@ -1,13 +1,10 @@
 ﻿@{
-
     Layout = null;
-
     ViewData["Title"] = "ParkirajBa";
-
     <link rel="stylesheet" href="/css/site.css" />
 
-    var isLoggedIn = false;
-    var username = isLoggedIn ? "Ime Korisnika" : "Guest";
+    var isLoggedIn = User.Identity.IsAuthenticated;
+    var username = isLoggedIn ? User.Identity.Name : "Guest";
 }
 
 <div class="app-container">
