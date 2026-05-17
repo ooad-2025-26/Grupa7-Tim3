@@ -4,14 +4,14 @@
 }
 
 <div class="auth-container">
-    <h2>Registracija</h2>
+    <h2>Registracija vlasnika parkinga</h2>
     @if (ViewBag.Error != null)
     {
         <div style="color:red; margin-bottom:10px;">
             @ViewBag.Error
         </div>
     }
-    <form method="post" action="/User/Register">
+    <form method="post" action="/User/RegisterOwner">
         <input type="text" name="ime" placeholder="Ime" />
         <input type="text" name="prezime" placeholder="Prezime" />
         <input type="email" name="email" placeholder="Email" />
@@ -24,15 +24,11 @@
     <p>Već imate račun?</p>
     <a href="/User/Login">Login</a>
 
-    <div class="owner-register-box">
+    <p>Želite registrovati parking?</p>
 
-        <p>Želite registrovati parking?</p>
-
-        <a class="owner-register-btn" href="/User/RegisterOwner">
-            Registracija vlasnika parkinga
-        </a>
-
-    </div>
+    <a class="owner-register-btn" href="/User/RegisterOwner">
+        Registracija vlasnika parkinga
+    </a>
 </div>
 
 <style>

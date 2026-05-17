@@ -1,77 +1,62 @@
-﻿@{
+﻿
+@{
     Layout = "_Layout";
-    ViewData["Title"] = "ParkirajBa";
+    ViewData["Title"] = "Rezervacije";
 }
 
 <div class="app-container">
 
     <!-- NAV -->
     <div class="tabs">
-        <div class="tab active">
+        <div class="tab">
             <a href="/Home/Index">Mapa</a>
         </div>
+
         <div class="tab">
             <a href="/Home/Objekti">Objekti</a>
         </div>
-        <div class="tab">
+
+        <div class="tab active">
             <a href="/Home/Rezervacije">Rezervacije</a>
         </div>
     </div>
 
-    <!-- FILTER BAR -->
-    <div class="filters">
-        <input type="text" placeholder="Search..." />
 
-        <label><input type="checkbox" /> Garaža</label>
-        <label><input type="checkbox" checked /> EV punjač</label>
-        <label><input type="checkbox" checked /> Video nadzor</label>
-
-        <div class="price">
-            Cijena
-            <input type="range" />
-        </div>
-    </div>
-
-    <!-- CONTENT -->
-    <div class="content">
-
-        <!-- LEFT LIST -->
-        <div class="sidebar">
-            @for (int i = 0; i < 5; i++)
-            {
-                <div class="card">
-                    <img src="~/images/parking.jpg" />
-                    <div>
-                        <h4>Parking @i</h4>
-                        <p>Kratki opis parkinga...</p>
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- MAP -->
-        <div class="map">
-            <img src="/images/map.png" alt="mapa" />
-            <div class="custom-overlay"></div>
-        </div>
-
-    </div>
 </div>
 
-<script>
-    function toggleDropdown() {
-        var d = document.getElementById("dropdown");
-        d.style.display = d.style.display === "block" ? "none" : "block";
-    }
-
-    window.onclick = function (e) {
-        if (!e.target.closest('.profile')) {
-            document.getElementById("dropdown").style.display = "none";
-        }
-    }
-</script>
-
 <style>
+    .objects-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        padding: 30px 40px;
+    }
+
+    .object-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+        .object-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .object-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .object-card h3 {
+            padding: 18px;
+            margin: 0;
+            text-align: center;
+        }
+
     body {
         margin: 0;
         font-family: 'GoogleSans', 'Segoe UI', Arial, sans-serif;
@@ -110,15 +95,15 @@
     .profile > .profile-icon {
         display: flex;
         align-items: center;
-        background: #f0f0f0; 
-        padding: 6px 12px; 
+        background: #f0f0f0;
+        padding: 6px 12px;
         border-radius: 20px;
         font-size: 14px;
-        height: fit-content; 
+        height: fit-content;
     }
 
         .profile > span + .profile-icon {
-            margin-left: -12px; 
+            margin-left: -12px;
             border-left: 0;
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
@@ -159,11 +144,11 @@
         transition: 0.3s;
     }
 
-    .tab.active {
-        background: #6287f9; 
-        color: white;
-        box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
-    }
+        .tab.active {
+            background: #6287f9;
+            color: white;
+            box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
+        }
 
     .dropdown {
         display: none;
@@ -253,13 +238,13 @@
             border-color: #e0e0e0;
         }
 
-            .card img {
-                width: 80px;
-                height: 60px;
-                object-fit: cover;
-                border-radius: 6px;
-                background: #eee;
-            }
+        .card img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #eee;
+        }
 
     .map {
         flex: 1;
@@ -274,7 +259,10 @@
 
     .custom-overlay {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background-image: url('/images/backgroundColor.png');
         background-position: center;
         background-size: cover;

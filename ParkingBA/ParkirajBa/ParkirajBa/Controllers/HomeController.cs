@@ -26,8 +26,8 @@ namespace ParkirajBa.Controllers
         {
             ParkingObject parkingObject = new ParkingObject
             {
-                name = "Test Parking",
-                address = "Test Address",
+                name = "Test Parking 2",
+                address = "Test Address 2",
                 latitude = 44.7866,
                 longitude = 17.4489,
                 totalSpots = 100,
@@ -162,6 +162,35 @@ namespace ParkirajBa.Controllers
                 _logger.LogError(ex, "Greška pri slanju emaila");
                 return Content("Greška: " + ex.Message);
             }
+        }
+
+        //Objekti Tab
+        public async Task<IActionResult> Objekti()
+        {
+            string fullName = "Guest";
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var user = await _database.Users
+                    .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+                if (user != null)
+                {
+                    fullName = user.FirstName + " " + user.LastName;
+                }
+            }
+
+            ViewBag.FullName = fullName;
+
+            var objekti = await _database.ParkingObject.ToListAsync();
+
+            return View(objekti);
+        }
+
+        //Rezervacije tab
+        public IActionResult Rezervacije()
+        {
+            return View();
         }
     }
 }

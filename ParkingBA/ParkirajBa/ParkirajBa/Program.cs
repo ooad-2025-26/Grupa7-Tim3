@@ -64,7 +64,6 @@ namespace ParkirajBa
 
             await SeedRolesAsync(app); //za role
 
-            // 3. HTTP Pipeline (REDOSLJED JE BITAN!)
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
