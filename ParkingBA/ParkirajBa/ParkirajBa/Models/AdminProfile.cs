@@ -1,12 +1,13 @@
 ﻿using ParkirajBa.Models;
 
 namespace ParkirajBa.Models
+
 {
-    public class OwnerProfile
+    public class AdminProfile
     {
         public int Id { get; set; }
 
-        public string CompanyName { get; set; }
+        public string Department { get; set; }
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }

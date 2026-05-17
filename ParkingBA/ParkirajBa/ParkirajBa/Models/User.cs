@@ -8,17 +8,17 @@ namespace ParkirajBa.Models
     {
         [Key]
         public int ID { get; set; }
-        public string name { get; set; }
-        public string surname { get; set; }
-        public string email { get; set; }
-        public string passwordHash { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string PasswordHash { get; set; }
 
         public User()
         {
-            name = string.Empty;
-            surname = string.Empty;
-            email = string.Empty;
-            passwordHash = string.Empty;
+            FirstName = string.Empty;
+            LastName = string.Empty;
+            Email = string.Empty;
+            PasswordHash = string.Empty;
         }
     }
 }
