@@ -15,10 +15,13 @@ namespace ParkirajBa.Controllers
 
         private readonly ApplicationDbContext _database;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database)
+        private readonly IConfiguration _configuration;
+
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database, IConfiguration configuration)
         {
             _logger = logger;
             _database = database;
+            _configuration = configuration;
         }
 
         //testiranje baze
@@ -75,6 +78,10 @@ namespace ParkirajBa.Controllers
             }
 
             ViewBag.FullName = fullName;
+
+            var apiKey = _configuration["GoogleMaps:ApiKey"];
+
+            ViewData["GoogleMapsApiKey"] = apiKey;
 
             return View();
         }

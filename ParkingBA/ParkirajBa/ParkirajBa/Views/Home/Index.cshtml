@@ -1,6 +1,7 @@
 ﻿@{
     Layout = "_Layout";
     ViewData["Title"] = "ParkirajBa";
+    var apiKey = ViewData["GoogleMapsApiKey"] as string;
 }
 
 <div class="app-container">
@@ -50,27 +51,13 @@
         </div>
 
         <!-- MAP -->
-        <div class="map">
-            <img src="/images/map.png" alt="mapa" />
-            <div class="custom-overlay"></div>
-        </div>
+        <div class="container mt-4">
+            <h2>Mapa</h2>
 
+            <div id="map" style="height: 600px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+        </div>
     </div>
 </div>
-
-<script>
-    function toggleDropdown() {
-        var d = document.getElementById("dropdown");
-        d.style.display = d.style.display === "block" ? "none" : "block";
-    }
-
-    window.onclick = function (e) {
-        if (!e.target.closest('.profile')) {
-            document.getElementById("dropdown").style.display = "none";
-        }
-    }
-</script>
-
 <style>
     body {
         margin: 0;
@@ -287,3 +274,51 @@
     }
 
 </style>
+
+@section Scripts {
+    <script>
+        function toggleDropdown() {
+            var d = document.getElementById("dropdown");
+            d.style.display = d.style.display === "block" ? "none" : "block";
+        }
+
+        window.onclick = function (e) {
+            if (!e.target.closest('.profile')) {
+                var dropdown = document.getElementById("dropdown");
+                if (dropdown) {
+                    dropdown.style.display = "none";
+                }
+            }
+        }
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&callback=initMap" async defer></script>
+
+    <script>
+        let map;
+
+        // Ova funkcija se zove automatski zbog "&callback=initMap" u linku iznad
+        function initMap() {
+            // Početne koordinate (npr. centar Sarajeva)
+            const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
+
+            // Povezujemo mapu sa tvojim <div id="map">
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: pocetnaPozicija,
+                mapTypeId: 'roadmap',
+                // Opcionalno: možeš isključiti defaultne Google UI kontrole ako ti smetaju
+                disableDefaultUI: false
+            });
+
+            // Primjer jednog markera čisto da testiraš da li radi
+            new google.maps.Marker({
+                position: pocetnaPozicija,
+                map: map,
+                title: "Test lokacija"
+            });
+
+            // Ovdje ćeš kasnije dodati fetch() poziv za povlačenje parking mjesta iz baze
+        }
+    </script>
+}
