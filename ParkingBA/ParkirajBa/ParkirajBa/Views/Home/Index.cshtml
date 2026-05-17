@@ -1,42 +1,9 @@
 ﻿@{
-    Layout = null;
+    Layout = "_Layout";
     ViewData["Title"] = "ParkirajBa";
-    <link rel="stylesheet" href="/css/site.css" />
-
-    var isLoggedIn = User.Identity.IsAuthenticated;
-    var username = isLoggedIn ? User.Identity.Name : "Guest";
 }
 
 <div class="app-container">
-
-    <!-- HEADER -->
-    <div class="header">
-
-        <div class="left"></div>
-
-        <div class="logo">
-            <img src="/images/logo.png" alt="logo" />
-        </div>
-
-        <div class="profile" onclick="toggleDropdown()">
-            <span>@username</span>
-            <div class="profile-icon">👤</div>
-
-            <div id="dropdown" class="dropdown">
-                @if (!isLoggedIn)
-                {
-                    <a href="/User/Login">Login</a>
-                    <a href="/User/Register">Registracija</a>
-                }
-                else
-                {
-                    <a href="/Home/Profile">Profil</a>
-                    <a href="/Home/Logout">Logout</a>
-                }
-            </div>
-        </div>
-
-    </div>
 
     <!-- NAV -->
     <div class="tabs">

@@ -4,7 +4,12 @@
 
 <div class="auth-container">
     <h2>Registracija</h2>
-
+    @if (ViewBag.Error != null)
+    {
+        <div style="color:red; margin-bottom:10px;">
+            @ViewBag.Error
+        </div>
+    }
     <form method="post" action="/User/Register">
         <input type="text" name="ime" placeholder="Ime" />
         <input type="text" name="prezime" placeholder="Prezime" />

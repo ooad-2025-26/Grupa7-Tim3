@@ -17,6 +17,12 @@ namespace ParkirajBa.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
         }
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
 
         [HttpGet]
         public IActionResult Login()
@@ -100,7 +106,75 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.GetUserAsync(User);
 
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            return View(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Profile(
+       string firstName,
+       string lastName,
+       string currentPassword,
+       string newPassword,
+       string confirmPassword)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            user.FirstName = firstName;
+            user.LastName = lastName;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                ViewBag.Error = "Greška pri ažuriranju profila";
+                return View(user);
+            }
+
+            // promjena passworda
+            if (!string.IsNullOrWhiteSpace(newPassword))
+            {
+                if (newPassword != confirmPassword)
+                {
+                    ViewBag.Error = "Novi passwordi se ne poklapaju";
+                    return View(user);
+                }
+
+                var passwordResult = await _userManager.ChangePasswordAsync(
+                    user,
+                    currentPassword,
+                    newPassword);
+
+                if (!passwordResult.Succeeded)
+                {
+                    ViewBag.Error = string.Join(", ",
+                        passwordResult.Errors.Select(e => e.Description));
+
+                    return View(user);
+                }
+            }
+
+            ViewBag.Success = "Profil uspješno ažuriran";
+
+            return View(user);
+        }
+
+
+        //--------------------------------
         //ispis svih iz baze za testiranje
         public async Task<IActionResult> TestUsers()
         {

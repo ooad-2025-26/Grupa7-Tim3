@@ -7,7 +7,25 @@ namespace ParkirajBa
 {
     public class Program
     {
-        public static void Main(string[] args)
+        //za role
+        static async Task SeedRolesAsync(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            string[] roles = { "User", "Admin", "Owner" };
+
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+        }
+
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +61,8 @@ namespace ParkirajBa
 
             // ——— Build ———
             var app = builder.Build();
+
+            await SeedRolesAsync(app); //za role
 
             // 3. HTTP Pipeline (REDOSLJED JE BITAN!)
             if (app.Environment.IsDevelopment())

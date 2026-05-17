@@ -1,7 +1,9 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
 
@@ -56,11 +58,32 @@ namespace ParkirajBa.Controllers
             return Content("Database test completed successfully!");
         }
 
-        public IActionResult Index()
+
+        public async Task<IActionResult> Index()
         {
+            string fullName = "Guest";
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var user = await _database.Users
+                    .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+                if (user != null)
+                {
+                    fullName = user.FirstName + " " + user.LastName;
+                }
+            }
+
+            ViewBag.FullName = fullName;
+
             return View();
         }
 
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
 
         public IActionResult Privacy()
         {
