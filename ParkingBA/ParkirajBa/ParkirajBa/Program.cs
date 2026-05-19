@@ -44,7 +44,7 @@ namespace ParkirajBa
             // ——— Build ———
             var app = builder.Build();
 
-            // 3. HTTP Pipeline (REDOSLJED JE BITAN!)
+            // 3. HTTP Pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();

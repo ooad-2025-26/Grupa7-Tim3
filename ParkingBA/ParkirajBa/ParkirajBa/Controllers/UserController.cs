@@ -18,7 +18,7 @@ namespace ParkirajBa.Controllers
             return View();
         }
 
-        // POST - obrada login forme
+        // POST - login form
         [HttpPost]
         public IActionResult Login(string email, string password)
         {
