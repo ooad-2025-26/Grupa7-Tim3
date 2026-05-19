@@ -7,11 +7,11 @@ using System.IO;
 
 namespace ParkirajBa.Controllers
 {
-    // [Authorize] Provjerava da li je korisnik ulogovan, zakomentarisano radi testiranja
+    // [Authorize] checks if the user is authenticated before allowing access to the controller's actions. If the user is not authenticated, they will be redirected to the login page.
     public class PaymentController : Controller
     {
-        private readonly string mojEmail = "parkirajba.service@gmail.com";
-        private readonly string mojaLozinka = "iplx fham rnwz oajz";
+        private readonly string parkingBaEmail = "parkirajba.service@gmail.com";
+        private readonly string parkingBaEmailConnection = "iplx fham rnwz oajz";
 
         public IActionResult Placanje() => View();
 
@@ -24,25 +24,25 @@ namespace ParkirajBa.Controllers
         [HttpPost]
         public IActionResult PosaljiEmail(string ime)
         {
-            // Email ulogovanog korisnika
-            // string korisnikEmail = User.Identity.Name; zakomentarisano radi testiranja, zamijenjeno sa test emailom
-            string korisnikEmail = "dzejjlaa@gmail.com";
+            // Email registered usera.
+            // string korisnikEmail = User.Identity.Name; currently hardcoded for testing purposes. In a real application, this would be retrieved from the authenticated user's information
+            string userEmail = "stavititestniemail@gmail.com";
 
-            //Generisanje unikatnog ID-a za rampu
-            string unikatniKod = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+            //generating unique code for the reservation, which will be included in the email and encoded in the QR code. This code can be used to verify the reservation at the parking lot.
+            string uniqueCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
             try
             {
                 using (MailMessage mail = new MailMessage())
                 {
-                    mail.From = new MailAddress(mojEmail);
-                    mail.To.Add(korisnikEmail);
+                    mail.From = new MailAddress(parkingBaEmail);
+                    mail.To.Add(userEmail);
                     mail.Subject = "Potvrda rezervacije - ParkirajBa";
                     mail.Body = $"Poštovani/a {ime},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {unikatniKod}\n\nHvala što koristite ParkirajBa!";
                     mail.IsBodyHtml = false;
 
                     using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-                    using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(unikatniKod, QRCodeGenerator.ECCLevel.Q))
+                    using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(uniqueCode, QRCodeGenerator.ECCLevel.Q))
                     using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                     {
                         byte[] qrCodeBytes = qrCode.GetGraphic(20); 
@@ -55,7 +55,7 @@ namespace ParkirajBa.Controllers
 
                             using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                             {
-                                smtp.Credentials = new NetworkCredential(mojEmail, mojaLozinka);
+                                smtp.Credentials = new NetworkCredential(parkingBaEmail, parkingBaEmailConnection);
                                 smtp.EnableSsl = true;
                                 smtp.Send(mail);
                             }

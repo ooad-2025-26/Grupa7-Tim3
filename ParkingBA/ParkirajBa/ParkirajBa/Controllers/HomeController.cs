@@ -24,7 +24,7 @@ namespace ParkirajBa.Controllers
             _configuration = configuration;
         }
 
-        //testiranje baze
+        //db testing
         public IActionResult databaseTest()
         {
             ParkingObject parkingObject = new ParkingObject
@@ -133,32 +133,32 @@ namespace ParkirajBa.Controllers
         {
             try
             {
-                string korisnikEmail = User.Identity.Name;
+                string userEmail = User.Identity.Name;
 
-                if (string.IsNullOrEmpty(korisnikEmail))
+                if (string.IsNullOrEmpty(userEmail))
                 {
                     return RedirectToAction("Login");
                 }
 
-                var mojiEmail = "parkirajba.service@gmail.com";
-                var mojiLozinka = "iplx fham rnwz oajz";
+                var parkingBaEmail = "parkirajba.service@gmail.com";
+                var parkingBaEmailConnection = "iplx fham rnwz oajz";
 
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
                     Port = 587,
-                    Credentials = new NetworkCredential(mojiEmail, mojiLozinka),
+                    Credentials = new NetworkCredential(parkingBaEmail, parkingBaEmailConnection),
                     EnableSsl = true,
                 };
 
                 var mailMessage = new MailMessage
                 {
-                    From = new MailAddress(mojiEmail, "ParkirajBa"),
+                    From = new MailAddress(parkingBaEmail, "ParkirajBa"),
                     Subject = "Potvrda rezervacije - ParkirajBa",
                     Body = $"Poštovani {ime},\n\nVaša rezervacija je uspješno potvrđena! Hvala Vam što koristite ParkirajBa.",
                     IsBodyHtml = false,
                 };
 
-                mailMessage.To.Add(korisnikEmail);
+                mailMessage.To.Add(userEmail);
 
                 await smtpClient.SendMailAsync(mailMessage);
 
