@@ -7,7 +7,25 @@ namespace ParkirajBa
 {
     public class Program
     {
-        public static void Main(string[] args)
+        //za role
+        static async Task SeedRolesAsync(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            string[] roles = { "User", "Admin", "Owner" };
+
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+        }
+
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +38,7 @@ namespace ParkirajBa
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // 2. Identity Settings
-            builder.Services.AddIdentity<RegisteredUser, IdentityRole>(options =>
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = false;
                 options.Password.RequireDigit = false;
@@ -44,7 +62,8 @@ namespace ParkirajBa
             // ——— Build ———
             var app = builder.Build();
 
-            // 3. HTTP Pipeline
+            await SeedRolesAsync(app); //za role
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();

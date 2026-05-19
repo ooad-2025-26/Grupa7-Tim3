@@ -1,7 +1,9 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
 
@@ -13,10 +15,13 @@ namespace ParkirajBa.Controllers
 
         private readonly ApplicationDbContext _database;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database)
+        private readonly IConfiguration _configuration;
+
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database, IConfiguration configuration)
         {
             _logger = logger;
             _database = database;
+            _configuration = configuration;
         }
 
         //db testing
@@ -24,8 +29,8 @@ namespace ParkirajBa.Controllers
         {
             ParkingObject parkingObject = new ParkingObject
             {
-                name = "Test Parking",
-                address = "Test Address",
+                name = "Test Parking 2",
+                address = "Test Address 2",
                 latitude = 44.7866,
                 longitude = 17.4489,
                 totalSpots = 100,
@@ -56,11 +61,36 @@ namespace ParkirajBa.Controllers
             return Content("Database test completed successfully!");
         }
 
-        public IActionResult Index()
+
+        public async Task<IActionResult> Index()
         {
+            string fullName = "Guest";
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var user = await _database.Users
+                    .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+                if (user != null)
+                {
+                    fullName = user.FirstName + " " + user.LastName;
+                }
+            }
+
+            ViewBag.FullName = fullName;
+
+            var apiKey = _configuration["GoogleMaps:ApiKey"];
+
+            ViewData["GoogleMapsApiKey"] = apiKey;
+
             return View();
         }
 
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
 
         public IActionResult Privacy()
         {
@@ -139,6 +169,35 @@ namespace ParkirajBa.Controllers
                 _logger.LogError(ex, "Greška pri slanju emaila");
                 return Content("Greška: " + ex.Message);
             }
+        }
+
+        //Objekti Tab
+        public async Task<IActionResult> Objekti()
+        {
+            string fullName = "Guest";
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var user = await _database.Users
+                    .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+
+                if (user != null)
+                {
+                    fullName = user.FirstName + " " + user.LastName;
+                }
+            }
+
+            ViewBag.FullName = fullName;
+
+            var objekti = await _database.ParkingObject.ToListAsync();
+
+            return View(objekti);
+        }
+
+        //Rezervacije tab
+        public IActionResult Rezervacije()
+        {
+            return View();
         }
     }
 }

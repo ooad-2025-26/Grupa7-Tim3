@@ -1,0 +1,53 @@
+﻿@model ParkirajBa.Models.ApplicationUser
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Profil";
+}
+
+<div class="profile-page">
+
+    <div class="profile-card">
+
+        <h2>Upravljanje profilom</h2>
+
+        @if (ViewBag.Success != null)
+        {
+            <div class="success-message">
+                @ViewBag.Success
+            </div>
+        }
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error-message">
+                @ViewBag.Error
+            </div>
+        }
+
+        <form method="post">
+
+            <label>Ime</label>
+            <input type="text" name="firstName" value="@Model.FirstName" />
+
+            <label>Prezime</label>
+            <input type="text" name="lastName" value="@Model.LastName" />
+
+            <label>Trenutna lozinka</label>
+            <input type="password" name="currentPassword" />
+
+            <label>Nova lozinka</label>
+            <input type="password" name="newPassword" />
+
+            <label>Potvrdi novu lozinku</label>
+            <input type="password" name="confirmPassword" />
+
+            <button type="submit">
+                Spremi promjene
+            </button>
+
+        </form>
+
+    </div>
+
+</div>

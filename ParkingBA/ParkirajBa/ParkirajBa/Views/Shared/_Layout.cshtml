@@ -1,28 +1,98 @@
-﻿<!DOCTYPE html>
+﻿@using ParkirajBa.Models
+@using ParkirajBa.Data
+@inject ApplicationDbContext db
+
+@{
+    string fullName = "Guest";
+
+    if (User.Identity.IsAuthenticated)
+    {
+        var user = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
+
+        if (user != null)
+        {
+            fullName = user.FirstName + " " + user.LastName;
+        }
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ParkirajBa</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ParkirajBa.styles.css" asp-append-version="true" />
 </head>
+
 <body>
+    <!-- HEADER (GLOBAL) -->
+    @if (ViewBag.HideHeader != true)
+    {
+        <div class="header">
+
+            <div class="left-placeholder"></div>
+
+            <div class="logo">
+                <img src="/images/logo.png" />
+            </div>
+
+            <div class="profile" onclick="toggleDropdown()">
+                <span>@fullName</span>
+                <div class="profile-icon">👤</div>
+
+                <div id="dropdown" class="dropdown">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <a href="/User/Profile">Upravljaj profilom</a>
+                        <a href="/User/Logout">Logout</a>
+                    }
+                    else
+                    {
+                        <a href="/User/Register">Register</a>
+                        <a href="/User/Login">Login</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    <!-- PAGE CONTENT -->
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
+    <!-- FOOTER -->
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - ParkirajBa - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2026 - ParkirajBa -
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>
+
+<script>
+    function toggleDropdown() {
+        var d = document.getElementById("dropdown");
+        d.style.display = d.style.display === "block" ? "none" : "block";
+    }
+
+    window.onclick = function (e) {
+        if (!e.target.closest('.profile')) {
+            document.getElementById("dropdown").style.display = "none";
+        }
+    }
+</script>

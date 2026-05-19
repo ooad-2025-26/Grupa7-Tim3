@@ -1,6 +1,6 @@
 ﻿@{
     Layout = "_Layout";
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Register Owner";
 }
 
 <div class="auth-page">
@@ -13,7 +13,7 @@
 
         <div class="auth-card">
 
-            <h2>Prijavi se</h2>
+            <h2>Registracija vlasnika parkinga</h2>
 
             @if (ViewBag.Error != null)
             {
@@ -22,7 +22,15 @@
                 </div>
             }
 
-            <form method="post" action="/User/Login">
+            <form method="post" action="/User/RegisterOwner">
+
+                <input type="text"
+                       name="ime"
+                       placeholder="Ime" />
+
+                <input type="text"
+                       name="prezime"
+                       placeholder="Prezime" />
 
                 <input type="email"
                        name="email"
@@ -32,8 +40,12 @@
                        name="password"
                        placeholder="Password" />
 
+                <input type="password"
+                       name="confirmPassword"
+                       placeholder="Potvrdi password" />
+
                 <button type="submit">
-                    Prijava putem Email-a
+                    Registruj parking nalog
                 </button>
 
             </form>
@@ -43,9 +55,16 @@
             </div>
 
             <a class="secondary-auth-btn"
+               href="/User/Login">
+
+                Već imate račun?
+
+            </a>
+
+            <a class="secondary-auth-btn"
                href="/User/Register">
 
-                Registracija putem Email-a
+                Obična registracija
 
             </a>
 

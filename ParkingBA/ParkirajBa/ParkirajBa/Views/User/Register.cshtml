@@ -1,41 +1,73 @@
 ﻿@{
+    Layout = "_Layout";
     ViewData["Title"] = "Register";
 }
 
-<div class="auth-container">
-    <h2>Registracija</h2>
+<div class="auth-page">
 
-    <form>
-        <input type="text" placeholder="Ime" />
-        <input type="email" placeholder="Email" />
-        <input type="password" placeholder="Password" />
-        <input type="password" placeholder="Potvrdi password" />
+    <div class="auth-overlay"></div>
 
-        <button type="submit">Registruj se</button>
-    </form>
+    <div class="auth-content">
 
-    <p>Već imate račun?</p>
-    <a href="/User/Login">Login</a>
+        <img class="auth-logo" src="/images/logo.png" />
+
+        <div class="auth-card">
+
+            <h2>Registracija</h2>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="error-message">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form method="post" action="/User/Register">
+
+                <input type="text"
+                       name="ime"
+                       placeholder="Ime" />
+
+                <input type="text"
+                       name="prezime"
+                       placeholder="Prezime" />
+
+                <input type="email"
+                       name="email"
+                       placeholder="Email" />
+
+                <input type="password"
+                       name="password"
+                       placeholder="Password" />
+
+                <input type="password"
+                       name="confirmPassword"
+                       placeholder="Potvrdi password" />
+
+                <button type="submit">
+                    Registracija putem Email-a
+                </button>
+
+            </form>
+
+            <div class="auth-divider">
+                <span>ili</span>
+            </div>
+
+            <a class="secondary-auth-btn"
+               href="/User/Login">
+
+                Već imate račun?
+
+            </a>
+
+            <a class="owner-auth-btn"
+               href="/User/RegisterOwner">
+
+                Registracija vlasnika parkinga
+
+            </a>
+
+        </div>
+    </div>
 </div>
-
-<style>
-    .auth-container {
-        width: 320px;
-        margin: 100px auto;
-        text-align: center;
-    }
-
-    input {
-        width: 100%;
-        margin: 8px 0;
-        padding: 10px;
-    }
-
-    button {
-        width: 100%;
-        padding: 10px;
-        background: #28a745;
-        color: white;
-        border: none;
-    }
-</style>

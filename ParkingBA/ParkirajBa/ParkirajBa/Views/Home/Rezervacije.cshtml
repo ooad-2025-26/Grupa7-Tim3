@@ -1,64 +1,62 @@
-﻿@{
+﻿
+@{
     Layout = "_Layout";
-    ViewData["Title"] = "ParkirajBa";
-    var apiKey = ViewData["GoogleMapsApiKey"] as string;
+    ViewData["Title"] = "Rezervacije";
 }
 
 <div class="app-container">
 
     <!-- NAV -->
     <div class="tabs">
-        <div class="tab active">
+        <div class="tab">
             <a href="/Home/Index">Mapa</a>
         </div>
+
         <div class="tab">
             <a href="/Home/Objekti">Objekti</a>
         </div>
-        <div class="tab">
+
+        <div class="tab active">
             <a href="/Home/Rezervacije">Rezervacije</a>
         </div>
     </div>
 
-    <!-- FILTER BAR -->
-    <div class="filters">
-        <input type="text" placeholder="Search..." />
 
-        <label><input type="checkbox" /> Garaža</label>
-        <label><input type="checkbox" checked /> EV punjač</label>
-        <label><input type="checkbox" checked /> Video nadzor</label>
-
-        <div class="price">
-            Cijena
-            <input type="range" />
-        </div>
-    </div>
-
-    <!-- CONTENT -->
-    <div class="content">
-
-        <!-- LEFT LIST -->
-        <div class="sidebar">
-            @for (int i = 0; i < 5; i++)
-            {
-                <div class="card">
-                    <img src="~/images/parking.jpg" />
-                    <div>
-                        <h4>Parking @i</h4>
-                        <p>Kratki opis parkinga...</p>
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- MAP -->
-        <div class="container mt-4">
-            <h2>Mapa</h2>
-
-            <div id="map" style="height: 600px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
-        </div>
-    </div>
 </div>
+
 <style>
+    .objects-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        padding: 30px 40px;
+    }
+
+    .object-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+        .object-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .object-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .object-card h3 {
+            padding: 18px;
+            margin: 0;
+            text-align: center;
+        }
+
     body {
         margin: 0;
         font-family: 'GoogleSans', 'Segoe UI', Arial, sans-serif;
@@ -97,15 +95,15 @@
     .profile > .profile-icon {
         display: flex;
         align-items: center;
-        background: #f0f0f0; 
-        padding: 6px 12px; 
+        background: #f0f0f0;
+        padding: 6px 12px;
         border-radius: 20px;
         font-size: 14px;
-        height: fit-content; 
+        height: fit-content;
     }
 
         .profile > span + .profile-icon {
-            margin-left: -12px; 
+            margin-left: -12px;
             border-left: 0;
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
@@ -146,11 +144,11 @@
         transition: 0.3s;
     }
 
-    .tab.active {
-        background: #6287f9; 
-        color: white;
-        box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
-    }
+        .tab.active {
+            background: #6287f9;
+            color: white;
+            box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
+        }
 
     .dropdown {
         display: none;
@@ -240,13 +238,13 @@
             border-color: #e0e0e0;
         }
 
-            .card img {
-                width: 80px;
-                height: 60px;
-                object-fit: cover;
-                border-radius: 6px;
-                background: #eee;
-            }
+        .card img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #eee;
+        }
 
     .map {
         flex: 1;
@@ -261,7 +259,10 @@
 
     .custom-overlay {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background-image: url('/images/backgroundColor.png');
         background-position: center;
         background-size: cover;
@@ -274,51 +275,3 @@
     }
 
 </style>
-
-@section Scripts {
-    <script>
-        function toggleDropdown() {
-            var d = document.getElementById("dropdown");
-            d.style.display = d.style.display === "block" ? "none" : "block";
-        }
-
-        window.onclick = function (e) {
-            if (!e.target.closest('.profile')) {
-                var dropdown = document.getElementById("dropdown");
-                if (dropdown) {
-                    dropdown.style.display = "none";
-                }
-            }
-        }
-    </script>
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&callback=initMap" async defer></script>
-
-    <script>
-        let map;
-
-        // Ova funkcija se zove automatski zbog "&callback=initMap" u linku iznad
-        function initMap() {
-            // Početne koordinate (npr. centar Sarajeva)
-            const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
-
-            // Povezujemo mapu sa tvojim <div id="map">
-            map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 14,
-                center: pocetnaPozicija,
-                mapTypeId: 'roadmap',
-                // Opcionalno: možeš isključiti defaultne Google UI kontrole ako ti smetaju
-                disableDefaultUI: false
-            });
-
-            // Primjer jednog markera čisto da testiraš da li radi
-            new google.maps.Marker({
-                position: pocetnaPozicija,
-                map: map,
-                title: "Test lokacija"
-            });
-
-            // Ovdje ćeš kasnije dodati fetch() poziv za povlačenje parking mjesta iz baze
-        }
-    </script>
-}
