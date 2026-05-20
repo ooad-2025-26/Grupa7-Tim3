@@ -297,28 +297,28 @@
     <script>
         let map;
 
-        // Ova funkcija se zove automatski zbog "&callback=initMap" u linku iznad
+        // this function is called automatically by "&callback=initMap" in the script link above
         function initMap() {
-            // Početne koordinate (npr. centar Sarajeva)
+            // first coordinates (ex. centar Sarajeva)
             const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
 
-            // Povezujemo mapu sa tvojim <div id="map">
+            // connecting the map to the <div id="map">
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 14,
                 center: pocetnaPozicija,
                 mapTypeId: 'roadmap',
-                // Opcionalno: možeš isključiti defaultne Google UI kontrole ako ti smetaju
+            // optional: default google maps controls can be disabled if you want to implement your own custom controls
                 disableDefaultUI: false
             });
 
-            // Primjer jednog markera čisto da testiraš da li radi
+            // ex of one marker on the map, will later add markers for each parking place from the database
             new google.maps.Marker({
                 position: pocetnaPozicija,
                 map: map,
                 title: "Test lokacija"
             });
 
-            // Ovdje ćeš kasnije dodati fetch() poziv za povlačenje parking mjesta iz baze
+        // later we will add fetch request to our API to get parking places
         }
     </script>
 }

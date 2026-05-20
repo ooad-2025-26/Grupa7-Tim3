@@ -38,7 +38,7 @@ namespace ParkirajBa.Controllers
                     mail.From = new MailAddress(parkingBaEmail);
                     mail.To.Add(userEmail);
                     mail.Subject = "Potvrda rezervacije - ParkirajBa";
-                    mail.Body = $"Poštovani/a {ime},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {unikatniKod}\n\nHvala što koristite ParkirajBa!";
+                    mail.Body = $"Poštovani/a {ime},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {uniqueCode}\n\nHvala što koristite ParkirajBa!";
                     mail.IsBodyHtml = false;
 
                     using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
