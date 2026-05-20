@@ -1,4 +1,6 @@
-﻿@{
+﻿@model List<ParkirajBa.Models.ParkingObject>
+
+@{
     Layout = "_Layout";
     ViewData["Title"] = "ParkirajBa";
     var apiKey = ViewData["GoogleMapsApiKey"] as string;
@@ -51,11 +53,12 @@
         </div>
 
         <!-- MAP -->
-        <div class="container mt-4">
+        <div class="container mt-4" style="flex: 1; padding: 20px;">
             <h2>Mapa</h2>
-
-            <div id="map" style="height: 600px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+            <div id="map" style="height: calc(100% - 60px); width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
         </div>
+
+        <!--------->
     </div>
 </div>
 <style>
@@ -292,10 +295,27 @@
         }
     </script>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&callback=initMap" async defer></script>
-
+    <!--Bootstrap map script-->
     <script>
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+          key: "@apiKey", // extracts the key
+          v: "weekly"
+        });
+    </script>
+
+    <!--Initialisation of the map-->
+    <script>
+
+        const parkingLocations = @Html.Raw(Json.Serialize(Model));
+
         let map;
+        async function init() {
+            // Import the needed libraries
+            const { Map } = await google.maps.importLibrary('maps');
+
+            const {AdvancedMarkerElement, PinElement}=await google.maps.importLibrary("marker");
+
+            const { InfoWindow } = await google.maps.importLibrary("maps");
 
         // this function is called automatically by "&callback=initMap" in the script link above
         function initMap() {
@@ -320,5 +340,8 @@
 
         // later we will add fetch request to our API to get parking places
         }
+
+        init();
+
     </script>
 }

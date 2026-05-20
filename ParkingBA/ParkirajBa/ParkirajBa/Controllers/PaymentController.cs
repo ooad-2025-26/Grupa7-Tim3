@@ -4,14 +4,23 @@ using System.Net;
 using System.Net.Mail;
 using QRCoder;
 using System.IO;
+using ParkirajBa.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ParkirajBa.Controllers
 {
-    // [Authorize] checks if the user is authenticated before allowing access to the controller's actions. If the user is not authenticated, they will be redirected to the login page.
+    [Authorize] 
     public class PaymentController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+
         private readonly string parkingBaEmail = "parkirajba.service@gmail.com";
         private readonly string parkingBaEmailConnection = "iplx fham rnwz oajz";
+
+        public PaymentController(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
 
         public IActionResult Placanje() => View();
 
@@ -22,11 +31,19 @@ namespace ParkirajBa.Controllers
         }
 
         [HttpPost]
-        public IActionResult PosaljiEmail(string ime)
+        public async Task<IActionResult> PosaljiEmail()
         {
             // Email registered usera.
             // string korisnikEmail = User.Identity.Name; currently hardcoded for testing purposes. In a real application, this would be retrieved from the authenticated user's information
-            string userEmail = "stavititestniemail@gmail.com";
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+
+            string userEmail = currentUser.Email;
+            string fullName = currentUser.FullName;
 
             //generating unique code for the reservation, which will be included in the email and encoded in the QR code. This code can be used to verify the reservation at the parking lot.
             string uniqueCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
@@ -38,7 +55,7 @@ namespace ParkirajBa.Controllers
                     mail.From = new MailAddress(parkingBaEmail);
                     mail.To.Add(userEmail);
                     mail.Subject = "Potvrda rezervacije - ParkirajBa";
-                    mail.Body = $"Poštovani/a {ime},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {uniqueCode}\n\nHvala što koristite ParkirajBa!";
+                    mail.Body = $"Poštovani/a {fullName},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {uniqueCode}\n\nHvala što koristite ParkirajBa!";
                     mail.IsBodyHtml = false;
 
                     using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
