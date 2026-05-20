@@ -79,11 +79,17 @@ namespace ParkirajBa.Controllers
 
             ViewBag.FullName = fullName;
 
+            //-- Mapa --
+
             var apiKey = _configuration["GoogleMaps:ApiKey"];
 
             ViewData["GoogleMapsApiKey"] = apiKey;
 
-            return View();
+            var parkingObjekti = _database.ParkingObject.ToList();
+
+            //----
+
+            return View(parkingObjekti);
         }
 
         public async Task<IActionResult> Logout()
