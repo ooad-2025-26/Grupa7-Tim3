@@ -1,4 +1,6 @@
-﻿@{
+﻿@model List<ParkirajBa.Models.ParkingObject>
+
+@{
     Layout = "_Layout";
     ViewData["Title"] = "ParkirajBa";
     var apiKey = ViewData["GoogleMapsApiKey"] as string;
@@ -51,11 +53,12 @@
         </div>
 
         <!-- MAP -->
-        <div class="container mt-4">
+        <div class="container mt-4" style="flex: 1; padding: 20px;">
             <h2>Mapa</h2>
-
-            <div id="map" style="height: 600px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+            <div id="map" style="height: calc(100% - 60px); width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
         </div>
+
+        <!--------->
     </div>
 </div>
 <style>
@@ -292,33 +295,85 @@
         }
     </script>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&callback=initMap" async defer></script>
-
+    <!--Bootstrap map script-->
     <script>
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+          key: "@apiKey", // extracts the key
+          v: "weekly"
+        });
+    </script>
+
+    <!--Initialisation of the map-->
+    <script>
+
+        const parkingLocations = @Html.Raw(Json.Serialize(Model));
+
         let map;
+        async function init() {
+            // Import the needed libraries
+            const { Map } = await google.maps.importLibrary('maps');
 
-        // Ova funkcija se zove automatski zbog "&callback=initMap" u linku iznad
-        function initMap() {
-            // Početne koordinate (npr. centar Sarajeva)
-            const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
+            const {AdvancedMarkerElement, PinElement}=await google.maps.importLibrary("marker");
 
-            // Povezujemo mapu sa tvojim <div id="map">
-            map = new google.maps.Map(document.getElementById("map"), {
+            const { InfoWindow } = await google.maps.importLibrary("maps");
+
+            const startPosition = { lat: 43.8563, lng: 18.4131 }; // Sarajevo
+
+            // Create a new map from the div with id="map".
+            map = new Map(document.getElementById('map'), {
+                center: startPosition,
                 zoom: 14,
-                center: pocetnaPozicija,
-                mapTypeId: 'roadmap',
-                // Opcionalno: možeš isključiti defaultne Google UI kontrole ako ti smetaju
-                disableDefaultUI: false
+                renderingType: 'VECTOR',
+                mapId: "DEMO_MAP_ID"
             });
 
-            // Primjer jednog markera čisto da testiraš da li radi
-            new google.maps.Marker({
-                position: pocetnaPozicija,
-                map: map,
-                title: "Test lokacija"
-            });
-
-            // Ovdje ćeš kasnije dodati fetch() poziv za povlačenje parking mjesta iz baze
+            loadMarkers(parkingLocations, AdvancedMarkerElement, PinElement, InfoWindow);
         }
+
+        function loadMarkers(locations, AdvancedMarkerElement, PinElement, InfoWindow) {
+
+            // Checking if the list is empty or null
+            if (!locations || locations.length === 0) {
+                console.log("No parking objects in DataBase.");
+                return;
+            }
+
+            locations.forEach(location => {
+                // JSON.Serialize automatically turns upper case letters into lower case(Latitude ->latitude)
+                const position = {
+                    lat: parseFloat(location.latitude),
+                    lng: parseFloat(location.longitude)
+                };
+
+                const pinDesign = new PinElement({
+                    background: "#28a745", //later check if accessible
+                    borderColor: "#ffffff",
+                    glyphColor: "#ffffff"
+                });
+
+                const marker = new AdvancedMarkerElement({
+                    map: map,
+                    position: position,
+                    title: location.name,
+                    content: pinDesign.element
+                });
+
+                const info = new InfoWindow({
+                    content: `
+                        <div style="color: black; padding: 5px;">
+                            <h5 style="margin: 0 0 5px 0;">${location.name}</h5>
+                            <p style="margin: 0;">Status: <strong>${'Slobodno'}</strong></p>
+                        </div>
+                    `
+                });
+
+                marker.addListener("click", () => {
+                    info.open(map, marker);
+                });
+            });
+        }
+
+        init();
+
     </script>
 }
