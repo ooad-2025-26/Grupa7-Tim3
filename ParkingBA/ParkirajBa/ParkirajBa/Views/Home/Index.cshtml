@@ -317,60 +317,28 @@
 
             const { InfoWindow } = await google.maps.importLibrary("maps");
 
-            const startPosition = { lat: 43.8563, lng: 18.4131 }; // Sarajevo
+        // this function is called automatically by "&callback=initMap" in the script link above
+        function initMap() {
+            // first coordinates (ex. centar Sarajeva)
+            const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
 
-            // Create a new map from the div with id="map".
-            map = new Map(document.getElementById('map'), {
-                center: startPosition,
+            // connecting the map to the <div id="map">
+            map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 14,
-                renderingType: 'VECTOR',
-                mapId: "DEMO_MAP_ID"
+                center: pocetnaPozicija,
+                mapTypeId: 'roadmap',
+            // optional: default google maps controls can be disabled if you want to implement your own custom controls
+                disableDefaultUI: false
             });
 
-            loadMarkers(parkingLocations, AdvancedMarkerElement, PinElement, InfoWindow);
-        }
-
-        function loadMarkers(locations, AdvancedMarkerElement, PinElement, InfoWindow) {
-
-            // Checking if the list is empty or null
-            if (!locations || locations.length === 0) {
-                console.log("No parking objects in DataBase.");
-                return;
-            }
-
-            locations.forEach(location => {
-                // JSON.Serialize automatically turns upper case letters into lower case(Latitude ->latitude)
-                const position = {
-                    lat: parseFloat(location.latitude),
-                    lng: parseFloat(location.longitude)
-                };
-
-                const pinDesign = new PinElement({
-                    background: "#28a745", //later check if accessible
-                    borderColor: "#ffffff",
-                    glyphColor: "#ffffff"
-                });
-
-                const marker = new AdvancedMarkerElement({
-                    map: map,
-                    position: position,
-                    title: location.name,
-                    content: pinDesign.element
-                });
-
-                const info = new InfoWindow({
-                    content: `
-                        <div style="color: black; padding: 5px;">
-                            <h5 style="margin: 0 0 5px 0;">${location.name}</h5>
-                            <p style="margin: 0;">Status: <strong>${'Slobodno'}</strong></p>
-                        </div>
-                    `
-                });
-
-                marker.addListener("click", () => {
-                    info.open(map, marker);
-                });
+            // ex of one marker on the map, will later add markers for each parking place from the database
+            new google.maps.Marker({
+                position: pocetnaPozicija,
+                map: map,
+                title: "Test lokacija"
             });
+
+        // later we will add fetch request to our API to get parking places
         }
 
         init();

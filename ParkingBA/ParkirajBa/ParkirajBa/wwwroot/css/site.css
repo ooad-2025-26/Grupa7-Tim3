@@ -1,12 +1,4 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
+/* ── FONTS ─────────────────────────────────────────────────── */
 
 @font-face {
     font-family: 'Google Sans Variable';
@@ -22,225 +14,669 @@ html {
     font-style: italic;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
+/* ── RESET & BASE ───────────────────────────────────────────── */
 
 html {
-  position: relative;
-  min-height: 100%;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
-body {
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html, body {
     margin: 0;
+    padding: 0;
     min-height: 100vh;
+    font-family: 'Google Sans Variable', 'Segoe UI', Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
 }
 
-.right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user {
-    background: #f1f1f1;
-    padding: 8px 15px;
-    border-radius: 20px;
-}
-
-.btn {
-    padding: 8px 15px;
-    background: #1e5cc3;
-    color: white;
+a {
+    color: #6287f9;
     text-decoration: none;
-    border-radius: 6px;
 }
 
-    .btn.secondary {
-        background: #28a745;
+    a:hover {
+        opacity: 0.85;
     }
 
-.tabs {
-    display: flex;
-    background: #eaeaea;
+/* ── FOCUS RING ─────────────────────────────────────────────── */
+
+.btn:focus,
+.btn:active:focus,
+.form-control:focus,
+.form-check-input:focus,
+input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(98, 135, 249, 0.4);
+    outline: none;
 }
 
-.tab {
-    flex: 1;
-    text-align: center;
-    padding: 12px;
-    cursor: pointer;
-}
 
-    .tab.active {
-        background: #1e5cc3;
-        color: white;
-    }
+/* ============================================================
+   HEADER  (used in _Layout.cshtml and standalone pages)
+   ============================================================ */
 
 .header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    height: 120px;
+    height: 100px;
     padding: 0 40px;
     background: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 10;
 }
 
 .left-placeholder {
-    width: 140px; /* prilagodi ako treba */
+    /* keeps the logo centered by balancing the profile side */
 }
 
 .logo {
     justify-self: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    font-size: 20px;
 }
 
     .logo img {
-        height: 110px !important;
-        width: auto !important;
+        height: 80px;
+        width: auto;
         display: block;
     }
 
-/* za dropdown u headeru*/
-.dropdown {
-    display: none;
-    position: absolute;
-    right: 40px;
-    top: 70px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    min-width: 120px;
-    overflow: hidden;
-}
-
-    .dropdown a {
-        display: block;
-        padding: 10px;
-        text-decoration: none;
-        color: black;
-    }
-
-        .dropdown a:hover {
-            background: #f2f2f2;
-        }
+/* Profile pill + dropdown */
 
 .profile {
     justify-self: end;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0;
     position: relative;
     cursor: pointer;
 }
 
-.profile-icon {
-    background: #eee;
-    padding: 6px 10px;
-    border-radius: 50%;
-}
+    .profile > span,
+    .profile > .profile-icon {
+        display: flex;
+        align-items: center;
+        background: #f0f0f0;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        height: fit-content;
+    }
 
+    .profile > span {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
 
-/*UPRAVLJANJE PROFILOM*/
-.profile-page {
-    display: flex;
-    justify-content: center;
-    margin-top: 50px;
-}
+        .profile > span + .profile-icon {
+            margin-left: -12px;
+            border-left: 0;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
 
-.profile-card {
-    width: 400px;
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 45px;
     background: white;
-    padding: 30px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-width: 160px;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+    .dropdown a {
+        display: block;
+        padding: 10px 14px;
+        text-decoration: none;
+        color: #333;
+        font-size: 14px;
+    }
+
+        .dropdown a:hover {
+            background: #f5f5f5;
+        }
+
+/* Standalone header variant (Placanje, Potvrda, Uspjeh — Layout = null) */
+
+.top-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-sizing: border-box;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.header-logo {
+    height: 100px;
+}
+
+.header-right {
+    margin-left: auto;
+}
+
+.user-pill {
+    display: flex;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 6px 15px;
+    border-radius: 20px;
+    gap: 10px;
+}
+
+.user-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.user-icon {
+    color: #4a148c;
+    display: flex;
+    align-items: center;
+}
+
+
+/* ============================================================
+   TABS NAV  (Mapa / Objekti / Rezervacije)
+   ============================================================ */
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    padding: 15px 40px;
+    background: #f8f9fa;
+}
+
+.tab {
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s;
+}
+
+    .tab a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .tab.active {
+        background: #6287f9;
+        color: white;
+        box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
+    }
+
+    .tab:not(.active):hover {
+        background: #ebebeb;
+    }
+
+
+/* ============================================================
+   MAP BACKGROUND LAYER  (Placanje / Potvrda / Uspjeh)
+   ============================================================ */
+
+.main-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.map-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+    .map-layer img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.custom-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: url('/images/backgroundColor.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    z-index: 2;
+}
+
+.content-wrapper {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    box-sizing: border-box;
+    padding-top: 120px;
+}
+
+
+/* ============================================================
+   CARDS  (floating white panels used on payment/confirmation)
+   ============================================================ */
+
+.floating-card {
+    background: white;
+    padding: 30px 40px;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-top: -60px;
+}
+
+/* Objekti / grid cards */
+
+.objects-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    padding: 30px 40px;
+}
+
+.object-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+    .object-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .object-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .object-card h3 {
+        padding: 18px;
+        margin: 0;
+        text-align: center;
+    }
+
+.object-card-body {
+    padding: 18px;
     display: flex;
     flex-direction: column;
+    gap: 10px;
+}
+
+    .object-card-body h3 {
+        margin: 0;
+        font-size: 17px;
+        color: #222;
+        padding: 0;
+        text-align: left;
+    }
+
+.object-address {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.object-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.badge-feature {
+    background: #f0f4ff;
+    color: #6287f9;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.object-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.object-spots {
+    font-size: 13px;
+    color: #aaa;
+}
+
+/* Sidebar list cards (Index/Mapa view) */
+
+.sidebar {
+    width: 350px;
+    background: white;
+    padding: 10px;
+    overflow-y: auto;
+    z-index: 5;
+}
+
+.list-card {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 12px;
+    background: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+    .list-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #e0e0e0;
+    }
+
+    .list-card img {
+        width: 80px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        background: #eee;
+    }
+
+/* Info/confirm box inside floating card */
+
+.confirm-box {
+    padding: 20px 10px;
+    margin: 20px 0;
+    background-color: #f0f7ff;
+    border-radius: 8px;
+    border-left: 4px solid #6287f9;
+    text-align: left;
+}
+
+
+/* ============================================================
+   PAYMENT / STEPPER
+   ============================================================ */
+
+.pay-title {
+    color: #444;
+    font-weight: 500;
+    font-size: 24px;
+    margin: 20px 0;
+    letter-spacing: -0.5px;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+    .stepper .circle {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #e9ecef;
+    }
+
+        .stepper .circle.active {
+            background: #6287f9;
+            box-shadow: 0 0 8px rgba(98, 135, 249, 0.6);
+        }
+
+    .stepper .line {
+        width: 40px;
+        height: 2px;
+        background: #e9ecef;
+        margin: 0 8px;
+    }
+
+        .stepper .line.active {
+            background: #6287f9;
+        }
+
+.section-label {
+    text-align: left;
+    color: #6287f9;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+
+/* ============================================================
+   FORM INPUTS  (universal)
+   ============================================================ */
+
+.custom-input,
+.form-input {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+
+    .custom-input:focus,
+    .form-input:focus {
+        border-color: #6287f9;
+        box-shadow: 0 0 0 3px rgba(98, 135, 249, 0.15);
+    }
+
+    .custom-input.input-error,
+    .form-input.input-error {
+        border-color: #ff4d4d;
+        background-color: #fff2f2;
+    }
+
+.input-row {
+    display: flex;
+    gap: 12px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+/* Primary — blue pill */
+.btn-blue,
+.btn-primary-pb {
+    background: #6287f9;
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+    .btn-blue:hover,
+    .btn-primary-pb:hover {
+        background: #4e72e6;
+        transform: translateY(-1px);
+        color: white;
+    }
+
+/* Secondary — gray pill */
+.btn-gray,
+.btn-secondary-pb {
+    background: #f5f5f5;
+    border: none;
+    color: #888;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+    .btn-gray:hover,
+    .btn-secondary-pb:hover {
+        background: #eaeaea;
+    }
+
+/* Green (owner register) */
+.btn-green {
+    background: #28a745;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    font-family: inherit;
+    transition: opacity 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+    .btn-green:hover {
+        opacity: 0.9;
+        color: white;
+    }
+
+/* Back link button */
+.btn-back-link {
+    background: #6287f9;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    transition: background 0.2s;
+}
+
+    .btn-back-link:hover {
+        background: #4e72e6;
+        color: white;
+    }
+
+/* Footer button row */
+.footer-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
     gap: 15px;
 }
 
-    .profile-card h2 {
-        text-align: center;
-        margin-bottom: 10px;
-    }
-
-    .profile-card form {
+    .footer-buttons form {
+        flex: 1;
         display: flex;
-        flex-direction: column;
-        gap: 12px;
     }
 
-    .profile-card input {
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
+    .footer-buttons .btn-blue,
+    .footer-buttons .btn-gray,
+    .footer-buttons .btn-green {
+        flex: 1;
+        height: 42px;
     }
 
-    .profile-card button {
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        background: #1e5cc3;
-        color: white;
-        cursor: pointer;
-        font-size: 16px;
-    }
 
-        .profile-card button:hover {
-            opacity: 0.9;
-        }
+/* ============================================================
+   FEEDBACK MESSAGES
+   ============================================================ */
 
 .success-message {
     background: #d4edda;
     color: #155724;
-    padding: 10px;
+    padding: 12px 16px;
     border-radius: 8px;
+    font-size: 14px;
 }
 
 .error-message {
     background: #f8d7da;
     color: #721c24;
-    padding: 10px;
+    padding: 12px 16px;
     border-radius: 8px;
+    font-size: 14px;
 }
 
-/*-------------------------------------*/
-
-.owner-register-box {
-    margin-top: 25px;
-    text-align: center;
-}
-
-    .owner-register-box p {
-        margin-bottom: 10px;
-        color: #666;
-    }
-
-.owner-register-btn {
-    display: inline-block;
-    padding: 12px 18px;
-    background: #28a745;
-    color: white;
-    text-decoration: none;
+.info-message {
+    background: #d1ecf1;
+    color: #0c5460;
+    padding: 12px 16px;
     border-radius: 8px;
-    font-weight: 500;
+    font-size: 14px;
 }
 
-    .owner-register-btn:hover {
-        opacity: 0.9;
-    }
 
-.tab a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-/* AUTH PAGES */
-
-/* AUTH PAGES */
+/* ============================================================
+   AUTH PAGES  (Login / Register / RegisterOwner)
+   ============================================================ */
 
 .auth-page {
     min-height: 100vh;
@@ -257,7 +693,7 @@ body {
 .auth-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,0.72);
+    background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(4px);
 }
 
@@ -276,11 +712,11 @@ body {
 
 .auth-card {
     width: 420px;
-    background: rgba(255,255,255,0.92);
-    border: 3px solid #5f88ff;
+    background: rgba(255, 255, 255, 0.92);
+    border: 3px solid #6287f9;
     border-radius: 28px;
     padding: 35px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -289,7 +725,7 @@ body {
     .auth-card h2 {
         text-align: center;
         margin-bottom: 10px;
-        font-size: 30px;
+        font-size: 28px;
     }
 
     .auth-card form {
@@ -304,12 +740,13 @@ body {
         border: 1px solid #ddd;
         font-size: 15px;
         outline: none;
-        transition: 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
     }
 
         .auth-card input:focus {
-            border-color: #5f88ff;
-            box-shadow: 0 0 0 4px rgba(95,136,255,0.15);
+            border-color: #6287f9;
+            box-shadow: 0 0 0 4px rgba(98, 136, 255, 0.15);
         }
 
     .auth-card button {
@@ -322,12 +759,13 @@ body {
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
-        transition: 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
+        font-family: inherit;
     }
 
         .auth-card button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(21,101,255,0.25);
+            box-shadow: 0 8px 20px rgba(21, 101, 255, 0.25);
         }
 
 .auth-divider {
@@ -346,51 +784,244 @@ body {
         background: #ddd;
     }
 
-.secondary-auth-btn,
+.secondary-auth-btn {
+    text-align: center;
+    padding: 14px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 600;
+    background: #f1f1f1;
+    color: #333;
+    transition: background 0.2s;
+    display: block;
+}
+
+    .secondary-auth-btn:hover {
+        background: #e6e6e6;
+        color: #333;
+    }
+
 .owner-auth-btn {
     text-align: center;
     padding: 14px;
     border-radius: 14px;
     text-decoration: none;
     font-weight: 600;
-    transition: 0.2s;
-}
-
-.secondary-auth-btn {
-    background: #f1f1f1;
-    color: #333;
-}
-
-    .secondary-auth-btn:hover {
-        background: #e6e6e6;
-    }
-
-.owner-auth-btn {
     background: #28a745;
     color: white;
+    transition: opacity 0.2s;
+    display: block;
 }
 
     .owner-auth-btn:hover {
         opacity: 0.92;
-    }
-
-.owner-button-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.owner-button {
-    background: #1a73e8;
-    color: white;
-    padding: 10px 25px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: 0.2s;
-}
-
-    .owner-button:hover {
-        background: #1558b0;
         color: white;
     }
+
+
+/* ============================================================
+   PROFILE PAGE
+   ============================================================ */
+
+.profile-page {
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+    padding-bottom: 60px;
+}
+
+.profile-card {
+    width: 420px;
+    background: white;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+    .profile-card h2 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .profile-card form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .profile-card input {
+        padding: 12px 14px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+        .profile-card input:focus {
+            border-color: #6287f9;
+        }
+
+    .profile-card button {
+        padding: 13px;
+        border: none;
+        border-radius: 10px;
+        background: #6287f9;
+        color: white;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: inherit;
+        transition: opacity 0.2s;
+    }
+
+        .profile-card button:hover {
+            opacity: 0.9;
+        }
+
+
+/* ============================================================
+   REZERVACIJE PAGE
+   ============================================================ */
+
+.rezervacije-container {
+    padding: 30px 40px;
+}
+
+    .rezervacije-container h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        color: #333;
+    }
+
+.rezervacija-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px 25px;
+    margin-bottom: 16px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .rezervacija-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+
+.rezervacija-info h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #222;
+}
+
+.rezervacija-info p {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+}
+
+.rezervacija-badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+    .rezervacija-badge.active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .rezervacija-badge.expired {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .rezervacija-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+}
+
+    .empty-state svg {
+        margin-bottom: 16px;
+        opacity: 0.4;
+    }
+
+    .empty-state p {
+        font-size: 16px;
+    }
+
+
+/* ============================================================
+   FILTERS BAR  (Index/Mapa)
+   ============================================================ */
+
+.filters {
+    padding: 15px 40px;
+    background: white;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+    .filters input[type="text"] {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        padding: 8px 15px;
+        border-radius: 10px;
+        outline: none;
+        font-family: inherit;
+    }
+
+input[type="range"] {
+    accent-color: #6287f9;
+}
+
+
+/* ============================================================
+   LAYOUT / MISC
+   ============================================================ */
+
+.content {
+    display: flex;
+    height: calc(100vh - 160px);
+}
+
+.card-section-header {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px;
+}
+
+/* Bootstrap overrides to match our palette */
+.btn-primary {
+    background-color: #6287f9;
+    border-color: #4e72e6;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #6287f9;
+}
