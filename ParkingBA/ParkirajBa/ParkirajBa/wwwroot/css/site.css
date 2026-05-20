@@ -373,3 +373,24 @@ body {
     .owner-auth-btn:hover {
         opacity: 0.92;
     }
+
+.owner-button-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.owner-button {
+    background: #1a73e8;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+    .owner-button:hover {
+        background: #1558b0;
+        color: white;
+    }

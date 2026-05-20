@@ -41,6 +41,15 @@
                 <img src="/images/logo.png" />
             </div>
 
+            @if (User.IsInRole("Owner"))
+            {
+                <div class="owner-button-wrapper">
+                    <a href="/Parking/ParkingManagement" class="owner-button">
+                        Moji objekti
+                    </a>
+                </div>
+            }
+
             <div class="profile" onclick="toggleDropdown()">
                 <span>@fullName</span>
                 <div class="profile-icon">👤</div>

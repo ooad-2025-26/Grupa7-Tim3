@@ -12,6 +12,7 @@ namespace ParkirajBa.Models
         public double? latitude { get; set; }
         public double? longitude { get; set; }
         public int totalSpots { get; set; }
+        public int availableSpots { get; set; }
         public bool? hasCameras { get; set; }
         public bool? isDisabledAccessible { get; set; }
         public bool? hasEVCharger { get; set; }
@@ -19,7 +20,11 @@ namespace ParkirajBa.Models
         public bool? isUnderground { get; set; }
         public DateTime? opensAt { get; set; }
         public DateTime? closesAt { get; set; }
-        //add owner ID foreign key...
+
+        public string OwnerId { get; set; }
+
+        [ForeignKey("OwnerId")]
+        public ApplicationUser Owner { get; set; }
 
         public List<Pricing> pricings { get; set; } = new List<Pricing>();
 
