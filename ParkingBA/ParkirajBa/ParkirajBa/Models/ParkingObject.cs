@@ -7,8 +7,8 @@ namespace ParkirajBa.Models
     {
         [Key]
         public int ID { get; set; }
-        public string name { get; set; }
-        public string address { get; set; }
+        public string? name { get; set; }
+        public string? address { get; set; }
         public double? latitude { get; set; }
         public double? longitude { get; set; }
         public int totalSpots { get; set; }
@@ -21,7 +21,7 @@ namespace ParkirajBa.Models
         public DateTime? opensAt { get; set; }
         public DateTime? closesAt { get; set; }
 
-        public string OwnerId { get; set; }
+        public string? OwnerId { get; set; }
 
         [ForeignKey("OwnerId")]
         public ApplicationUser Owner { get; set; }

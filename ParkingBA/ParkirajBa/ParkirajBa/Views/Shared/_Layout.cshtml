@@ -35,20 +35,20 @@
     {
         <div class="header">
 
-            <div class="left-placeholder"></div>
+            @if (User.IsInRole("Owner"))
+            {
+                <div class="owner-button-wrapper">
+                    <a href="/Parking/ParkingManagement" class="owner-button">Moji objekti</a>
+                </div>
+            }
+            else
+            {
+                <div class="left-placeholder"></div>
+            }
 
             <div class="logo">
                 <img src="/images/logo.png" />
             </div>
-
-            @if (User.IsInRole("Owner"))
-            {
-                <div class="owner-button-wrapper">
-                    <a href="/Parking/ParkingManagement" class="owner-button">
-                        Moji objekti
-                    </a>
-                </div>
-            }
 
             <div class="profile" onclick="toggleDropdown()">
                 <span>@fullName</span>
@@ -70,11 +70,9 @@
         </div>
     }
     <!-- PAGE CONTENT -->
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main">
+        @RenderBody()
+    </main>
 
     <!-- FOOTER -->
     <footer class="border-top footer text-muted">
@@ -95,13 +93,13 @@
 
 <script>
     function toggleDropdown() {
-        var d = document.getElementById("dropdown");
-        d.style.display = d.style.display === "block" ? "none" : "block";
+    var d = document.getElementById("dropdown");
+    d.style.display = d.style.display === "block" ? "none" : "block";
     }
 
     window.onclick = function (e) {
-        if (!e.target.closest('.profile')) {
-            document.getElementById("dropdown").style.display = "none";
-        }
+    if (!e.target.closest('.profile')) {
+    document.getElementById("dropdown").style.display = "none";
+    }
     }
 </script>

@@ -1,0 +1,48 @@
+﻿@using ParkirajBa.Models
+@using ParkirajBa.Data
+@inject ApplicationDbContext db
+
+@{
+    string fullName = "Guest";
+    if (User.Identity.IsAuthenticated)
+    {
+        var user = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
+        if (user != null) fullName = user.FirstName + " " + user.LastName;
+    }
+}
+
+<div class="header">
+
+    @if (User.IsInRole("Owner"))
+    {
+        <div class="owner-button-wrapper">
+            <a href="/Parking/ParkingManagement" class="owner-button">Moji objekti</a>
+        </div>
+    }
+    else
+    {
+        <div class="left-placeholder"></div>
+    }
+
+    <div class="logo">
+        <img src="/images/logo.png" alt="ParkirajBa" />
+    </div>
+
+    <div class="profile" onclick="toggleDropdown()">
+        <span>@fullName</span>
+        <div class="profile-icon">👤</div>
+
+        <div id="dropdown" class="dropdown">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a href="/User/Profile">Upravljaj profilom</a>
+                <a href="/User/Logout">Logout</a>
+            }
+            else
+            {
+                <a href="/User/Register">Register</a>
+                <a href="/User/Login">Login</a>
+            }
+        </div>
+    </div>
+</div>
