@@ -59,41 +59,83 @@ input:focus {
 
 
 /* ============================================================
-   HEADER  (used in _Layout.cshtml and standalone pages)
+   HEADER  — unified: works for _Layout AND standalone pages
+             (Placanje, Potvrda, Uspjeh use Layout = null but
+              share this exact same markup + class)
    ============================================================ */
 
+/* Box-sizing reset — Bootstrap provides this on _Layout pages;
+   applying it here too makes standalone pages (Layout = null) match exactly. */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 .header {
+    /* Three-column grid: left slot | logo (centred) | right slot */
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    height: 100px;
+    height: 95px;
     padding: 0 40px;
     background: white;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     position: relative;
     z-index: 10;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* On standalone pages (Layout = null) the header sits above a
+   position:absolute map layer, so it must also be absolute.      */
+.main-container .header {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .left-placeholder {
-    /* keeps the logo centered by balancing the profile side */
+    /* balances the right-side profile pill so the logo stays centred */
+    justify-self: start;
 }
+
+/* Owner "Moji objekti" button lives in the left slot */
+.owner-button-wrapper {
+    justify-self: start;
+}
+
+.owner-button {
+    background: #6287f9;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+    .owner-button:hover {
+        background: #4e72e6;
+        color: white;
+    }
 
 .logo {
     justify-self: center;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
     font-weight: bold;
     font-size: 20px;
 }
 
     .logo img {
-        height: 80px;
+        height: 100px;
+        max-height: 105px;
         width: auto;
         display: block;
     }
 
-/* Profile pill + dropdown */
+/* Profile pill + dropdown (right slot) */
 
 .profile {
     justify-self: end;
@@ -153,59 +195,6 @@ input:focus {
             background: #f5f5f5;
         }
 
-/* Standalone header variant (Placanje, Potvrda, Uspjeh — Layout = null) */
-
-.top-header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 40px;
-    box-sizing: border-box;
-    z-index: 10;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.header-center {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.header-logo {
-    height: 100px;
-}
-
-.header-right {
-    margin-left: auto;
-}
-
-.user-pill {
-    display: flex;
-    align-items: center;
-    background: #f0f0f0;
-    padding: 6px 15px;
-    border-radius: 20px;
-    gap: 10px;
-}
-
-.user-name {
-    font-size: 14px;
-    color: #333;
-    font-weight: 500;
-}
-
-.user-icon {
-    color: #4a148c;
-    display: flex;
-    align-items: center;
-}
-
 
 /* ============================================================
    TABS NAV  (Mapa / Objekti / Rezervacije)
@@ -216,6 +205,7 @@ input:focus {
     gap: 10px;
     padding: 15px 40px;
     background: #f8f9fa;
+    justify-content: center;
 }
 
 .tab {
@@ -254,7 +244,7 @@ input:focus {
     position: relative;
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden; /* was overflow:hidden — that clipped the header's box-shadow */
 }
 
 .map-layer {
@@ -287,7 +277,26 @@ input:focus {
     justify-content: center;
     height: 100vh;
     box-sizing: border-box;
-    padding-top: 120px;
+    padding-top: 130px; /* matches .header height */
+}
+
+.payment-card {
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 20px;
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    text-align: center;
+}
+
+.payment-card-top {
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+.form-body {
+    text-align: left;
 }
 
 
@@ -497,7 +506,7 @@ input:focus {
     margin-bottom: 12px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 16px;
     box-sizing: border-box;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -523,7 +532,7 @@ input:focus {
 
 label {
     display: block;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 500;
     color: #555;
     margin-bottom: 4px;
