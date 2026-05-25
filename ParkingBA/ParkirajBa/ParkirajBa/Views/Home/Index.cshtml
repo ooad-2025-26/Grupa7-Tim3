@@ -23,16 +23,31 @@
 
     <!-- FILTER BAR -->
     <div class="filters">
-        <input type="text" placeholder="Search..." />
+        <input type="text" id="SearchInput" placeholder="Search..." />
 
-        <label><input type="checkbox" /> Garaža</label>
-        <label><input type="checkbox" checked /> EV punjač</label>
-        <label><input type="checkbox" checked /> Video nadzor</label>
+        <label><input type="checkbox" id="HasGarage" /> Garaža</label>
+        <label><input type="checkbox" id= "HasEVCharger" /> EV punjač</label>
+        <label><input type="checkbox" id="HasCameras" /> Video nadzor</label>
+        <label><input type="checkbox" id="isDisabledAccessible" /> Dostupno osobama sa invaliditetom</label>
+
 
         <div class="price">
-            Cijena
-            <input type="range" />
+            Cijena do:
+            <input type="range" id="PriceSlider" min="1" max="50" value="50" oninput="this.nextElementSibling.value = this.value" />
+            <output>50</output> KM
         </div>
+        <select id="regime">
+            Cijena po:
+            <option value="Hour">Satu</option>
+            <option value="Day">Danu</option>
+            <option value="Week">Sedmici</option>
+            <option value="Month">Mjesecu</option>
+            <option value="Year">Godini</option>
+        </select>
+        <button id="ClearButton">
+            Clear
+        </button>
+
     </div>
 
     <!-- CONTENT -->
@@ -54,7 +69,6 @@
 
         <!-- MAP -->
         <div class="container mt-4" style="flex: 1; padding: 20px;">
-            <h2>Mapa</h2>
             <div id="map" style="height: calc(100% - 60px); width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
         </div>
 
@@ -308,18 +322,29 @@
 
         const parkingLocations = @Html.Raw(Json.Serialize(Model));
 
+        let parkingMarkers=[]
+
+        let AdvancedMarkerElement;
+        let PinElement;
+        let InfoWindow;
+
+
         let map;
+
         async function init() {
-            // Import the needed libraries
-            const { Map } = await google.maps.importLibrary('maps');
+            // Load the libraries into temporary variables
+            const mapsLibrary = await google.maps.importLibrary('maps');
+            const markerLibrary = await google.maps.importLibrary("marker");
 
-            const {AdvancedMarkerElement, PinElement}=await google.maps.importLibrary("marker");
-
-            const { InfoWindow } = await google.maps.importLibrary("maps");
+            // Extract the exact classes
+            const Map = mapsLibrary.Map;
+            InfoWindow = mapsLibrary.InfoWindow;
+            AdvancedMarkerElement = markerLibrary.AdvancedMarkerElement;
+            PinElement = markerLibrary.PinElement;
 
             const startPosition = { lat: 43.8563, lng: 18.4131 }; // Sarajevo
 
-            // Create a new map from the div with id="map".
+            // Create a new map from the div with id="map"
             map = new Map(document.getElementById('map'), {
                 center: startPosition,
                 zoom: 14,
@@ -327,10 +352,10 @@
                 mapId: "DEMO_MAP_ID"
             });
 
-            loadMarkers(parkingLocations, AdvancedMarkerElement, PinElement, InfoWindow);
+            loadMarkers(parkingLocations);
         }
 
-        function loadMarkers(locations, AdvancedMarkerElement, PinElement, InfoWindow) {
+        async function loadMarkers(locations) {
 
             // Checking if the list is empty or null
             if (!locations || locations.length === 0) {
@@ -345,8 +370,15 @@
                     lng: parseFloat(location.longitude)
                 };
 
+                //if the parking is unavailable/full, make the marker red
+                let backgroundColor;
+                if(location.availableSpots<=0)
+                    backgroundColor="#FF0000";
+                else
+                    backgroundColor="#28a745";
+
                 const pinDesign = new PinElement({
-                    background: "#28a745", //later check if accessible
+                    background: backgroundColor, //later check if accessible
                     borderColor: "#ffffff",
                     glyphColor: "#ffffff"
                 });
@@ -357,6 +389,9 @@
                     title: location.name,
                     content: pinDesign.element
                 });
+
+               
+                parkingMarkers.push(marker);
 
                 const info = new InfoWindow({
                     content: `
@@ -373,7 +408,83 @@
             });
         }
 
+        async function refreshMap(locations){
+            parkingMarkers.forEach(marker=>{
+                marker.map=null;
+            });
+            parkingMarkers=[];
+
+            await loadMarkers(locations);
+        }
+
         init();
+
+    
+        document.getElementById("SearchInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission
+                searchParking();
+            }
+        });
+        document.getElementById("HasGarage").addEventListener("change", searchParking);
+        document.getElementById("HasEVCharger").addEventListener("change", searchParking);
+        document.getElementById("HasCameras").addEventListener("change", searchParking);
+        document.getElementById("PriceSlider").addEventListener("change", searchParking);
+
+        document.getElementById("ClearButton").addEventListener("click",clearFilter);
+
+        let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
+
+        function readFilterValues(){
+            // Read current values from HTML elements
+            searchText = document.getElementById("SearchInput").value;
+            hasGarage = document.getElementById("HasGarage").checked;
+            hasEVCharger = document.getElementById("HasEVCharger").checked;
+            hasCameras = document.getElementById("HasCameras").checked;
+            isDisabledAccessible=document.getElementById("isDisabledAccessible").checked;
+            regime=document.getElementById("regime").value;
+
+            maxPrice = document.getElementById("PriceSlider").value;
+        }
+
+
+        async function searchParking(){
+            readFilterValues();
+
+            const url = 
+            `/Home/Search?searchText=${encodeURIComponent(searchText)}&hasGarage=${hasGarage}&hasEvCharger=${hasEVCharger}&hasCameras=${hasCameras}&isDisabledAccessible=${isDisabledAccessible}&regime=${regime}&maxPrice=${maxPrice}`;
+            try {
+            // Send background request to the C# controller
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Server error occurred.");
+
+                const filteredData = await response.json();
+
+                // Pass new data to the map rendering function
+                refreshMap(filteredData);
+
+            } catch (error) {
+                console.error("Error during parking search:", error);
+            }
+        }
+
+        async function clearFilter(){
+            document.getElementById("SearchInput").value="";
+            document.getElementById("HasGarage").checked=false;
+            document.getElementById("HasEVCharger").checked=false;
+            document.getElementById("HasCameras").checked=false;
+            document.getElementById("isDisabledAccessible").checked=false;
+            document.getElementById("regime").value="Hour";
+
+            document.getElementById("PriceSlider").value=50;
+
+            parkingMarkers.forEach(marker=>{
+                marker.map=null;
+            });
+            parkingMarkers=[];
+
+            loadMarkers(parkingLocations);
+        }
 
     </script>
 }

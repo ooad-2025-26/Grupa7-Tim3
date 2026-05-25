@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ParkirajBa.Models
 {
@@ -7,11 +8,13 @@ namespace ParkirajBa.Models
     {
         [Key]
         public int ID { get; set; }
+        [Required]
         public string name { get; set; }
         public string address { get; set; }
-        public double? latitude { get; set; }
-        public double? longitude { get; set; }
-        public int totalSpots { get; set; }
+        public double latitude { get; set; }
+        public double longitude { get; set; }
+        public int? totalSpots { get; set; }
+        public int availableSpots {  get; set; }
         public bool? hasCameras { get; set; }
         public bool? isDisabledAccessible { get; set; }
         public bool? hasEVCharger { get; set; }
@@ -21,11 +24,9 @@ namespace ParkirajBa.Models
         public DateTime? closesAt { get; set; }
         //add owner ID foreign key...
 
-        public List<Pricing> pricings { get; set; } = new List<Pricing>();
 
         public ParkingObject() { 
-            address = string.Empty;
-            name = string.Empty;
+
         }
     }
 }
