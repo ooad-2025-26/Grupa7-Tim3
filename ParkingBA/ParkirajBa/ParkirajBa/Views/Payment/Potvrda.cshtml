@@ -1,25 +1,10 @@
 @{
-    Layout = null;
+    Layout = "_Layout";
+    ViewData["Title"] = "Potvrda";
+    ViewBag.HideHeader = true;
 }
 
-<link rel="stylesheet" href="/css/site.css" />
-
 <div class="main-container">
-    <header class="top-header">
-        <div class="header-center">
-            <img src="/images/logo.png" alt="ParkirajBa Logo" class="header-logo" />
-        </div>
-        <div class="header-right">
-            <div class="user-pill">
-                <span class="user-name">Ime Prezime</span>
-                <div class="user-icon">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </header>
 
     <div class="map-layer">
         <img src="/images/map.png" alt="Mapa" />
@@ -27,14 +12,16 @@
 
     <div class="custom-overlay"></div>
 
+    @await Html.PartialAsync("_PaymentHeader")
+
     <div class="content-wrapper">
         <div class="payment-card confirmation-style">
-            <div class="card-header">
+            <div class="payment-card-top">
                 <a href="/" class="btn-back-link">&lt; Nazad na početnu</a>
             </div>
 
             <h2 class="pay-title">Plaćanje</h2>
-    
+
             <div class="stepper">
                 <div class="circle active"></div>
                 <div class="line active"></div>
@@ -51,351 +38,14 @@
                 </div>
 
                 <div class="footer-buttons">
+                    <button onclick="window.history.back()" class="btn-gray">Nazad</button>
 
-                    <button onclick="window.history.back()" class="btn-gray"> Nazad </button>
-    
                     <form asp-action="PosaljiEmail" method="post" style="flex: 1; display: flex;">
                         <input type="hidden" name="ime" value="@ViewBag.ImeKorisnika" />
                         <button type="submit" class="btn-blue" style="width: 100%;">Potvrdi podatke</button>
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
-<style>
-
-    html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        font-family: 'GoogleSans', 'Segoe UI', Arial, sans-serif;
-        background-color: #f4f7f6;
-    }
-
-    .main-container {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-    }
-
-    .top-header {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 120px;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 40px;
-        box-sizing: border-box;
-        z-index: 10;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    .header-center {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .header-logo {
-        height: 120px;
-    }
-
-    .header-right {
-        margin-left: auto;
-    }
-
-    .user-pill {
-        display: flex;
-        align-items: center;
-        background: #f0f0f0;
-        padding: 6px 15px;
-        border-radius: 20px;
-        gap: 10px;
-    }
-
-    .user-name {
-        font-size: 14px;
-        color: #333;
-        font-weight: 500;
-    }
-
-    .user-icon {
-        color: #4a148c;
-        display: flex;
-        align-items: center;
-    }
-
-
-    .map-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-    }
-
-        .map-layer img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-    .custom-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url('/images/backgroundColor.png');
-        background-size: cover;
-        background-position: center;
-        opacity: 0.6;
-        z-index: 2;
-        background-blend-mode: overlay;
-    }
-
-    .content-wrapper {
-        position: relative;
-        z-index: 5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        box-sizing: border-box;
-        padding-top: 120px;
-    }
-
-    .payment-card {
-        background: white;
-        padding: 30px 40px;
-        border-radius: 12px;
-        width: 100%;
-        max-width: 480px;
-        height: auto;
-        min-height: 300px; 
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        text-align: center;
-        margin-top: -60px;
-    }
-
-    .confirm-box {
-        padding: 20px 10px;
-        margin: 20px 0;
-        background-color: #f0f7ff;
-        border-radius: 8px;
-        border-left: 4px solid #6287f9;
-    }
-
-    .card-header {
-        text-align: left;
-        margin-bottom: 20px;
-    }
-
-    .btn-back-link {
-        background: #007bff;
-        color: white;
-        padding: 8px 18px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: bold;
-        display: inline-block;
-    }
-
-    .pay-title {
-        color: #444;
-        font-weight: 500;
-        font-size: 24px;
-        margin: 20px 0;
-        letter-spacing: -0.5px;
-    }
-
-    .stepper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 25px;
-    }
-
-    .circle {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: #e9ecef;
-    }
-
-        .circle.active {
-            background: #6287f9;
-            box-shadow: 0 0 8px rgba(98, 135, 249, 0.6);
-        }
-
-    .line {
-        width: 40px;
-        height: 2px;
-        background: #e9ecef;
-        margin: 0 8px;
-    }
-
-        .line.active {
-            background: #6287f9;
-        }
-
-    .section-label {
-        text-align: left;
-        color: #6287f9;
-        font-size: 13px;
-        margin-bottom: 10px;
-    }
-
-    .custom-input {
-        width: 100%;
-        padding: 10px 12px;
-        margin-bottom: 12px;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        font-style: italic;
-        box-sizing: border-box;
-        outline: none;
-        font-size: 14px;
-    }
-
-    .input-row {
-        display: flex;
-        gap: 12px;
-    }
-
-    /*Buttons*/
-    .footer-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 25px;
-        gap: 15px;
-    }
-
-        .footer-buttons form {
-            flex: 1;
-            display: flex;
-        }
-
-    .btn-gray {
-        flex: 1;
-        background: #f5f5f5;
-        border: none;
-        padding: 12px 20px; 
-        border-radius: 30px; 
-        color: #999;
-        font-weight: 500;
-        font-family: 'GoogleSans', sans-serif;
-        cursor: pointer;
-        font-size: 14px;
-        height: 42px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .btn-blue {
-        flex: 1;
-        background: #6287f9;
-        border: none;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 30px; 
-        cursor: pointer;
-        font-weight: 500;
-        font-family: 'GoogleSans', sans-serif;
-        font-size: 14px;
-        height: 42px; 
-        transition: background 0.2s;
-    }
-
-        .btn-blue:hover {
-            background: #4e72e6;
-        }
-
-
-    .input-error {
-        border: 1px solid #ff4d4d !important;
-        background-color: #fff2f2 !important;
-    }
-</style>
-
-
-<script>
-    document.getElementById('btnSubmit').addEventListener('click', function () {
-        const cardName = document.getElementById('cardName');
-        const cardNumber = document.getElementById('cardNumber');
-        const expiryDate = document.getElementById('expiryDate');
-        const cvv = document.getElementById('cvv');
-
-        let isValid = true;
-
-        if (cardName.value.trim().length < 3) {
-            cardName.classList.add('input-error');
-            isValid = false;
-        } else {
-            cardName.classList.remove('input-error');
-        }
-
-        const cleanNumber = cardNumber.value.replace(/\s+/g, '');
-        if (!validateLuhn(cleanNumber) || cleanNumber.length < 13) {
-            cardNumber.classList.add('input-error');
-            isValid = false;
-        } else {
-            cardNumber.classList.remove('input-error');
-        }
-
-        const dateRegex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
-        if (!dateRegex.test(expiryDate.value)) {
-            expiryDate.classList.add('input-error');
-            isValid = false;
-        } else {
-            expiryDate.classList.remove('input-error');
-        }
-
-        const cvvRegex = /^[0-9]{3,4}$/;
-        if (!cvvRegex.test(cvv.value)) {
-            cvv.classList.add('input-error');
-            isValid = false;
-        } else {
-            cvv.classList.remove('input-error');
-        }
-
-        if (isValid) {
-            const name = encodeURIComponent(cardName.value);
-            window.location.href = '/Home/Potvrda?ime=' + name;
-        }
-    });
-
-    //Algorithm for validating credit card number using Luhn's algorithm
-    function validateLuhn(number) {
-        let sum = 0;
-        let shouldDouble = false;
-        for (let i = number.length - 1; i >= 0; i--) {
-            let digit = parseInt(number.charAt(i));
-            if (shouldDouble) {
-                if ((digit *= 2) > 9) digit -= 9;
-            }
-            sum += digit;
-            shouldDouble = !shouldDouble;
-        }
-        return (sum % 10) === 0;
-    }
-
-    cardNumber.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim();
-    });
-
-    expiryDate.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{2})/, '$1/').trim();
-    });
-</script>
