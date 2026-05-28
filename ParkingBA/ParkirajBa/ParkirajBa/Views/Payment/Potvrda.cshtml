@@ -37,13 +37,15 @@
                     </p>
                 </div>
 
-                <div class="footer-buttons">
-                    <button onclick="window.history.back()" class="btn-gray">Nazad</button>
+                <div class="footer-buttons" style="display: flex; gap: 15px; width: 100%;">
+
+                    <button onclick="window.history.back()" class="btn-gray" style="flex: 1; justify-content: center;">Nazad</button>
 
                     <form asp-action="PosaljiEmail" method="post" style="flex: 1; display: flex;">
                         <input type="hidden" name="ime" value="@ViewBag.ImeKorisnika" />
-                        <button type="submit" class="btn-blue" style="width: 100%;">Potvrdi podatke</button>
+                        <button type="submit" class="btn-blue" style="width: 100%; justify-content: center;">Potvrdi podatke</button>
                     </form>
+
                 </div>
             </div>
         </div>
