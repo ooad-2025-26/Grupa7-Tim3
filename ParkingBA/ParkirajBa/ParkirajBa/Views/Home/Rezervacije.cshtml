@@ -5,7 +5,7 @@
 
 <div class="app-container">
 
-    <!-- NAV -->
+    
     <div class="tabs">
         <div class="tab">
             <a href="/Home/Index">Mapa</a>
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <!-- CONTENT -->
+    
     <div class="rezervacije-container">
 
         <h2>Moje rezervacije</h2>
@@ -29,50 +29,51 @@
         @{
             var demoRezervacije = new[]
             {
-                new { Naziv = "Parking Centar", Adresa = "Titova 12, Sarajevo", DatumOd = "20.05.2026 08:00", DatumDo = "20.05.2026 18:00", Status = "active",   StatusLabel = "Aktivna"  },
-                new { Naziv = "Parking Skenderija", Adresa = "Terezija 3, Sarajevo", DatumOd = "18.05.2026 09:00", DatumDo = "18.05.2026 17:00", Status = "expired",  StatusLabel = "Istekla"  },
-                new { Naziv = "Parking Ilidža", Adresa = "Bosanska 7, Ilidža",    DatumOd = "22.05.2026 10:00", DatumDo = "22.05.2026 20:00", Status = "pending",  StatusLabel = "Na čekanju" },
+                new { Naziv = "Parking Centar",     Adresa = "Titova 12, Sarajevo",   DatumOd = "20.05.2026 08:00", DatumDo = "20.05.2026 18:00", Status = "active",  StatusLabel = "Aktivna"    },
+                new { Naziv = "Parking Skenderija", Adresa = "Terezija 3, Sarajevo",  DatumOd = "18.05.2026 09:00", DatumDo = "18.05.2026 17:00", Status = "expired", StatusLabel = "Istekla"    },
+                new { Naziv = "Parking Ilidža",     Adresa = "Bosanska 7, Ilidža",    DatumOd = "22.05.2026 10:00", DatumDo = "22.05.2026 20:00", Status = "pending", StatusLabel = "Na čekanju" },
             };
+
+            int StatusOrder(string s) => s switch { "active" => 0, "pending" => 1, _ => 2 };
+            var sortirane = demoRezervacije.OrderBy(r => StatusOrder(r.Status));
         }
 
-        @if (demoRezervacije.Length == 0)
+        @if (!demoRezervacije.Any())
         {
             <div class="empty-state">
                 <svg viewBox="0 0 24 24" width="64" height="64" fill="#6287f9">
                     <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" />
                 </svg>
                 <p>Nemate aktivnih rezervacija.</p>
-                <a href="/Home/Objekti" class="btn-blue" style="margin-top: 16px; padding: 12px 28px;">
-                    Pronađi parking
-                </a>
+                <a href="/Home/Objekti" class="btn-blue" style="margin-top: 16px; padding: 12px 28px;">Pronađi parking</a>
             </div>
         }
         else
         {
-            foreach (var r in demoRezervacije)
+            foreach (var r in sortirane)
             {
                 <div class="rezervacija-card">
 
+                   
                     <div class="rezervacija-icon">
                         <svg viewBox="0 0 24 24" width="36" height="36" fill="#6287f9">
                             <path d="M13 2.05V4.07c3.39.49 6 3.39 6 6.93 0 2.56-1.38 4.83-3.45 6.12l.01 1.88C18.1 17.44 21 14.1 21 11c0-4.82-3.48-8.83-8-9.95zM11 2.05C6.48 3.17 3 7.18 3 12c0 3.1 2.9 6.44 5.45 7.06L8.44 17.2C6.37 15.91 5 13.64 5 11c0-3.54 2.61-6.44 6-6.93V2.05zM12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                         </svg>
                     </div>
 
+                    
                     <div class="rezervacija-info">
                         <h4>@r.Naziv</h4>
                         <p>@r.Adresa</p>
-                        <p style="margin-top: 4px;">@r.DatumOd &nbsp;→&nbsp; @r.DatumDo</p>
+                        <p class="rezervacija-dates">@r.DatumOd &nbsp;→&nbsp; @r.DatumDo</p>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                    
+                    <div class="rezervacija-actions">
                         <span class="rezervacija-badge @r.Status">@r.StatusLabel</span>
-
                         @if (r.Status == "active")
                         {
-                            <a href="/Payment/Placanje" class="btn-blue" style="padding: 8px 18px; font-size: 13px; border-radius: 20px;">
-                                Plati
-                            </a>
+                            <a href="/Payment/Placanje" class="btn-blue rezervacija-pay">Plati</a>
                         }
                     </div>
 
