@@ -1,0 +1,252 @@
+﻿@model List<ParkirajBa.Controllers.ParkingStatViewModel>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="utf-8" />
+    <title>Admin izvještaj – ParkirajBa</title>
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 13px;
+                color: #333;
+                background: white;
+                padding: 32px 40px;
+            }
+
+            .print-actions {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .btn-print {
+                background: #6287f9;
+                color: white;
+                border: none;
+                padding: 9px 22px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 13px;
+                font-family: inherit;
+            }
+
+            .btn-back {
+                background: #f0f0f0;
+                color: #555;
+                border: none;
+                padding: 9px 22px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 13px;
+                text-decoration: none;
+                display: inline-block;
+                font-family: inherit;
+            }
+
+            .pdf-header {
+                border-bottom: 3px solid #6287f9;
+                padding-bottom: 16px;
+                margin-bottom: 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+
+            .pdf-logo {
+                font-size: 26px;
+                font-weight: 800;
+                color: #6287f9;
+            }
+
+            h1 {
+                font-size: 20px;
+                color: #333;
+                margin: 6px 0 4px;
+            }
+
+            .meta {
+                font-size: 12px;
+                color: #777;
+                line-height: 1.6;
+            }
+
+            .stats-row {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .stat-box {
+                flex: 1;
+                background: #f4f7ff;
+                border-radius: 8px;
+                padding: 12px 14px;
+                text-align: center;
+            }
+
+                .stat-box .val {
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: #6287f9;
+                }
+
+                .stat-box .lbl {
+                    font-size: 10px;
+                    color: #999;
+                    text-transform: uppercase;
+                    margin-top: 2px;
+                }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+
+            thead tr {
+                background: #6287f9;
+                color: white;
+            }
+
+            thead th {
+                padding: 10px 12px;
+                text-align: left;
+                font-size: 12px;
+            }
+
+            tbody tr:nth-child(even) {
+                background: #f8f9ff;
+            }
+
+            tbody td {
+                padding: 9px 12px;
+                border-bottom: 1px solid #eee;
+                font-size: 12px;
+            }
+
+            tfoot td {
+                padding: 10px 12px;
+                font-weight: 700;
+                background: #eef1ff;
+            }
+
+            .bar-wrap {
+                width: 60px;
+                height: 6px;
+                background: #f0f0f0;
+                border-radius: 3px;
+                overflow: hidden;
+                display: inline-block;
+                vertical-align: middle;
+                margin-right: 5px;
+            }
+
+            .bar-fill {
+                height: 100%;
+                border-radius: 3px;
+            }
+
+            .pdf-footer {
+                border-top: 1px solid #eee;
+                padding-top: 10px;
+                margin-top: 20px;
+                font-size: 11px;
+                color: #aaa;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            @@media print {
+                .print-actions {
+                    display: none;
+                }
+
+                body {
+                    padding: 16px 20px;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="print-actions">
+        <button class="btn-print" onclick="window.print()">🖨 Štampaj / Sačuvaj PDF</button>
+        <a class="btn-back" href="/Report/AdminReport">← Nazad</a>
+    </div>
+
+    <div class="pdf-header">
+        <div>
+            <div class="pdf-logo">ParkirajBa</div>
+            <h1>Sistemski izvještaj — Admin</h1>
+            <div class="meta">Generisano: @ViewBag.GeneratedAt &nbsp;|&nbsp; Ukupno parkinga: @ViewBag.TotalParkings &nbsp;|&nbsp; Korisnika: @ViewBag.TotalUsers</div>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box"><div class="val">@ViewBag.TotalParkings</div><div class="lbl">Parkinga</div></div>
+        <div class="stat-box"><div class="val">@ViewBag.TotalTickets</div><div class="lbl">Tiketa</div></div>
+        <div class="stat-box"><div class="val">@ViewBag.TotalUsers</div><div class="lbl">Korisnika</div></div>
+        <div class="stat-box"><div class="val" style="color:#28a745;">@(((decimal)ViewBag.RevenueThisMonth).ToString("0.00")) KM</div><div class="lbl">Ovaj mj.</div></div>
+        <div class="stat-box"><div class="val">@(((decimal)ViewBag.TotalRevenue).ToString("0.00")) KM</div><div class="lbl">Ukupno</div></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Parking</th>
+                <th>Vlasnik</th>
+                <th>Mjesta</th>
+                <th>Aktiv.</th>
+                <th>Iskorištenost</th>
+                <th>Prihod ovaj mj.</th>
+                <th>Ukupni prihod</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                int i = 1;
+                @foreach (var s in Model)
+                {
+                    var occColor = s.OccupancyPercent >= 80 ? "#dc3545" : s.OccupancyPercent >= 50 ? "#fd7e14" : "#28a745";
+                    <tr>
+                        <td style="color:#aaa;">@i</td>
+                        <td style="font-weight:600;">@(s.Parking.name ?? "—")<br /><span style="font-size:11px; color:#aaa; font-weight:400;">@(s.Parking.address ?? "")</span></td>
+                        <td>@(s.Parking.Owner?.FullName ?? "—")</td>
+                        <td style="text-align:center;">@s.Parking.totalSpots</td>
+                        <td style="text-align:center; color:#28a745; font-weight:600;">@s.ActiveTickets</td>
+                        <td>
+                            <span class="bar-wrap"><span class="bar-fill" style="width:@s.OccupancyPercent.ToString("0.0")%; background:@occColor;"></span></span>
+                            <span style="color:@occColor; font-weight:600;">@s.OccupancyPercent.ToString("0")%</span>
+                        </td>
+                        <td style="color:#28a745; font-weight:600;">@s.RevenueThisMonth.ToString("0.00") KM</td>
+                        <td style="color:#6287f9; font-weight:700;">@s.TotalRevenue.ToString("0.00") KM</td>
+                    </tr>
+                    i++;
+                }
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" style="text-align:right;">UKUPNO:</td>
+                <td style="color:#28a745;">@(((decimal)ViewBag.RevenueThisMonth).ToString("0.00")) KM</td>
+                <td style="color:#6287f9;">@(((decimal)ViewBag.TotalRevenue).ToString("0.00")) KM</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="pdf-footer">
+        <span>ParkirajBa – Admin sistemski izvještaj</span>
+        <span>@ViewBag.GeneratedAt</span>
+    </div>
+</body>
+</html>
