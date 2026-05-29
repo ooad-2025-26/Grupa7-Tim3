@@ -22,6 +22,7 @@
     </div>
 
     <!-- FILTER BAR -->
+
     <div class="filters">
         <input type="text" id="SearchInput" placeholder="Search..." />
 
@@ -319,18 +320,6 @@
 
     <!--Initialisation of the map-->
     <script>
-
-        const parkingLocations = @Html.Raw(Json.Serialize(Model));
-
-        let parkingMarkers=[]
-
-        let AdvancedMarkerElement;
-        let PinElement;
-        let InfoWindow;
-
-
-        let map;
-
         async function init() {
             // Load the libraries into temporary variables
             const mapsLibrary = await google.maps.importLibrary('maps');
@@ -417,24 +406,7 @@
             await loadMarkers(locations);
         }
 
-        init();
-
-    
-        document.getElementById("SearchInput").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); // Prevent form submission
-                searchParking();
-            }
-        });
-        document.getElementById("HasGarage").addEventListener("change", searchParking);
-        document.getElementById("HasEVCharger").addEventListener("change", searchParking);
-        document.getElementById("HasCameras").addEventListener("change", searchParking);
-        document.getElementById("PriceSlider").addEventListener("change", searchParking);
-
-        document.getElementById("ClearButton").addEventListener("click",clearFilter);
-
-        let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
-
+        
         function readFilterValues(){
             // Read current values from HTML elements
             searchText = document.getElementById("SearchInput").value;
@@ -478,13 +450,37 @@
 
             document.getElementById("PriceSlider").value=50;
 
-            parkingMarkers.forEach(marker=>{
-                marker.map=null;
-            });
-            parkingMarkers=[];
-
-            loadMarkers(parkingLocations);
+            refreshMap(parkingLocations);
         }
+        const parkingLocations = @Html.Raw(Json.Serialize(Model));
+
+        let parkingMarkers=[]
+
+        let AdvancedMarkerElement;
+        let PinElement;
+        let InfoWindow;
+
+
+        let map;
+
+        init();
+
+        document.getElementById("SearchInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission
+                searchParking();
+            }
+        });
+
+        document.getElementById("HasGarage").addEventListener("change", searchParking);
+        document.getElementById("HasEVCharger").addEventListener("change", searchParking);
+        document.getElementById("HasCameras").addEventListener("change", searchParking);
+        document.getElementById("PriceSlider").addEventListener("change", searchParking);
+
+        document.getElementById("ClearButton").addEventListener("click",clearFilter);
+
+        let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
+
 
     </script>
 }
