@@ -1,0 +1,149 @@
+﻿@model List<ParkirajBa.Controllers.ParkingStatViewModel>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Admin – Sistemski izvještaj";
+}
+
+<div class="app-container">
+
+    <div class="tabs">
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab active"><a href="/Report/AdminReport">Admin izvještaj</a></div>
+    </div>
+
+    <div class="rezervacije-container">
+
+        <!-- HEADER -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
+            <div>
+                <h2 style="margin: 0 0 4px;">Sistemski izvještaj</h2>
+                <p style="margin: 0; color: #777; font-size: 14px;">Pregled svih parkinga u sistemu &nbsp;·&nbsp; @ViewBag.GeneratedAt</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/Report/AdminReportExcel" class="btn-gray" style="padding: 9px 20px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 8l-3-3h2v-4h2v4h2l-3 3z" /></svg>
+                    Excel
+                </a>
+                <a href="/Report/AdminReportPdf" class="btn-blue" style="padding: 9px 20px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" /></svg>
+                    PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- SUMMARY -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 28px;">
+            <div class="stat-card">
+                <div class="stat-value">@ViewBag.TotalParkings</div>
+                <div class="stat-label">Parkinga</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@ViewBag.TotalTickets</div>
+                <div class="stat-label">Tiketa ukupno</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">@ViewBag.TotalUsers</div>
+                <div class="stat-label">Korisnika</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #28a745;">@(((decimal)ViewBag.RevenueThisMonth).ToString("0.00")) KM</div>
+                <div class="stat-label">Prihod ovaj mj.</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #6287f9;">@(((decimal)ViewBag.TotalRevenue).ToString("0.00")) KM</div>
+                <div class="stat-label">Ukupni prihod</div>
+            </div>
+        </div>
+
+        <!-- TABELA SVIH PARKINGA -->
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state"><p>Nema parkinga u sistemu.</p></div>
+        }
+        else
+        {
+            <div style="background: white; border-radius: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.07); overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #6287f9; color: white;">
+                            <th style="padding: 12px 14px; text-align: left;">#</th>
+                            <th style="padding: 12px 14px; text-align: left;">Parking</th>
+                            <th style="padding: 12px 14px; text-align: left;">Vlasnik</th>
+                            <th style="padding: 12px 14px; text-align: center;">Mjesta</th>
+                            <th style="padding: 12px 14px; text-align: center;">Aktivnih</th>
+                            <th style="padding: 12px 14px; text-align: center;">Iskorištenost</th>
+                            <th style="padding: 12px 14px; text-align: right;">Ovaj mj.</th>
+                            <th style="padding: 12px 14px; text-align: right;">Ukupno</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var s in Model)
+                        {
+                            var occColor = s.OccupancyPercent >= 80 ? "#dc3545" : s.OccupancyPercent >= 50 ? "#fd7e14" : "#28a745";
+                            var occBg = s.OccupancyPercent >= 80 ? "#f8d7da" : s.OccupancyPercent >= 50 ? "#fff3cd" : "#d4edda";
+                            string rowBg = i % 2 == 0 ? "#f8f9ff" : "white";
+
+                            <tr style="background: @rowBg; border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 11px 14px; color: #aaa;">@i</td>
+                                <td style="padding: 11px 14px;">
+                                    <div style="font-weight: 600; color: #222;">@(s.Parking.name ?? "—")</div>
+                                    <div style="font-size: 12px; color: #aaa;">@(s.Parking.address ?? "")</div>
+                                </td>
+                                <td style="padding: 11px 14px; color: #555;">@(s.Parking.Owner?.FullName ?? "—")</td>
+                                <td style="padding: 11px 14px; text-align: center;">@s.Parking.totalSpots</td>
+                                <td style="padding: 11px 14px; text-align: center; font-weight: 600; color: #28a745;">@s.ActiveTickets</td>
+                                <td style="padding: 11px 14px; text-align: center;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <div style="width: 60px; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden;">
+                                            <div style="height: 100%; width: @s.OccupancyPercent.ToString("0.0")%; background: @occColor; border-radius: 3px;"></div>
+                                        </div>
+                                        <span style="font-size: 12px; font-weight: 600; color: @occColor; min-width: 38px;">@s.OccupancyPercent.ToString("0")%</span>
+                                    </div>
+                                </td>
+                                <td style="padding: 11px 14px; text-align: right; color: #28a745; font-weight: 600;">@s.RevenueThisMonth.ToString("0.00") KM</td>
+                                <td style="padding: 11px 14px; text-align: right; font-weight: 700; color: #6287f9;">@s.TotalRevenue.ToString("0.00") KM</td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f0f4ff; font-weight: 700;">
+                            <td colspan="6" style="padding: 13px 14px; text-align: right; color: #555;">UKUPNO:</td>
+                            <td style="padding: 13px 14px; text-align: right; color: #28a745;">@(((decimal)ViewBag.RevenueThisMonth).ToString("0.00")) KM</td>
+                            <td style="padding: 13px 14px; text-align: right; color: #6287f9; font-size: 15px;">@(((decimal)ViewBag.TotalRevenue).ToString("0.00")) KM</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 22px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: #6287f9;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+</style>
