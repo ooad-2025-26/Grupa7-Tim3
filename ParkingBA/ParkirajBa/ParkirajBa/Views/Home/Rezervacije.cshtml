@@ -1,44 +1,46 @@
-﻿@{
+﻿@model IEnumerable<ParkirajBa.Models.Ticket>
+@{
     Layout = "_Layout";
     ViewData["Title"] = "Rezervacije";
 }
 
 <div class="app-container">
 
-    
     <div class="tabs">
-        <div class="tab">
-            <a href="/Home/Index">Mapa</a>
-        </div>
-
-        <div class="tab">
-            <a href="/Home/Objekti">Objekti</a>
-        </div>
-
-        <div class="tab active">
-            <a href="/Home/Rezervacije">Rezervacije</a>
-        </div>
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab active"><a href="/Home/Rezervacije">Rezervacije</a></div>
     </div>
 
-    
     <div class="rezervacije-container">
 
-        <h2>Moje rezervacije</h2>
-
-        @* replace with real data from database *@
-        @{
-            var demoRezervacije = new[]
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Moje rezervacije</h2>
+            @if (Model != null && Model.Any())
             {
-                new { Naziv = "Parking Centar",     Adresa = "Titova 12, Sarajevo",   DatumOd = "20.05.2026 08:00", DatumDo = "20.05.2026 18:00", Status = "active",  StatusLabel = "Aktivna"    },
-                new { Naziv = "Parking Skenderija", Adresa = "Terezija 3, Sarajevo",  DatumOd = "18.05.2026 09:00", DatumDo = "18.05.2026 17:00", Status = "expired", StatusLabel = "Istekla"    },
-                new { Naziv = "Parking Ilidža",     Adresa = "Bosanska 7, Ilidža",    DatumOd = "22.05.2026 10:00", DatumDo = "22.05.2026 20:00", Status = "pending", StatusLabel = "Na čekanju" },
-            };
+                <div style="display: flex; gap: 10px;">
+                    <a href="/Report/ExportExcel" class="btn-gray" style="padding: 8px 18px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 8l-3-3h2v-4h2v4h2l-3 3z" /></svg>
+                        Excel
+                    </a>
+                    <a href="/Report/ExportPdf" class="btn-gray" style="padding: 8px 18px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" /></svg>
+                        PDF
+                    </a>
+                </div>
+            }
+        </div>
 
-            int StatusOrder(string s) => s switch { "active" => 0, "pending" => 1, _ => 2 };
-            var sortirane = demoRezervacije.OrderBy(r => StatusOrder(r.Status));
+        @if (ViewBag.Error != null)
+        {
+            <div class="error-message" style="margin-bottom: 16px;">@ViewBag.Error</div>
+        }
+        @if (ViewBag.Success != null)
+        {
+            <div class="success-message" style="margin-bottom: 16px;">@ViewBag.Success</div>
         }
 
-        @if (!demoRezervacije.Any())
+        @if (Model == null || !Model.Any())
         {
             <div class="empty-state">
                 <svg viewBox="0 0 24 24" width="64" height="64" fill="#6287f9">
@@ -50,37 +52,54 @@
         }
         else
         {
-            foreach (var r in sortirane)
+            @foreach (var ticket in Model)
             {
-                <div class="rezervacija-card">
+                var now = DateTime.Now;
+                string status, statusLabel;
+                if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt < now)
+                { status = "expired"; statusLabel = "Istekla"; }
+                else if (ticket.IssuedAt <= now && (!ticket.ExpiresAt.HasValue || ticket.ExpiresAt >= now))
+                { status = "active"; statusLabel = "Aktivna"; }
+                else
+                { status = "pending"; statusLabel = "Na čekanju"; }
 
-                   
+                <a href="/Reservation/Details/@ticket.Id" class="rezervacija-card rezervacija-card-link">
                     <div class="rezervacija-icon">
                         <svg viewBox="0 0 24 24" width="36" height="36" fill="#6287f9">
                             <path d="M13 2.05V4.07c3.39.49 6 3.39 6 6.93 0 2.56-1.38 4.83-3.45 6.12l.01 1.88C18.1 17.44 21 14.1 21 11c0-4.82-3.48-8.83-8-9.95zM11 2.05C6.48 3.17 3 7.18 3 12c0 3.1 2.9 6.44 5.45 7.06L8.44 17.2C6.37 15.91 5 13.64 5 11c0-3.54 2.61-6.44 6-6.93V2.05zM12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                         </svg>
                     </div>
-
-                    
                     <div class="rezervacija-info">
-                        <h4>@r.Naziv</h4>
-                        <p>@r.Adresa</p>
-                        <p class="rezervacija-dates">@r.DatumOd &nbsp;→&nbsp; @r.DatumDo</p>
+                        <h4>@(ticket.ParkingObject?.name ?? "Nepoznat parking")</h4>
+                        <p>@(ticket.ParkingObject?.address ?? "")</p>
+                        <p class="rezervacija-dates">
+                            @ticket.IssuedAt.ToString("dd.MM.yyyy HH:mm")
+                            &nbsp;→&nbsp;
+                            @(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")
+                        </p>
+                        <p style="margin-top: 4px; font-size: 13px; color: #6287f9; font-weight: 600;">@ticket.Price.ToString("0.00") KM</p>
                     </div>
-
-                    
                     <div class="rezervacija-actions">
-                        <span class="rezervacija-badge @r.Status">@r.StatusLabel</span>
-                        @if (r.Status == "active")
-                        {
-                            <a href="/Payment/Placanje" class="btn-blue rezervacija-pay">Plati</a>
-                        }
+                        <span class="rezervacija-badge @status">@statusLabel</span>
+                        <span style="font-size: 12px; color: #aaa; margin-top: 4px;">Klikni za detalje →</span>
                     </div>
-
-                </div>
+                </a>
             }
         }
 
     </div>
-
 </div>
+
+<style>
+    .rezervacija-card-link {
+        display: grid;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+        .rezervacija-card-link:hover {
+            color: inherit;
+            text-decoration: none;
+        }
+</style>

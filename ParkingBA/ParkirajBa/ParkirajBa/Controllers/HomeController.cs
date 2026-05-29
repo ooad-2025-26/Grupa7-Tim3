@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
@@ -13,19 +15,16 @@ namespace ParkirajBa.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
         private readonly ApplicationDbContext _database;
-
         private readonly IConfiguration _configuration;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly IParkingRepository _ParkingRepository;
-
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database, IConfiguration configuration, IParkingRepository parkingRepository)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database, IConfiguration configuration, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _database = database;
             _configuration = configuration;
-            _ParkingRepository = parkingRepository;
+            _userManager = userManager;
         }
 
         //db testing
@@ -192,22 +191,31 @@ namespace ParkirajBa.Controllers
                     .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
                 if (user != null)
-                {
                     fullName = user.FirstName + " " + user.LastName;
-                }
             }
 
             ViewBag.FullName = fullName;
 
             var objekti = await _database.ParkingObject.ToListAsync();
-
             return View(objekti);
         }
 
         //Rezervacije tab
-        public IActionResult Rezervacije()
+        [Authorize]
+        public async Task<IActionResult> Rezervacije()
         {
-            return View();
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login", "User");
+
+            var rezervacije = await _database.Tickets
+                .Include(t => t.ParkingObject)
+                .Where(t => t.ApplicationUserId == user.Id)
+                .OrderByDescending(t => t.IssuedAt)
+                .ToListAsync();
+
+            return View(rezervacije);
         }
 
 

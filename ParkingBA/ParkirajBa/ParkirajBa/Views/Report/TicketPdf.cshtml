@@ -1,0 +1,308 @@
+﻿@model ParkirajBa.Models.Ticket
+@{
+    Layout = null;
+    ViewData["Title"] = "Tiketa – ParkirajBa";
+
+    var now = DateTime.Now;
+    string status = (Model.ExpiresAt.HasValue && Model.ExpiresAt < now) ? "expired"
+                  : (Model.IssuedAt <= now) ? "active" : "pending";
+    string statusLabel = status == "expired" ? "ISTEKLA" : status == "active" ? "AKTIVNA" : "NA ČEKANJU";
+    string statusColor = status == "expired" ? "#dc3545" : status == "active" ? "#28a745" : "#856404";
+    string statusBg = status == "expired" ? "#f8d7da" : status == "active" ? "#d4edda" : "#fff3cd";
+
+    var parking = Model.ParkingObject;
+}
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="utf-8" />
+    <title>Tiketa #@Model.Id – ParkirajBa</title>
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background: #f4f7f6;
+                display: flex;
+                justify-content: center;
+                padding: 40px 20px;
+            }
+
+            .ticket-wrapper {
+                width: 100%;
+                max-width: 560px;
+            }
+
+            .print-actions {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .btn-print {
+                background: #6287f9;
+                color: white;
+                border: none;
+                padding: 9px 22px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 13px;
+                font-family: inherit;
+            }
+
+            .btn-back {
+                background: #f0f0f0;
+                color: #555;
+                border: none;
+                padding: 9px 22px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 13px;
+                text-decoration: none;
+                display: inline-block;
+                font-family: inherit;
+            }
+
+            .ticket {
+                background: white;
+                border-radius: 18px;
+                box-shadow: 0 6px 28px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+
+            .ticket-top {
+                background: #6287f9;
+                color: white;
+                padding: 24px 28px;
+            }
+
+                .ticket-top .brand {
+                    font-size: 24px;
+                    font-weight: 800;
+                    letter-spacing: -1px;
+                    opacity: 0.9;
+                }
+
+                .ticket-top .subtitle {
+                    font-size: 13px;
+                    opacity: 0.7;
+                    margin-top: 2px;
+                }
+
+            .ticket-divider {
+                position: relative;
+                height: 24px;
+                background: white;
+            }
+
+                .ticket-divider::before {
+                    content: '';
+                    position: absolute;
+                    left: -14px;
+                    top: -14px;
+                    width: 28px;
+                    height: 28px;
+                    background: #f4f7f6;
+                    border-radius: 50%;
+                }
+
+                .ticket-divider::after {
+                    content: '';
+                    position: absolute;
+                    right: -14px;
+                    top: -14px;
+                    width: 28px;
+                    height: 28px;
+                    background: #f4f7f6;
+                    border-radius: 50%;
+                }
+
+            .ticket-divider-line {
+                position: absolute;
+                top: 12px;
+                left: 14px;
+                right: 14px;
+                border-top: 2px dashed #e0e0e0;
+            }
+
+            .ticket-body {
+                padding: 20px 28px 28px;
+            }
+
+            .ticket-parking-name {
+                font-size: 20px;
+                font-weight: 700;
+                color: #222;
+                margin-bottom: 4px;
+            }
+
+            .ticket-parking-address {
+                font-size: 13px;
+                color: #777;
+                margin-bottom: 20px;
+            }
+
+            .ticket-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+
+            .ticket-field label {
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #aaa;
+                margin-bottom: 3px;
+            }
+
+            .ticket-field span {
+                font-size: 15px;
+                font-weight: 600;
+                color: #333;
+            }
+
+            .ticket-price-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #f4f7ff;
+                border-radius: 10px;
+                padding: 14px 18px;
+                margin-bottom: 18px;
+            }
+
+                .ticket-price-row .plabel {
+                    font-size: 12px;
+                    color: #777;
+                }
+
+                .ticket-price-row .pval {
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #6287f9;
+                }
+
+            .ticket-status {
+                display: inline-block;
+                padding: 6px 18px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.4px;
+                background: @statusBg;
+                color: @statusColor;
+            }
+
+            .ticket-id {
+                font-size: 11px;
+                color: #ccc;
+                text-align: center;
+                padding: 14px;
+                border-top: 1px dashed #eee;
+                margin-top: 16px;
+            }
+
+            @@media print {
+                body {
+                    background: white;
+                    padding: 0;
+                }
+
+                .print-actions {
+                    display: none;
+                }
+
+                .ticket {
+                    box-shadow: none;
+                    border: 1px solid #ddd;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="ticket-wrapper">
+
+        <div class="print-actions">
+            <button class="btn-print" onclick="window.print()">🖨 Štampaj / Sačuvaj PDF</button>
+            <a class="btn-back" href="/Reservation/Details/@Model.Id">← Nazad</a>
+        </div>
+
+        <div class="ticket">
+            <div class="ticket-top">
+                <div class="brand">ParkirajBa</div>
+                <div class="subtitle">Potvrda parkinga · Tiketa #@Model.Id</div>
+            </div>
+
+            <div style="position: relative; height: 0; overflow: visible;">
+                <div class="ticket-divider">
+                    <div class="ticket-divider-line"></div>
+                </div>
+            </div>
+
+            <div class="ticket-body" style="padding-top: 24px;">
+                <div class="ticket-parking-name">@(parking?.name ?? "Nepoznat parking")</div>
+                <div class="ticket-parking-address">
+                    📍 @(parking?.address ?? "")
+                </div>
+
+                <div class="ticket-grid">
+                    <div class="ticket-field">
+                        <label>Korisnik</label>
+                        <span>@ViewBag.UserFullName</span>
+                    </div>
+                    <div class="ticket-field">
+                        <label>Email</label>
+                        <span style="font-size: 13px;">@ViewBag.UserEmail</span>
+                    </div>
+                    <div class="ticket-field">
+                        <label>Kreirana</label>
+                        <span>@Model.IssuedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+                    <div class="ticket-field">
+                        <label>Ističe</label>
+                        <span>@(Model.ExpiresAt.HasValue ? Model.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</span>
+                    </div>
+                    @if (Model.ExpiresAt.HasValue)
+                    {
+                        var trajanje = Model.ExpiresAt.Value - Model.IssuedAt;
+                        <div class="ticket-field">
+                            <label>Trajanje</label>
+                            <span>@((int)trajanje.TotalHours)h @trajanje.Minutes min</span>
+                        </div>
+                    }
+                    @if (parking?.availableSpots > 0)
+                    {
+                        <div class="ticket-field">
+                            <label>Slobodna mjesta</label>
+                            <span>@parking.availableSpots / @parking.totalSpots</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="ticket-price-row">
+                    <div>
+                        <div class="plabel">Ukupna cijena</div>
+                    </div>
+                    <div class="pval">@Model.Price.ToString("0.00") KM</div>
+                </div>
+
+                <div>
+                    <span class="ticket-status">@statusLabel</span>
+                </div>
+
+                <div class="ticket-id">
+                    Tiketa ID: @Model.Id &nbsp;·&nbsp; Generisano: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
