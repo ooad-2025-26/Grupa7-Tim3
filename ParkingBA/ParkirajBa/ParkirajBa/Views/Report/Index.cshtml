@@ -1,0 +1,141 @@
+﻿@model IEnumerable<ParkirajBa.Models.Ticket>
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Izvještaj";
+}
+
+<div class="app-container">
+
+    <div class="tabs">
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab"><a href="/Home/Rezervacije">Rezervacije</a></div>
+    </div>
+
+    <div class="rezervacije-container">
+
+        <!-- HEADER -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h2 style="margin: 0 0 4px;">Izvještaj rezervacija</h2>
+                <p style="margin: 0; color: #777; font-size: 14px;">@ViewBag.UserFullName &nbsp;·&nbsp; @ViewBag.UserEmail</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/Report/ExportExcel" class="btn-gray" style="padding: 9px 20px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-2 8l-3-3h2v-4h2v4h2l-3 3z" /></svg>
+                    Preuzmi Excel
+                </a>
+                <a href="/Report/ExportPdf" class="btn-blue" style="padding: 9px 20px; font-size: 13px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" /></svg>
+                    Preuzmi PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- STATISTIKE -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px;">
+            <div class="stat-card">
+                <div class="stat-value" style="color: #6287f9;">@ViewBag.TotalCount</div>
+                <div class="stat-label">Ukupno rezervacija</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #28a745;">@ViewBag.ActiveCount</div>
+                <div class="stat-label">Aktivnih</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #dc3545;">@ViewBag.ExpiredCount</div>
+                <div class="stat-label">Isteklih</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #6287f9;">@(((decimal)ViewBag.TotalSpent).ToString("0.00")) KM</div>
+                <div class="stat-label">Ukupno potrošeno</div>
+            </div>
+        </div>
+
+        <!-- TABELA -->
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <p>Nema rezervacija za prikaz.</p>
+                <a href="/Home/Objekti" class="btn-blue" style="margin-top: 16px;">Pronađi parking</a>
+            </div>
+        }
+        else
+        {
+            <div style="background: white; border-radius: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.07); overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background: #6287f9; color: white;">
+                            <th style="padding: 12px 16px; text-align: left;">#</th>
+                            <th style="padding: 12px 16px; text-align: left;">Parking</th>
+                            <th style="padding: 12px 16px; text-align: left;">Adresa</th>
+                            <th style="padding: 12px 16px; text-align: left;">Kreirana</th>
+                            <th style="padding: 12px 16px; text-align: left;">Ističe</th>
+                            <th style="padding: 12px 16px; text-align: right;">Cijena</th>
+                            <th style="padding: 12px 16px; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var t in Model)
+                        {
+                            var now = DateTime.Now;
+                            string status = (t.ExpiresAt.HasValue && t.ExpiresAt < now) ? "expired"
+                                          : (t.IssuedAt <= now) ? "active" : "pending";
+                            string statusLabel = status == "expired" ? "Istekla" : status == "active" ? "Aktivna" : "Na čekanju";
+                            string rowBg = i % 2 == 0 ? "#f8f9ff" : "white";
+
+                            <tr style="background: @rowBg; border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 11px 16px; color: #aaa;">@i</td>
+                                <td style="padding: 11px 16px; font-weight: 600;">
+                                    <a href="/Reservation/Details/@t.Id" style="color: #6287f9;">@(t.ParkingObject?.name ?? "—")</a>
+                                </td>
+                                <td style="padding: 11px 16px; color: #555;">@(t.ParkingObject?.address ?? "—")</td>
+                                <td style="padding: 11px 16px; color: #555;">@t.IssuedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td style="padding: 11px 16px; color: #555;">@(t.ExpiresAt.HasValue ? t.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</td>
+                                <td style="padding: 11px 16px; text-align: right; font-weight: 600; color: #333;">@t.Price.ToString("0.00") KM</td>
+                                <td style="padding: 11px 16px; text-align: center;">
+                                    <span class="rezervacija-badge @status">@statusLabel</span>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f0f4ff; font-weight: 700;">
+                            <td colspan="5" style="padding: 13px 16px; text-align: right; color: #555;">UKUPNO:</td>
+                            <td style="padding: 13px 16px; text-align: right; color: #6287f9; font-size: 15px;">@(((decimal)ViewBag.TotalSpent).ToString("0.00")) KM</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 22px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+</style>

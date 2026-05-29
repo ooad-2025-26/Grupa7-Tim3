@@ -1,0 +1,213 @@
+﻿@model ParkirajBa.Models.Ticket
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Detalji rezervacije";
+
+    var now = DateTime.Now;
+    string status, statusLabel;
+    if (Model.ExpiresAt.HasValue && Model.ExpiresAt < now)
+    { status = "expired"; statusLabel = "Istekla"; }
+    else if (Model.IssuedAt <= now && (!Model.ExpiresAt.HasValue || Model.ExpiresAt >= now))
+    { status = "active"; statusLabel = "Aktivna"; }
+    else
+    { status = "pending"; statusLabel = "Na čekanju"; }
+
+    var parking = Model.ParkingObject;
+}
+
+<div class="app-container">
+
+    <div class="tabs">
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab active"><a href="/Home/Rezervacije">Rezervacije</a></div>
+    </div>
+
+    <div class="rezervacije-container">
+
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+            <a href="/Home/Rezervacije" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#6287f9"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+                Nazad na rezervacije
+            </a>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error-message" style="margin-bottom: 16px;">@ViewBag.Error</div>
+        }
+
+        <!-- HEADER -->
+        <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <h2 style="margin: 0; font-size: 22px; color: #222;">@(parking?.name ?? "Nepoznat parking")</h2>
+                        <span class="rezervacija-badge @status">@statusLabel</span>
+                    </div>
+                    <p style="margin: 0; color: #777; font-size: 14px;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="#aaa" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
+                        @(parking?.address ?? "")
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 28px; font-weight: 700; color: #6287f9;">@Model.Price.ToString("0.00") KM</div>
+                    <div style="font-size: 12px; color: #aaa;">ukupna cijena</div>
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #f0f0f0;" />
+
+            <!-- TIMING INFORMATION -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div>
+                    <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Kreirana</div>
+                    <div style="font-size: 15px; font-weight: 600; color: #333;">@Model.IssuedAt.ToString("dd.MM.yyyy")</div>
+                    <div style="font-size: 13px; color: #777;">@Model.IssuedAt.ToString("HH:mm")</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Ističe</div>
+                    <div style="font-size: 15px; font-weight: 600; color: #333;">@(Model.ExpiresAt.HasValue ? Model.ExpiresAt.Value.ToString("dd.MM.yyyy") : "—")</div>
+                    <div style="font-size: 13px; color: #777;">@(Model.ExpiresAt.HasValue ? Model.ExpiresAt.Value.ToString("HH:mm") : "")</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Trajanje</div>
+                    @if (Model.ExpiresAt.HasValue)
+                    {
+                        var trajanje = Model.ExpiresAt.Value - Model.IssuedAt;
+                        <div style="font-size: 15px; font-weight: 600; color: #333;">@((int)trajanje.TotalHours) h @trajanje.Minutes min</div>
+                    }
+                    else
+                    {
+                        <div style="font-size: 15px; font-weight: 600; color: #333;">—</div>
+                    }
+                    <div style="font-size: 13px; color: #777;">rezervacije</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PARKING INFORMATION -->
+        @if (parking != null)
+        {
+            <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
+                <h3 style="margin: 0 0 20px; font-size: 16px; color: #333; font-weight: 600;">Informacije o parkingu</h3>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+
+                    <div class="parking-info-item">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" /></svg>
+                        <div>
+                            <div style="font-size: 11px; color: #aaa; text-transform: uppercase;">Slobodna mjesta</div>
+                            <div style="font-weight: 600; color: #333;">@parking.availableSpots / @parking.totalSpots</div>
+                        </div>
+                    </div>
+
+                    @if (parking.maxHeight.HasValue)
+                    {
+                        <div class="parking-info-item">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
+                            <div>
+                                <div style="font-size: 11px; color: #aaa; text-transform: uppercase;">Maks. visina</div>
+                                <div style="font-weight: 600; color: #333;">@parking.maxHeight.Value.ToString("0.0") m</div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (parking.opensAt.HasValue && parking.closesAt.HasValue)
+                    {
+                        <div class="parking-info-item">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" /></svg>
+                            <div>
+                                <div style="font-size: 11px; color: #aaa; text-transform: uppercase;">Radno vrijeme</div>
+                                <div style="font-weight: 600; color: #333;">@parking.opensAt.Value.ToString("HH:mm") – @parking.closesAt.Value.ToString("HH:mm")</div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+                <!-- FEATURES -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
+                    @if (parking.hasCameras == true)
+                    {
+                        <span class="feature-badge">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" /></svg>
+                            Video nadzor
+                        </span>
+                    }
+                    @if (parking.isDisabledAccessible == true)
+                    {
+                        <span class="feature-badge">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z" /></svg>
+                            Pristup invalidima
+                        </span>
+                    }
+                    @if (parking.hasEVCharger == true)
+                    {
+                        <span class="feature-badge">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+                            EV punjač
+                        </span>
+                    }
+                    @if (parking.isUnderground == true)
+                    {
+                        <span class="feature-badge">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20 4H4v2l8 5 8-5V4zm0 4.55L12 13 4 8.55V20h16V8.55z" /></svg>
+                            Podzemni parking
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- ACTIONS -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            @if (status == "active")
+            {
+                <a href="/Payment/Placanje?ticketId=@Model.Id" class="btn-blue">
+                    Plati rezervaciju
+                </a>
+            }
+
+            <a href="/Report/TicketPdf/@Model.Id" class="btn-gray" style="display: inline-flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" /></svg>
+                Preuzmi PDF tiketu
+            </a>
+
+            @if (status != "expired")
+            {
+                <form asp-controller="Reservation" asp-action="Cancel" method="post" style="display: inline;"
+                      onsubmit="return confirm('Jeste li sigurni da želite otkazati ovu rezervaciju?');">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn-gray" style="color: #dc3545; background: #fdf0f0; border: 1px solid #f5c6cb;">
+                        Otkaži rezervaciju
+                    </button>
+                </form>
+            }
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .parking-info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .feature-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #eef1ff;
+        color: #4a67d6;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+</style>

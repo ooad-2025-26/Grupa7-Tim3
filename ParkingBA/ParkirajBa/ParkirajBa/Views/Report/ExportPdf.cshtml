@@ -1,0 +1,292 @@
+﻿@model IEnumerable<ParkirajBa.Models.Ticket>
+@{
+    Layout = null;
+    ViewData["Title"] = "Izvještaj – ParkirajBa";
+}
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Izvještaj rezervacija – ParkirajBa</title>
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 13px;
+                color: #333;
+                background: white;
+                padding: 32px 40px;
+            }
+
+            /* ── Header ── */
+            .pdf-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-bottom: 3px solid #6287f9;
+                padding-bottom: 16px;
+                margin-bottom: 24px;
+            }
+
+                .pdf-header h1 {
+                    font-size: 22px;
+                    color: #6287f9;
+                    margin-bottom: 4px;
+                }
+
+                .pdf-header .meta {
+                    font-size: 12px;
+                    color: #777;
+                    line-height: 1.6;
+                }
+
+            .pdf-logo {
+                font-size: 28px;
+                font-weight: 800;
+                color: #6287f9;
+                letter-spacing: -1px;
+            }
+
+            /* ── Stats ── */
+            .stats-row {
+                display: flex;
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+
+            .stat-box {
+                flex: 1;
+                background: #f4f7ff;
+                border-radius: 10px;
+                padding: 14px 18px;
+                text-align: center;
+            }
+
+                .stat-box .val {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #6287f9;
+                }
+
+                .stat-box .lbl {
+                    font-size: 11px;
+                    color: #999;
+                    text-transform: uppercase;
+                    letter-spacing: 0.4px;
+                    margin-top: 2px;
+                }
+
+            /* ── Table ── */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+
+            thead tr {
+                background: #6287f9;
+                color: white;
+            }
+
+            thead th {
+                padding: 10px 12px;
+                text-align: left;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            tbody tr:nth-child(even) {
+                background: #f8f9ff;
+            }
+
+            tbody td {
+                padding: 9px 12px;
+                border-bottom: 1px solid #eee;
+                font-size: 12px;
+            }
+
+            tfoot td {
+                padding: 10px 12px;
+                font-weight: 700;
+                background: #eef1ff;
+            }
+
+            /* ── Badge ── */
+            .badge {
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+
+                .badge.active {
+                    background: #d4edda;
+                    color: #155724;
+                }
+
+                .badge.expired {
+                    background: #f8d7da;
+                    color: #721c24;
+                }
+
+                .badge.pending {
+                    background: #fff3cd;
+                    color: #856404;
+                }
+
+            /* ── Footer ── */
+            .pdf-footer {
+                border-top: 1px solid #eee;
+                padding-top: 12px;
+                margin-top: 24px;
+                font-size: 11px;
+                color: #aaa;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            /* ── Print buttons (screen only) ── */
+            .print-actions {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 24px;
+            }
+
+            .btn-print {
+                background: #6287f9;
+                color: white;
+                border: none;
+                padding: 9px 22px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 13px;
+                font-family: inherit;
+            }
+
+            .btn-back {
+                background: #f0f0f0;
+                color: #555;
+                border: none;
+                padding: 9px 22px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 13px;
+                font-family: inherit;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            @@media print {
+                .print-actions {
+                    display: none;
+                }
+
+                body {
+                    padding: 16px 20px;
+                }
+            }
+    </style>
+</head>
+<body>
+
+    <div class="print-actions">
+        <button class="btn-print" onclick="window.print()">🖨 Štampaj / Sačuvaj PDF</button>
+        <a class="btn-back" href="/Home/Rezervacije">← Nazad</a>
+    </div>
+
+    <div class="pdf-header">
+        <div>
+            <div class="pdf-logo">ParkirajBa</div>
+            <h1 style="margin-top: 6px;">Izvještaj rezervacija</h1>
+            <div class="meta">
+                Korisnik: <strong>@ViewBag.UserFullName</strong><br />
+                Email: @ViewBag.UserEmail<br />
+                Generisano: @ViewBag.GeneratedAt
+            </div>
+        </div>
+    </div>
+
+    @{
+        var tickets = Model?.ToList() ?? new List<ParkirajBa.Models.Ticket>();
+        var now = DateTime.Now;
+        int activeCount = tickets.Count(t => t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
+        int expiredCount = tickets.Count(t => t.ExpiresAt.HasValue && t.ExpiresAt < now);
+        decimal ukupno = tickets.Sum(t => t.Price);
+    }
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="val">@tickets.Count</div>
+            <div class="lbl">Ukupno</div>
+        </div>
+        <div class="stat-box">
+            <div class="val" style="color: #28a745;">@activeCount</div>
+            <div class="lbl">Aktivnih</div>
+        </div>
+        <div class="stat-box">
+            <div class="val" style="color: #dc3545;">@expiredCount</div>
+            <div class="lbl">Isteklih</div>
+        </div>
+        <div class="stat-box">
+            <div class="val">@ukupno.ToString("0.00") KM</div>
+            <div class="lbl">Potrošeno</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Parking</th>
+                <th>Adresa</th>
+                <th>Kreirana</th>
+                <th>Ističe</th>
+                <th>Cijena</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int i = 1;
+            }
+            @foreach (var t in tickets)
+            {
+                string status = (t.ExpiresAt.HasValue && t.ExpiresAt < now) ? "expired"
+                              : (t.IssuedAt <= now) ? "active" : "pending";
+                string statusLabel = status == "expired" ? "Istekla" : status == "active" ? "Aktivna" : "Na čekanju";
+
+                <tr>
+                    <td style="color: #aaa;">@i</td>
+                    <td style="font-weight: 600;">@(t.ParkingObject?.name ?? "—")</td>
+                    <td>@(t.ParkingObject?.address ?? "—")</td>
+                    <td>@t.IssuedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@(t.ExpiresAt.HasValue ? t.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</td>
+                    <td style="font-weight: 600;">@t.Price.ToString("0.00") KM</td>
+                    <td><span class="badge @status">@statusLabel</span></td>
+                </tr>
+                i++;
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="text-align: right;">UKUPNO:</td>
+                <td style="color: #6287f9;">@ukupno.ToString("0.00") KM</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="pdf-footer">
+        <span>ParkirajBa – Sistem za upravljanje parkingom</span>
+        <span>Generisano: @ViewBag.GeneratedAt</span>
+    </div>
+
+</body>
+</html>
