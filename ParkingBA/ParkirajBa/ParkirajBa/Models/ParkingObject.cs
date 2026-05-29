@@ -22,7 +22,11 @@ namespace ParkirajBa.Models
         public bool? isUnderground { get; set; }
         public DateTime? opensAt { get; set; }
         public DateTime? closesAt { get; set; }
-        //add owner ID foreign key...
+
+        public string? OwnerId { get; set; }
+
+        [ForeignKey("OwnerId")]
+        public ApplicationUser Owner { get; set; }
 
 
         public ParkingObject() { 

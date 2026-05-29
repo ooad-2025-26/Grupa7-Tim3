@@ -8,7 +8,7 @@ namespace ParkirajBa
 {
     public class Program
     {
-        //za role
+        //for roles
         static async Task SeedRolesAsync(WebApplication app)
         {
             using var scope = app.Services.CreateScope();
@@ -66,7 +66,7 @@ namespace ParkirajBa
             // ——— Build ———
             var app = builder.Build();
 
-            await SeedRolesAsync(app); //za role
+            await SeedRolesAsync(app); //for roles
 
             if (app.Environment.IsDevelopment())
             {

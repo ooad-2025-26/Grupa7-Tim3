@@ -83,71 +83,6 @@
         background-color: #f4f7f6;
     }
 
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 40px;
-        height: 100px;
-        background: white;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        position: relative;
-        z-index: 10;
-    }
-
-        .header > div {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-
-        .header .logo {
-            justify-content: center;
-        }
-
-        .header .profile {
-            justify-content: flex-end;
-            background: transparent;
-            padding: 0;
-        }
-
-    .profile > span,
-    .profile > .profile-icon {
-        display: flex;
-        align-items: center;
-        background: #f0f0f0; 
-        padding: 6px 12px; 
-        border-radius: 20px;
-        font-size: 14px;
-        height: fit-content; 
-    }
-
-        .profile > span + .profile-icon {
-            margin-left: -12px; 
-            border-left: 0;
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-
-    .profile > span {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-
-    .logo {
-        flex: 0 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        align-items: center;
-        gap: 10px;
-        font-weight: bold;
-        font-size: 20px;
-    }
-
-        .logo img {
-            height: 80px;
-        }
 
     .tabs {
         display: flex;
@@ -331,14 +266,19 @@
             AdvancedMarkerElement = markerLibrary.AdvancedMarkerElement;
             PinElement = markerLibrary.PinElement;
 
-            const startPosition = { lat: 43.8563, lng: 18.4131 }; // Sarajevo
+        // this function is called automatically by "&callback=initMap" in the script link above
+        function initMap() {
+            // first coordinates (ex. centar Sarajeva)
+            const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
 
             // Create a new map from the div with id="map"
             map = new Map(document.getElementById('map'), {
                 center: startPosition,
                 zoom: 14,
-                renderingType: 'VECTOR',
-                mapId: "DEMO_MAP_ID"
+                center: pocetnaPozicija,
+                mapTypeId: 'roadmap',
+            // optional: default google maps controls can be disabled if you want to implement your own custom controls
+                disableDefaultUI: false
             });
 
             loadMarkers(parkingLocations);
@@ -395,6 +335,8 @@
                     info.open(map, marker);
                 });
             });
+
+        // later we will add fetch request to our API to get parking places
         }
 
         async function refreshMap(locations){

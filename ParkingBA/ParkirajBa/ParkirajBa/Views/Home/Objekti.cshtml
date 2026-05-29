@@ -25,270 +25,66 @@
     <!-- CONTENT -->
     <div class="objects-container">
 
-        @foreach (var parking in Model)
+        @if (Model == null || !Model.Any())
         {
-            <div class="object-card">
-
-                <img src="/images/parking.png" />
-
-                <h3>@parking.name</h3>
-
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="#6287f9">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+                <p>Nema dostupnih parking objekata.</p>
             </div>
+        }
+        else
+        {
+            foreach (var parking in Model)
+            {
+                <div class="object-card">
+
+                    <img src="/images/parking.png" alt="@parking.name" />
+
+                    <div class="object-card-body">
+
+                        <h3>@parking.name</h3>
+
+                        <p class="object-address">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="#6287f9" style="vertical-align:middle; margin-right:4px;">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                            @parking.address
+                        </p>
+
+                        <div class="object-badges">
+                            @if (parking.hasCameras == true)
+                            {
+                                <span class="badge-feature">📷 Kamere</span>
+                            }
+                            @if (parking.hasEVCharger == true)
+                            {
+                                <span class="badge-feature">⚡ EV punjač</span>
+                            }
+                            @if (parking.isDisabledAccessible == true)
+                            {
+                                <span class="badge-feature">♿ Pristupačno</span>
+                            }
+                            @if (parking.isUnderground == true)
+                            {
+                                <span class="badge-feature">🏢 Podzemno</span>
+                            }
+                        </div>
+
+                        <div class="object-footer">
+                            <span class="object-spots">@parking.totalSpots mjesta</span>
+                            <a href="/Reservation/Create?parkingObjectId=@parking.ID" class="btn-blue" style="padding: 8px 18px; font-size: 13px; border-radius: 20px;">
+                                Rezerviši
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+            }
         }
 
     </div>
 
 </div>
-
-<style>
-    .objects-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 25px;
-        padding: 30px 40px;
-    }
-
-    .object-card {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        transition: 0.2s;
-        cursor: pointer;
-    }
-
-        .object-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .object-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .object-card h3 {
-            padding: 18px;
-            margin: 0;
-            text-align: center;
-        }
-
-    body {
-        margin: 0;
-        font-family: 'GoogleSans', 'Segoe UI', Arial, sans-serif;
-        background-color: #f4f7f6;
-    }
-
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 40px;
-        height: 100px;
-        background: white;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        position: relative;
-        z-index: 10;
-    }
-
-        .header > div {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-
-        .header .logo {
-            justify-content: center;
-        }
-
-        .header .profile {
-            justify-content: flex-end;
-            background: transparent;
-            padding: 0;
-        }
-
-    .profile > span,
-    .profile > .profile-icon {
-        display: flex;
-        align-items: center;
-        background: #f0f0f0;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-        height: fit-content;
-    }
-
-        .profile > span + .profile-icon {
-            margin-left: -12px;
-            border-left: 0;
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-
-    .profile > span {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-
-    .logo {
-        flex: 0 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        align-items: center;
-        gap: 10px;
-        font-weight: bold;
-        font-size: 20px;
-    }
-
-        .logo img {
-            height: 80px;
-        }
-
-    .tabs {
-        display: flex;
-        gap: 10px;
-        padding: 15px 40px;
-        background: #f8f9fa;
-    }
-
-    .tab {
-        padding: 10px 20px;
-        border-radius: 30px;
-        font-weight: 500;
-        color: #666;
-        transition: 0.3s;
-    }
-
-        .tab.active {
-            background: #6287f9;
-            color: white;
-            box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
-        }
-
-    .dropdown {
-        display: none;
-        position: absolute;
-        right: 0;
-        top: 45px;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        overflow: hidden;
-        min-width: 120px;
-    }
-
-        .dropdown a {
-            display: block;
-            padding: 10px;
-            text-decoration: none;
-            color: black;
-        }
-
-            .dropdown a:hover {
-                background: #eee;
-            }
-
-    .nav {
-        display: flex;
-        background: #eaeaea;
-    }
-
-    .nav-item {
-        flex: 1;
-        text-align: center;
-        padding: 12px;
-        cursor: pointer;
-    }
-
-        .nav-item.active {
-            background: #1e5cc3;
-            color: white;
-        }
-
-    .filters {
-        padding: 15px 40px;
-        background: white;
-        display: flex;
-        gap: 20px;
-        align-items: center;
-        border-bottom: 1px solid #eee;
-    }
-
-        .filters input[type="text"] {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            padding: 8px 15px;
-            border-radius: 10px;
-            outline: none;
-        }
-
-    .content {
-        display: flex;
-        height: calc(100vh - 160px);
-    }
-
-    .sidebar {
-        width: 350px;
-        background: white;
-        padding: 10px;
-        overflow-y: auto;
-        z-index: 5;
-    }
-
-    .card {
-        display: flex;
-        gap: 15px;
-        padding: 15px;
-        margin: 10px;
-        border-radius: 12px;
-        background: white;
-        transition: 0.2s;
-        border: 1px solid transparent;
-        cursor: pointer;
-    }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: #e0e0e0;
-        }
-
-        .card img {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 6px;
-            background: #eee;
-        }
-
-    .map {
-        flex: 1;
-        position: relative;
-    }
-
-        .map img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-    .custom-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url('/images/backgroundColor.png');
-        background-position: center;
-        background-size: cover;
-        opacity: 0.4;
-        pointer-events: none;
-    }
-
-    input[type="range"] {
-        accent-color: #1a73e8;
-    }
-
-
-</style>
