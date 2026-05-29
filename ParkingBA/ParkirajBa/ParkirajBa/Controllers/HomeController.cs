@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using ParkirajBa.Repositories;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
@@ -216,5 +217,21 @@ namespace ParkirajBa.Controllers
 
             return View(rezervacije);
         }
+
+
+        //-- Mapa --
+        [HttpGet]
+        public async Task<IActionResult> Search(string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras,bool isDisabledAccessible,string regime, int maxPrice)
+        {
+            // Execute query and fetch data
+            var results = 
+                await _ParkingRepository.FilterParkings(searchText,hasGarage,hasEVCharger,hasCameras, isDisabledAccessible, regime, maxPrice);
+
+            // Return filtered results as JSON to the frontend
+            return Json(results);
+        }
+
+
+        //----
     }
 }

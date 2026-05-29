@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using ParkirajBa.Repositories;
 
 namespace ParkirajBa
 {
@@ -36,6 +37,9 @@ namespace ParkirajBa
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            // Parking repository service registration
+            builder.Services.AddScoped<IParkingRepository, ParkingRepository>();
 
             // 2. Identity Settings
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
