@@ -72,5 +72,11 @@ namespace ParkirajBa.Repositories
 
             return NewParking;
         }
+
+        public async Task<List<Pricing>>
+            GetParkingPricings(int ParkingObjectID)
+        {
+            return await _Database.Pricing.Where(p => p.ParkingObjectID == ParkingObjectID).ToListAsync();
+        }
     }
 }
