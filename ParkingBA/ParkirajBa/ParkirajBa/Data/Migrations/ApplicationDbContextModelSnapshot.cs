@@ -390,7 +390,7 @@ namespace ParkirajBa.Data.Migrations
 
                     b.HasIndex("ParkingObjectId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

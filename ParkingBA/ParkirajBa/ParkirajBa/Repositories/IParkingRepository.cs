@@ -9,6 +9,7 @@ namespace ParkirajBa.Repositories
 
         public Task<ParkingObject>
             AddParking(ParkingObject NewParking);
-        
+
+        public Task<List<Pricing>> GetParkingPricings(int ParkingObjectID);
     }
 }

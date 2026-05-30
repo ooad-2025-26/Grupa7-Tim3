@@ -25,7 +25,6 @@ namespace ParkirajBa.Models
 
         public string? OwnerId { get; set; }
 
-        [ForeignKey("OwnerId")]
         public ApplicationUser Owner { get; set; }
 
 

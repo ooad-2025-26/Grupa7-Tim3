@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using ParkirajBa.Repositories;
 
 namespace ParkirajBa.Controllers
 {
@@ -11,12 +12,15 @@ namespace ParkirajBa.Controllers
     public class ReservationController : Controller
     {
         private readonly ApplicationDbContext _database;
+        
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IParkingRepository _ParkingRepository;
 
-        public ReservationController(ApplicationDbContext database, UserManager<ApplicationUser> userManager)
+        public ReservationController(ApplicationDbContext database, UserManager<ApplicationUser> userManager, IParkingRepository ParkingRepository)
         {
             _database = database;
             _userManager = userManager;
+            _ParkingRepository = ParkingRepository;
         }
 
         // GET: /Reservation/Index
@@ -43,8 +47,8 @@ namespace ParkirajBa.Controllers
         public async Task<IActionResult> Create(int parkingObjectId)
         {
             var parking = await _database.ParkingObject
-                .Include(p => p.pricings)
                 .FirstOrDefaultAsync(p => p.ID == parkingObjectId);
+
 
             if (parking == null)
             {
@@ -67,8 +71,8 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Login", "User");
 
             var parking = await _database.ParkingObject
-                .Include(p => p.pricings)
                 .FirstOrDefaultAsync(p => p.ID == parkingObjectId);
+            List<Pricing> ParkingPricings = await _ParkingRepository.GetParkingPricings(parkingObjectId);
 
             if (parking == null)
             {
@@ -84,8 +88,7 @@ namespace ParkirajBa.Controllers
             }
 
             // use hourly pricing to calculate price of reservation
-            var hourlyPricing = parking.pricings
-                .FirstOrDefault(p => p.pricingType == PricingType.Hourly);
+            var hourlyPricing = ParkingPricings.FirstOrDefault(p => p.pricingType == PricingType.Hourly);
 
             decimal cijena = 0;
             if (hourlyPricing != null)
