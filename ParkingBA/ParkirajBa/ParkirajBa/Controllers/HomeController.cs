@@ -18,16 +18,23 @@ namespace ParkirajBa.Controllers
         private readonly ApplicationDbContext _database;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IParkingRepository _parkingRepository;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext database, IConfiguration configuration, UserManager<ApplicationUser> userManager)
+        public HomeController(
+            ILogger<HomeController> logger,
+            ApplicationDbContext database,
+            IConfiguration configuration,
+            UserManager<ApplicationUser> userManager,
+            IParkingRepository parkingRepository)
         {
             _logger = logger;
             _database = database;
             _configuration = configuration;
             _userManager = userManager;
+            _parkingRepository = parkingRepository;
         }
 
-        //db testing
+        // db testing
         public IActionResult databaseTest()
         {
             ParkingObject parkingObject = new ParkingObject
@@ -56,7 +63,6 @@ namespace ParkirajBa.Controllers
                 validFrom = DateTime.Now,
                 validTo = DateTime.Now.AddMonths(1),
                 ParkingObjectID = parkingObject.ID
-
             };
             _database.Pricing.Add(pricing);
             _database.SaveChanges();
@@ -64,35 +70,41 @@ namespace ParkirajBa.Controllers
             return Content("Database test completed successfully!");
         }
 
-
         public async Task<IActionResult> Index()
         {
-            string fullName = "Guest";
+            ViewBag.FullName = await GetFullNameAsync();
+            ViewData["GoogleMapsApiKey"] = _configuration["GoogleMaps:ApiKey"];
 
-            if (User.Identity.IsAuthenticated)
-            {
-                var user = await _database.Users
-                    .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-
-                if (user != null)
-                {
-                    fullName = user.FirstName + " " + user.LastName;
-                }
-            }
-
-            ViewBag.FullName = fullName;
-
-            //-- Mapa --
-
-            var apiKey = _configuration["GoogleMaps:ApiKey"];
-
-            ViewData["GoogleMapsApiKey"] = apiKey;
-
-            var parkingObjekti = _database.ParkingObject.ToList();
-
-            //----
+            var parkingObjekti = await _parkingRepository.GetAllAsync();
 
             return View(parkingObjekti);
+        }
+
+        // objects tab
+        public async Task<IActionResult> Objekti()
+        {
+            ViewBag.FullName = await GetFullNameAsync();
+
+            var objekti = await _parkingRepository.GetAllAsync();
+            return View(objekti);
+        }
+
+        // reservation tab
+        [Authorize]
+        public async Task<IActionResult> Rezervacije()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return RedirectToAction("Login", "User");
+
+            var rezervacije = await _database.Tickets
+                .Include(t => t.ParkingObject)
+                .Where(t => t.ApplicationUserId == user.Id)
+                .OrderByDescending(t => t.IssuedAt)
+                .ToListAsync();
+
+            return View(rezervacije);
         }
 
         public async Task<IActionResult> Logout()
@@ -101,41 +113,22 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 
-        public IActionResult Login()
-        {
-            return View();
-        }
+        public IActionResult Login() => View();
+        public IActionResult Register() => View();
+        public IActionResult Placanje() => View();
 
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-
-        public IActionResult Placanje()
-        {
-            return View();
-        }
         public IActionResult Potvrda(string ime)
         {
             ViewBag.ImeKorisnika = ime;
             return View();
         }
-        public IActionResult Uspjeh()
-        {
-            return View();
-        }
+
+        public IActionResult Uspjeh() => View();
 
         [HttpPost]
         public async Task<IActionResult> PosaljiEmail(string ime)
@@ -145,9 +138,7 @@ namespace ParkirajBa.Controllers
                 string userEmail = User.Identity.Name;
 
                 if (string.IsNullOrEmpty(userEmail))
-                {
                     return RedirectToAction("Login");
-                }
 
                 var parkingBaEmail = "parkirajba.service@gmail.com";
                 var parkingBaEmailConnection = "iplx fham rnwz oajz";
@@ -168,7 +159,6 @@ namespace ParkirajBa.Controllers
                 };
 
                 mailMessage.To.Add(userEmail);
-
                 await smtpClient.SendMailAsync(mailMessage);
 
                 return RedirectToAction("Uspjeh");
@@ -180,58 +170,17 @@ namespace ParkirajBa.Controllers
             }
         }
 
-        //Objekti Tab
-        public async Task<IActionResult> Objekti()
+        // ── Helper
+
+        private async Task<string> GetFullNameAsync()
         {
-            string fullName = "Guest";
+            if (!User.Identity.IsAuthenticated)
+                return "Guest";
 
-            if (User.Identity.IsAuthenticated)
-            {
-                var user = await _database.Users
-                    .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            var user = await _database.Users
+                .FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
 
-                if (user != null)
-                    fullName = user.FirstName + " " + user.LastName;
-            }
-
-            ViewBag.FullName = fullName;
-
-            var objekti = await _database.ParkingObject.ToListAsync();
-            return View(objekti);
+            return user != null ? user.FirstName + " " + user.LastName : "Guest";
         }
-
-        //Rezervacije tab
-        [Authorize]
-        public async Task<IActionResult> Rezervacije()
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "User");
-
-            var rezervacije = await _database.Tickets
-                .Include(t => t.ParkingObject)
-                .Where(t => t.ApplicationUserId == user.Id)
-                .OrderByDescending(t => t.IssuedAt)
-                .ToListAsync();
-
-            return View(rezervacije);
-        }
-
-
-        //-- Mapa --
-        [HttpGet]
-        public async Task<IActionResult> Search(string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras,bool isDisabledAccessible,string regime, int maxPrice)
-        {
-            // Execute query and fetch data
-            var results = 
-                await _ParkingRepository.FilterParkings(searchText,hasGarage,hasEVCharger,hasCameras, isDisabledAccessible, regime, maxPrice);
-
-            // Return filtered results as JSON to the frontend
-            return Json(results);
-        }
-
-
-        //----
     }
 }

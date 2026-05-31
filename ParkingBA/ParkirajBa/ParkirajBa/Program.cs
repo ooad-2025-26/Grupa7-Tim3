@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
-using ParkirajBa.Repositories;
 
 namespace ParkirajBa
 {
@@ -38,9 +37,6 @@ namespace ParkirajBa
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // Parking repository service registration
-            builder.Services.AddScoped<IParkingRepository, ParkingRepository>();
-
             // 2. Identity Settings
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
@@ -60,10 +56,12 @@ namespace ParkirajBa
                 options.LogoutPath = "/User/Logout";
             });
 
+            builder.Services.AddScoped<ParkirajBa.Repositories.IParkingRepository, ParkirajBa.Repositories.ParkingRepository>();
+
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
-            // ——— Build ———
+            // ——— Build 
             var app = builder.Build();
 
             await SeedRolesAsync(app); //for roles

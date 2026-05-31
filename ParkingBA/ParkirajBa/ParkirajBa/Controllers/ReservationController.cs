@@ -14,17 +14,19 @@ namespace ParkirajBa.Controllers
         private readonly ApplicationDbContext _database;
         
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IParkingRepository _ParkingRepository;
+        private readonly IParkingRepository _parkingRepository;
 
-        public ReservationController(ApplicationDbContext database, UserManager<ApplicationUser> userManager, IParkingRepository ParkingRepository)
+        public ReservationController(
+            ApplicationDbContext database,
+            UserManager<ApplicationUser> userManager,
+            IParkingRepository parkingRepository)
         {
             _database = database;
             _userManager = userManager;
-            _ParkingRepository = ParkingRepository;
+            _parkingRepository = parkingRepository;
         }
 
         // GET: /Reservation/Index
-        // showing all current reservatins for logged in user
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -42,12 +44,10 @@ namespace ParkirajBa.Controllers
         }
 
         // GET: /Reservation/Create?parkingObjectId=1
-        // for showing form for creating new reservation for specific parking object
         [HttpGet]
         public async Task<IActionResult> Create(int parkingObjectId)
         {
-            var parking = await _database.ParkingObject
-                .FirstOrDefaultAsync(p => p.ID == parkingObjectId);
+            var parking = await _parkingRepository.GetByIdWithPricingsAsync(parkingObjectId);
 
 
             if (parking == null)
@@ -61,7 +61,6 @@ namespace ParkirajBa.Controllers
         }
 
         // POST: /Reservation/Create
-        // Saves a new reservation to the database
         [HttpPost]
         public async Task<IActionResult> Create(int parkingObjectId, DateTime expiresAt)
         {
@@ -70,9 +69,7 @@ namespace ParkirajBa.Controllers
             if (user == null)
                 return RedirectToAction("Login", "User");
 
-            var parking = await _database.ParkingObject
-                .FirstOrDefaultAsync(p => p.ID == parkingObjectId);
-            List<Pricing> ParkingPricings = await _ParkingRepository.GetParkingPricings(parkingObjectId);
+            var parking = await _parkingRepository.GetByIdWithPricingsAsync(parkingObjectId);
 
             if (parking == null)
             {
@@ -87,8 +84,8 @@ namespace ParkirajBa.Controllers
                 return View();
             }
 
-            // use hourly pricing to calculate price of reservation
-            var hourlyPricing = ParkingPricings.FirstOrDefault(p => p.pricingType == PricingType.Hourly);
+            // Using repository for getting hourly pricing rate
+            var hourlyPricing = await _parkingRepository.GetActivePricingAsync(parkingObjectId, PricingType.Hourly);
 
             decimal cijena = 0;
             if (hourlyPricing != null)
@@ -113,7 +110,6 @@ namespace ParkirajBa.Controllers
         }
 
         // GET: /Reservation/Details/5
-        // detail of a specific reservation, showing all details about it and parking object
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -136,7 +132,6 @@ namespace ParkirajBa.Controllers
         }
 
         // POST: /Reservation/Cancel/5
-        // cancels a reservation by deleting it from the database, only if it belongs to the logged in user and is not expired
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -154,7 +149,6 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Index");
             }
 
-            // not allowing cancellation of expired reservation, because it is already used and cannot be refunded
             if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt < DateTime.Now)
             {
                 ViewBag.Error = "Nije moguće otkazati isteklu rezervaciju.";
