@@ -12,6 +12,7 @@ namespace ParkirajBa.Controllers
     public class ReservationController : Controller
     {
         private readonly ApplicationDbContext _database;
+        
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IParkingRepository _parkingRepository;
 
@@ -47,6 +48,7 @@ namespace ParkirajBa.Controllers
         public async Task<IActionResult> Create(int parkingObjectId)
         {
             var parking = await _parkingRepository.GetByIdWithPricingsAsync(parkingObjectId);
+
 
             if (parking == null)
             {

@@ -162,5 +162,11 @@ namespace ParkirajBa.Repositories
                 .Include(t => t.ParkingObject)
                 .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
         }
+
+        public async Task<List<Pricing>>
+            GetParkingPricings(int ParkingObjectID)
+        {
+            return await _Database.Pricing.Where(p => p.ParkingObjectID == ParkingObjectID).ToListAsync();
+        }
     }
 }
