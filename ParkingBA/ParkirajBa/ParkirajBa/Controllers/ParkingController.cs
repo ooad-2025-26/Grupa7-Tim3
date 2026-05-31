@@ -1,23 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ParkirajBa.Data;
 using ParkirajBa.Models;
+using ParkirajBa.Repositories;
 
 namespace ParkirajBa.Controllers
 {
     [Authorize(Roles = "Owner")]
     public class ParkingController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IParkingRepository _parkingRepository;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public ParkingController(
-            ApplicationDbContext context,
+            IParkingRepository parkingRepository,
             UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _parkingRepository = parkingRepository;
             _userManager = userManager;
         }
 
@@ -30,11 +29,9 @@ namespace ParkirajBa.Controllers
                 return Unauthorized();
             }
 
-            var parkingObject = await _context.ParkingObject
-                .Where(p => p.OwnerId == currentUser.Id)
-                .ToListAsync();
+            var parkingObjects = await _parkingRepository.GetByOwnerIdAsync(currentUser.Id);
 
-            return View(parkingObject);
+            return View(parkingObjects);
         }
     }
 }

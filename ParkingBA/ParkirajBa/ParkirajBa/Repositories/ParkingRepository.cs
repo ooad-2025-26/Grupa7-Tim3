@@ -4,73 +4,163 @@ using ParkirajBa.Models;
 
 namespace ParkirajBa.Repositories
 {
-    public class ParkingRepository:IParkingRepository
+    public class ParkingRepository : IParkingRepository
     {
-        ApplicationDbContext _Database;
+        private readonly ApplicationDbContext _Database;
 
         public ParkingRepository(ApplicationDbContext database)
         {
-            this._Database = database;
+            _Database = database;
         }
 
-        public async Task<List<ParkingObject>>
-            FilterParkings(string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice)
+        // ── Filtering and searching
+
+        public async Task<List<ParkingObject>> FilterParkings(
+            string searchText, bool hasGarage, bool hasEVCharger,
+            bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice)
         {
             var query = _Database.ParkingObject.AsQueryable();
+
             if (!string.IsNullOrEmpty(searchText))
-            {
                 query = query.Where(p => p.name.Contains(searchText));
-            }
 
             if (hasGarage)
-            {
                 query = query.Where(p => p.isUnderground ?? false);
-            }
 
             if (hasEVCharger)
-            {
                 query = query.Where(p => p.hasEVCharger ?? false);
-            }
 
             if (hasCameras)
-            {
                 query = query.Where(p => p.hasCameras ?? false);
-            }
 
             if (isDisabledAccessible)
-            {
                 query = query.Where(p => p.isDisabledAccessible ?? false);
-            }
 
-            PricingType typeByRegime = PricingType.Hourly;
-            if (regime.Equals("Hour"))
-                typeByRegime = PricingType.Hourly;
-            else if (regime.Equals("Day"))
-                typeByRegime = PricingType.Daily;
-            else if (regime.Equals("Week"))
-                typeByRegime = PricingType.Weekly;
-            else if (regime.Equals("Month"))
-                typeByRegime = PricingType.Monthly;
-            else if (regime.Equals("Year"))
-                typeByRegime = PricingType.Yearly;
+            PricingType typeByRegime = regime switch
+            {
+                "Day" => PricingType.Daily,
+                "Week" => PricingType.Weekly,
+                "Month" => PricingType.Monthly,
+                "Year" => PricingType.Yearly,
+                _ => PricingType.Hourly
+            };
 
+            query = query.Where(p =>
+                _Database.Pricing.Any(pricing =>
+                    pricing.ParkingObjectID == p.ID &&
+                    pricing.pricingType == typeByRegime &&
+                    pricing.price < maxPrice));
 
-            // Filter by maximum price
-            query = query.Where(p => _Database.Pricing.Any(pricing => pricing.ParkingObjectID == p.ID && pricing.pricingType == typeByRegime && pricing.price < maxPrice));
-
-            // Execute query and fetch data
             return await query.ToListAsync();
-
         }
 
-        public async Task<ParkingObject>
-            AddParking(ParkingObject NewParking)
+        public async Task<ParkingObject> AddParking(ParkingObject newParking)
         {
-            _Database.ParkingObject.Add(NewParking);
-            
+            _Database.ParkingObject.Add(newParking);
             await _Database.SaveChangesAsync();
+            return newParking;
+        }
 
-            return NewParking;
+        // ── Getting parkings
+
+        public async Task<List<ParkingObject>> GetAllAsync()
+        {
+            return await _Database.ParkingObject
+                .ToListAsync();
+        }
+
+        public async Task<List<ParkingObject>> GetAllWithPricingsAsync()
+        {
+            return await _Database.ParkingObject.ToListAsync();
+        }
+
+        public async Task<List<ParkingObject>> GetAllWithOwnerAsync()
+        {
+            return await _Database.ParkingObject
+                .Include(p => p.Owner)
+                .ToListAsync();
+        }
+
+        public async Task<List<ParkingObject>> GetByOwnerIdAsync(string ownerId)
+        {
+            return await _Database.ParkingObject
+                .Where(p => p.OwnerId == ownerId)
+                .ToListAsync();
+        }
+
+        public async Task<List<ParkingObject>> GetByOwnerIdWithPricingsAsync(string ownerId)
+        {
+            return await _Database.ParkingObject
+                .Where(p => p.OwnerId == ownerId)
+                .ToListAsync();
+        }
+
+        public async Task<ParkingObject?> GetByIdAsync(int id)
+        {
+            return await _Database.ParkingObject
+                .FirstOrDefaultAsync(p => p.ID == id);
+        }
+
+        public async Task<ParkingObject?> GetByIdWithPricingsAsync(int id)
+        {
+            return await _Database.ParkingObject
+                .FirstOrDefaultAsync(p => p.ID == id);
+        }
+
+        public async Task<ParkingObject?> GetByIdWithOwnerAsync(int id)
+        {
+            return await _Database.ParkingObject
+                .Include(p => p.Owner)
+                .FirstOrDefaultAsync(p => p.ID == id);
+        }
+
+        // ── Prices
+
+        public async Task<List<Pricing>> GetPricingsByParkingIdAsync(int parkingObjectId)
+        {
+            return await _Database.Pricing
+                .Where(p => p.ParkingObjectID == parkingObjectId)
+                .ToListAsync();
+        }
+
+        public async Task<Pricing?> GetActivePricingAsync(int parkingObjectId, PricingType type)
+        {
+            var now = DateTime.Now;
+
+            return await _Database.Pricing
+                .Where(p =>
+                    p.ParkingObjectID == parkingObjectId &&
+                    p.pricingType == type &&
+                    (p.validFrom == null || p.validFrom <= now) &&
+                    (p.validTo == null || p.validTo >= now))
+                .OrderByDescending(p => p.validFrom)
+                .FirstOrDefaultAsync();
+        }
+
+        // ── Tiket
+
+        public async Task<List<Ticket>> GetTicketsByUserIdAsync(string userId)
+        {
+            return await _Database.Tickets
+                .Include(t => t.ParkingObject)
+                .Where(t => t.ApplicationUserId == userId)
+                .OrderByDescending(t => t.IssuedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Ticket>> GetTicketsByParkingIdsAsync(List<int> parkingIds)
+        {
+            return await _Database.Tickets
+                .Include(t => t.ParkingObject)
+                .Where(t => parkingIds.Contains(t.ParkingObjectId))
+                .ToListAsync();
+        }
+
+        public async Task<Ticket?> GetTicketByIdAsync(int id, string userId)
+        {
+            return await _Database.Tickets
+                .Include(t => t.ParkingObject)
+                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
         }
     }
 }
