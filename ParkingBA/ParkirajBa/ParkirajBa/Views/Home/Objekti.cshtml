@@ -7,22 +7,12 @@
 
 <div class="app-container">
 
-    <!-- NAV -->
     <div class="tabs">
-        <div class="tab">
-            <a href="/Home/Index">Mapa</a>
-        </div>
-
-        <div class="tab active">
-            <a href="/Home/Objekti">Objekti</a>
-        </div>
-
-        <div class="tab">
-            <a href="/Home/Rezervacije">Rezervacije</a>
-        </div>
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab active"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab"><a href="/Home/Rezervacije">Rezervacije</a></div>
     </div>
 
-    <!-- CONTENT -->
     <div class="objects-container">
 
         @if (Model == null || !Model.Any())
@@ -38,7 +28,7 @@
         {
             foreach (var parking in Model)
             {
-                <div class="object-card">
+                <a href="/Parking/Details/@parking.ID" class="object-card object-card-link">
 
                     <img src="/images/parking.png" alt="@parking.name" />
 
@@ -74,17 +64,28 @@
 
                         <div class="object-footer">
                             <span class="object-spots">@parking.totalSpots mjesta</span>
-                            <a href="/Reservation/Create?parkingObjectId=@parking.ID" class="btn-blue" style="padding: 8px 18px; font-size: 13px; border-radius: 20px;">
-                                Rezerviši
-                            </a>
+                            <span class="btn-blue" style="padding: 8px 18px; font-size: 13px; border-radius: 20px; pointer-events: none;">
+                                Pogledaj →
+                            </span>
                         </div>
 
                     </div>
 
-                </div>
+                </a>
             }
         }
 
     </div>
-
 </div>
+
+<style>
+    .object-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+        .object-card-link:hover {
+            color: inherit;
+        }
+</style>

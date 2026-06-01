@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
 using ParkirajBa.Repositories;
@@ -12,7 +11,6 @@ namespace ParkirajBa.Controllers
     public class ReservationController : Controller
     {
         private readonly ApplicationDbContext _database;
-        
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IParkingRepository _parkingRepository;
 
@@ -26,29 +24,11 @@ namespace ParkirajBa.Controllers
             _parkingRepository = parkingRepository;
         }
 
-        // GET: /Reservation/Index
-        public async Task<IActionResult> Index()
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "User");
-
-            var rezervacije = await _database.Tickets
-                .Include(t => t.ParkingObject)
-                .Where(t => t.ApplicationUserId == user.Id)
-                .OrderByDescending(t => t.IssuedAt)
-                .ToListAsync();
-
-            return View(rezervacije);
-        }
-
         // GET: /Reservation/Create?parkingObjectId=1
         [HttpGet]
         public async Task<IActionResult> Create(int parkingObjectId)
         {
             var parking = await _parkingRepository.GetByIdWithPricingsAsync(parkingObjectId);
-
 
             if (parking == null)
             {
@@ -57,6 +37,7 @@ namespace ParkirajBa.Controllers
             }
 
             ViewBag.Parking = parking;
+            ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
             return View();
         }
 
@@ -65,12 +46,9 @@ namespace ParkirajBa.Controllers
         public async Task<IActionResult> Create(int parkingObjectId, DateTime expiresAt)
         {
             var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return RedirectToAction("Login", "User");
+            if (user == null) return RedirectToAction("Login", "User");
 
             var parking = await _parkingRepository.GetByIdWithPricingsAsync(parkingObjectId);
-
             if (parking == null)
             {
                 ViewBag.Error = "Parking objekat nije pronađen.";
@@ -81,10 +59,10 @@ namespace ParkirajBa.Controllers
             {
                 ViewBag.Error = "Datum isteka mora biti u budućnosti.";
                 ViewBag.Parking = parking;
+                ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
                 return View();
             }
 
-            // Using repository for getting hourly pricing rate
             var hourlyPricing = await _parkingRepository.GetActivePricingAsync(parkingObjectId, PricingType.Hourly);
 
             decimal cijena = 0;
@@ -114,52 +92,45 @@ namespace ParkirajBa.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
 
-            if (user == null)
-                return RedirectToAction("Login", "User");
-
-            var ticket = await _database.Tickets
-                .Include(t => t.ParkingObject)
-                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == user.Id);
+            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
 
             if (ticket == null)
             {
                 ViewBag.Error = "Rezervacija nije pronađena.";
-                return RedirectToAction("Index");
+                return RedirectToAction("Rezervacije", "Home");
             }
 
             return View(ticket);
         }
 
-        // POST: /Reservation/Cancel/5
+        // POST: /Reservation/Cancel
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
 
-            if (user == null)
-                return RedirectToAction("Login", "User");
-
-            var ticket = await _database.Tickets
-                .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == user.Id);
+            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
 
             if (ticket == null)
             {
-                ViewBag.Error = "Rezervacija nije pronađena.";
-                return RedirectToAction("Index");
+                TempData["Error"] = "Rezervacija nije pronađena.";
+                return RedirectToAction("Rezervacije", "Home");
             }
 
             if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt < DateTime.Now)
             {
-                ViewBag.Error = "Nije moguće otkazati isteklu rezervaciju.";
-                return RedirectToAction("Index");
+                TempData["Error"] = "Nije moguće otkazati isteklu rezervaciju.";
+                return RedirectToAction("Details", new { id });
             }
 
             _database.Tickets.Remove(ticket);
             await _database.SaveChangesAsync();
 
-            ViewBag.Success = "Rezervacija je uspješno otkazana.";
-            return RedirectToAction("Index");
+            TempData["Success"] = "Rezervacija je uspješno otkazana.";
+            return RedirectToAction("Rezervacije", "Home");
         }
     }
 }

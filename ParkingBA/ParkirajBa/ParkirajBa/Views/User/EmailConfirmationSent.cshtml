@@ -1,0 +1,48 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Provjerite email";
+}
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ParkirajBa – Provjerite email</title>
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-overlay"></div>
+        <div class="auth-content">
+            <img src="/images/logo.png" class="auth-logo" alt="ParkirajBa" />
+
+            <div class="auth-card" style="text-align: center;">
+                <div style="margin-bottom: 16px;">
+                    <svg viewBox="0 0 24 24" width="56" height="56" fill="#6287f9">
+                        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                    </svg>
+                </div>
+
+                <h2 style="margin: 0 0 12px;">Provjerite email</h2>
+                <p style="color: #666; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+                    Poslali smo vam email sa linkom za potvrdu naloga.<br />
+                    Kliknite na link u emailu da aktivirate nalog.
+                </p>
+
+                @if (ViewBag.Message != null)
+                {
+                    <div class="success-message" style="margin-bottom: 16px;">@ViewBag.Message</div>
+                }
+
+                <p style="color: #aaa; font-size: 13px; margin: 0 0 20px;">
+                    Nije stigao email? Provjerite spam folder.
+                </p>
+
+                <a href="/User/Login" class="btn-blue" style="width: 100%; justify-content: center; box-sizing: border-box;">
+                    Nazad na prijavu
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
