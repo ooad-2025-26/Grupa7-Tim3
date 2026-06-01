@@ -1,27 +1,23 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using ParkirajBa.Services;
 
 namespace ParkirajBa
 {
     public class Program
     {
-        //for roles
         static async Task SeedRolesAsync(WebApplication app)
         {
             using var scope = app.Services.CreateScope();
-
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
             string[] roles = { "User", "Admin", "Owner" };
-
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
-                {
                     await roleManager.CreateAsync(new IdentityRole(role));
-                }
             }
         }
 
@@ -29,7 +25,7 @@ namespace ParkirajBa
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Database Connection
+            // 1. Database
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -37,10 +33,11 @@ namespace ParkirajBa
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // 2. Identity Settings
+            // 2. Identity 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = false;
+                options.SignIn.RequireConfirmedAccount = true;    // required confirmed account
+                options.SignIn.RequireConfirmedEmail = true;
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 3;
                 options.Password.RequireNonAlphanumeric = false;
@@ -56,20 +53,21 @@ namespace ParkirajBa
                 options.LogoutPath = "/User/Logout";
             });
 
+            // 3. Email sender (Identity IEmailSender)
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+            // 4. Repository
             builder.Services.AddScoped<ParkirajBa.Repositories.IParkingRepository, ParkirajBa.Repositories.ParkingRepository>();
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
-            // ——— Build 
             var app = builder.Build();
 
-            await SeedRolesAsync(app); //for roles
+            await SeedRolesAsync(app);
 
             if (app.Environment.IsDevelopment())
-            {
                 app.UseMigrationsEndPoint();
-            }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -82,7 +80,6 @@ namespace ParkirajBa
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // 4. Routing
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
