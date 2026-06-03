@@ -1,0 +1,127 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Nova rezervacija";
+    var parking = ViewBag.Parking as ParkirajBa.Models.ParkingObject;
+    var pricings = ViewBag.Pricings as List<ParkirajBa.Models.Pricing> ?? new();
+    var hourly = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Hourly);
+}
+
+<div class="app-container">
+
+    <div class="tabs">
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab active"><a href="/Home/Rezervacije">Rezervacije</a></div>
+    </div>
+
+    <div class="rezervacije-container">
+
+        <div style="margin-bottom: 24px;">
+            <a href="/Parking/Details/@parking?.ID" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#6287f9"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+                Nazad na parking
+            </a>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div style="background:#fdf0f0;color:#dc3545;padding:12px 16px;border-radius:10px;margin-bottom:16px;">@ViewBag.Error</div>
+        }
+
+        <!-- PARKING INFO -->
+        @if (parking != null)
+        {
+            <div style="background:white;border-radius:16px;padding:22px 28px;box-shadow:0 3px 14px rgba(0,0,0,0.07);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <h2 style="margin:0 0 4px;font-size:20px;color:#222;">@parking.name</h2>
+                    <p style="margin:0;color:#888;font-size:13px;">@parking.address</p>
+                    <p style="margin:6px 0 0;font-size:13px;color:#6287f9;font-weight:600;">
+                        @parking.availableSpots slobodnih mjesta od @parking.totalSpots
+                    </p>
+                </div>
+                @if (hourly != null)
+                {
+                    <div style="text-align:right;">
+                        <div style="font-size:24px;font-weight:700;color:#6287f9;">@hourly.price.ToString("0.00") KM</div>
+                        <div style="font-size:12px;color:#aaa;">po satu</div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- FORM -->
+        <div style="background:white;border-radius:16px;padding:28px 32px;box-shadow:0 3px 14px rgba(0,0,0,0.07);">
+            <h3 style="margin:0 0 20px;font-size:16px;color:#333;font-weight:600;">Odaberi trajanje rezervacije</h3>
+
+            <form method="post" asp-action="Create">
+                <input type="hidden" name="parkingObjectId" value="@parking?.ID" />
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                    <div>
+                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;">Početak *</label>
+                        <input type="datetime-local" name="startsAt" id="startsAt" required
+                               min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                               value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;" />
+                    </div>
+                    <div>
+                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;">Ističe *</label>
+                        <input type="datetime-local" name="expiresAt" id="expiresAt" required
+                               min="@DateTime.Now.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm")"
+                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;" />
+                    </div>
+                </div>
+
+                <!-- PRICE PREVIEW -->
+                <div id="pricePreview" style="display:none;background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:14px;color:#555;" id="durationLabel"></span>
+                        <span style="font-size:20px;font-weight:700;color:#6287f9;" id="priceLabel"></span>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <a href="/Parking/Details/@parking?.ID" class="btn-gray" style="padding:12px 24px;">Odustani</a>
+                    <button type="submit" class="btn-blue" style="padding:12px 28px;">Rezerviši i plati →</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const hourlyRate = @(hourly?.price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) ?? "0");
+        const startsAtEl  = document.getElementById('startsAt');
+        const expiresAtEl = document.getElementById('expiresAt');
+
+        function updatePreview() {
+            const start = new Date(startsAtEl.value);
+            const end   = new Date(expiresAtEl.value);
+            if (!startsAtEl.value || !expiresAtEl.value || end <= start) {
+                document.getElementById('pricePreview').style.display = 'none';
+                return;
+            }
+            const hours = Math.ceil((end - start) / 3600000);
+            const price = (hours * hourlyRate).toFixed(2);
+            document.getElementById('durationLabel').textContent = hours + (hours === 1 ? ' sat' : hours < 5 ? ' sata' : ' sati');
+            document.getElementById('priceLabel').textContent = price + ' KM';
+            document.getElementById('pricePreview').style.display = 'block';
+        }
+
+        startsAtEl.addEventListener('change', function () {
+            // Expires must be at least 30min after start
+            const start = new Date(this.value);
+            start.setMinutes(start.getMinutes() + 30);
+            const pad = n => String(n).padStart(2, '0');
+            const minVal = `${start.getFullYear()}-${pad(start.getMonth()+1)}-${pad(start.getDate())}T${pad(start.getHours())}:${pad(start.getMinutes())}`;
+            expiresAtEl.min = minVal;
+            if (expiresAtEl.value && new Date(expiresAtEl.value) <= new Date(this.value))
+                expiresAtEl.value = '';
+            updatePreview();
+        });
+
+        expiresAtEl.addEventListener('change', updatePreview);
+    </script>
+}
