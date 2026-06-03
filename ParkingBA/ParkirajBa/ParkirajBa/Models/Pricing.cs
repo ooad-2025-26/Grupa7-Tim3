@@ -26,6 +26,8 @@ namespace ParkirajBa.Models {
         [ForeignKey("ParkingObject")]
         public int ParkingObjectID { get; set; }
 
+        public ParkingObject ParkingObject { get; set; }
+
         public Pricing()
         {
         }

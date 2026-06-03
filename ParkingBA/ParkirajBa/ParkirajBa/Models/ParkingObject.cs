@@ -14,7 +14,13 @@ namespace ParkirajBa.Models
         public double latitude { get; set; }
         public double longitude { get; set; }
         public int? totalSpots { get; set; }
-        public int availableSpots {  get; set; }
+
+        /// <summary>
+        /// Slobodna mjesta se računaju dinamički u controlleru/servisu.
+        /// Ovo polje se ažurira pri kreiranju i otkazivanju rezervacije.
+        /// </summary>
+        public int availableSpots { get; set; }
+
         public bool? hasCameras { get; set; }
         public bool? isDisabledAccessible { get; set; }
         public bool? hasEVCharger { get; set; }
@@ -26,6 +32,8 @@ namespace ParkirajBa.Models
         public string? OwnerId { get; set; }
 
         public ApplicationUser Owner { get; set; }
+
+        public ICollection<Pricing> Pricings { get; set; } = new List<Pricing>();
 
 
         public ParkingObject() { 

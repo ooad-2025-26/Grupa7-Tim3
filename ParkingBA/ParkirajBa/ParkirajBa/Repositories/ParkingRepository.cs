@@ -71,7 +71,9 @@ namespace ParkirajBa.Repositories
 
         public async Task<List<ParkingObject>> GetAllWithPricingsAsync()
         {
-            return await _Database.ParkingObject.ToListAsync();
+            return await _Database.ParkingObject
+                .Include(p => p.Pricings)
+                .ToListAsync();
         }
 
         public async Task<List<ParkingObject>> GetAllWithOwnerAsync()
@@ -92,6 +94,7 @@ namespace ParkirajBa.Repositories
         {
             return await _Database.ParkingObject
                 .Where(p => p.OwnerId == ownerId)
+                .Include(p => p.Pricings)
                 .ToListAsync();
         }
 
@@ -104,6 +107,7 @@ namespace ParkirajBa.Repositories
         public async Task<ParkingObject?> GetByIdWithPricingsAsync(int id)
         {
             return await _Database.ParkingObject
+                .Include(p => p.Pricings)
                 .FirstOrDefaultAsync(p => p.ID == id);
         }
 

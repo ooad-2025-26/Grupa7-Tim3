@@ -25,6 +25,12 @@ namespace ParkirajBa.Data
             modelBuilder.Entity<Ticket>()
                 .Property(t => t.Price)
                 .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Pricing>()
+                .HasOne(p => p.ParkingObject)
+                .WithMany(o => o.Pricings)
+                .HasForeignKey(p => p.ParkingObjectID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
