@@ -266,16 +266,14 @@
             AdvancedMarkerElement = markerLibrary.AdvancedMarkerElement;
             PinElement = markerLibrary.PinElement;
 
-        function initMap() {
-            // first coordinates 
-            const pocetnaPozicija = { lat: 43.8563, lng: 18.4131 };
+            const startPosition = { lat: 43.8563, lng: 18.4131 }; // Sarajevo
 
+            // Create a new map from the div with id="map"
             map = new Map(document.getElementById('map'), {
                 center: startPosition,
                 zoom: 14,
-                center: pocetnaPozicija,
-                mapTypeId: 'roadmap',
-                disableDefaultUI: false
+                renderingType: 'VECTOR',
+                mapId: "DEMO_MAP_ID"
             });
 
             loadMarkers(parkingLocations);
@@ -290,6 +288,7 @@
             }
 
             locations.forEach(location => {
+                // JSON.Serialize automatically turns upper case letters into lower case(Latitude ->latitude)
                 const position = {
                     lat: parseFloat(location.latitude),
                     lng: parseFloat(location.longitude)
@@ -303,7 +302,7 @@
                     backgroundColor="#28a745";
 
                 const pinDesign = new PinElement({
-                    background: backgroundColor, //check if accessible
+                    background: backgroundColor, //later check if accessible
                     borderColor: "#ffffff",
                     glyphColor: "#ffffff"
                 });
@@ -315,7 +314,7 @@
                     content: pinDesign.element
                 });
 
-               
+
                 parkingMarkers.push(marker);
 
                 const info = new InfoWindow({
@@ -331,8 +330,6 @@
                     info.open(map, marker);
                 });
             });
-
-        // later we will add fetch request to our API to get parking places
         }
 
         async function refreshMap(locations){
@@ -344,7 +341,7 @@
             await loadMarkers(locations);
         }
 
-        
+
         function readFilterValues(){
             // Read current values from HTML elements
             searchText = document.getElementById("SearchInput").value;
@@ -361,7 +358,7 @@
         async function searchParking(){
             readFilterValues();
 
-            const url = 
+            const url =
             `/Home/Search?searchText=${encodeURIComponent(searchText)}&hasGarage=${hasGarage}&hasEvCharger=${hasEVCharger}&hasCameras=${hasCameras}&isDisabledAccessible=${isDisabledAccessible}&regime=${regime}&maxPrice=${maxPrice}`;
             try {
             // Send background request to the C# controller

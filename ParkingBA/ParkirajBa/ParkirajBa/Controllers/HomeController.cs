@@ -182,5 +182,20 @@ namespace ParkirajBa.Controllers
 
             return user != null ? user.FirstName + " " + user.LastName : "Guest";
         }
+
+        //-- Mapa --
+        [HttpGet]
+        public async Task<IActionResult> Search(string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice)
+        {
+            // Execute query and fetch data
+            var results =
+                await _parkingRepository.FilterParkings(searchText, hasGarage, hasEVCharger, hasCameras, isDisabledAccessible, regime, maxPrice);
+
+            // Return filtered results as JSON to the frontend
+            return Json(results);
+        }
+
+
+        //----
     }
 }
