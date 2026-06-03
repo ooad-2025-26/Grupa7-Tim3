@@ -82,6 +82,11 @@ namespace ParkirajBa.Controllers
             };
 
             _database.Tickets.Add(ticket);
+
+            // Smanji broj slobodnih mjesta
+            if (parking.availableSpots > 0)
+                parking.availableSpots--;
+
             await _database.SaveChangesAsync();
 
             return RedirectToAction("Details", new { id = ticket.Id });
@@ -127,6 +132,12 @@ namespace ParkirajBa.Controllers
             }
 
             _database.Tickets.Remove(ticket);
+
+            // Vrati slobodno mjesto
+            var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
+            if (parking != null && parking.availableSpots < parking.totalSpots)
+                parking.availableSpots++;
+
             await _database.SaveChangesAsync();
 
             TempData["Success"] = "Rezervacija je uspješno otkazana.";
