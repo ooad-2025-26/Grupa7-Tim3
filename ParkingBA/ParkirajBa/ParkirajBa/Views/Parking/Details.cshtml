@@ -150,9 +150,18 @@
 
         <!-- OPTIONS -->
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a href="/Reservation/Create?parkingObjectId=@Model.ID" class="btn-blue" style="padding: 12px 28px;">
-                Rezerviši parking
-            </a>
+            @if (Model.availableSpots > 0)
+            {
+                <a href="/Reservation/Create?parkingObjectId=@Model.ID" class="btn-blue" style="padding: 12px 28px;">
+                    Rezerviši parking
+                </a>
+            }
+            else
+            {
+                <span class="btn-gray" style="padding: 12px 28px; opacity: 0.6; cursor: not-allowed;">
+                    No Spots Available
+                </span>
+            }
         </div>
 
     </div>

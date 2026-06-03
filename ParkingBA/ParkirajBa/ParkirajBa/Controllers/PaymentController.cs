@@ -5,88 +5,136 @@ using System.Net.Mail;
 using QRCoder;
 using System.IO;
 using ParkirajBa.Models;
+using ParkirajBa.Data;
+using ParkirajBa.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace ParkirajBa.Controllers
 {
-    [Authorize] 
+    [Authorize]
     public class PaymentController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly string _parkingBaEmail;
-        private readonly string _parkingBaEmailConnection;
+        private readonly ApplicationDbContext _database;
+        private readonly IParkingRepository _parkingRepository;
+        private readonly string _senderEmail;
+        private readonly string _senderPassword;
 
         public PaymentController(
             UserManager<ApplicationUser> userManager,
+            ApplicationDbContext database,
+            IParkingRepository parkingRepository,
             IConfiguration configuration)
         {
             _userManager = userManager;
-            _parkingBaEmail = configuration["EmailSettings:SenderEmail"]
-                ?? throw new InvalidOperationException("EmailSettings:SenderEmail nije konfigurisan.");
-            _parkingBaEmailConnection = configuration["EmailSettings:AppPassword"]
-                ?? throw new InvalidOperationException("EmailSettings:AppPassword nije konfigurisan.");
+            _database = database;
+            _parkingRepository = parkingRepository;
+            _senderEmail = configuration["EmailSettings:SenderEmail"]
+                ?? throw new InvalidOperationException("EmailSettings:SenderEmail is not configured.");
+            _senderPassword = configuration["EmailSettings:AppPassword"]
+                ?? throw new InvalidOperationException("EmailSettings:AppPassword is not configured.");
         }
 
-        public IActionResult Placanje() => View();
-
-        public IActionResult Potvrda(string ime)
+        // GET: /Payment/Checkout?ticketId=5
+        [HttpGet]
+        public async Task<IActionResult> Checkout(int ticketId)
         {
-            ViewBag.ImeKorisnika = ime;
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+            if (ticket == null) return RedirectToAction("Reservations");
+
+            ViewBag.Ticket = ticket;
+            ViewBag.UserFullName = user.FullName;
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PosaljiEmail()
+        // GET: /Payment/Confirm?cardName=...&ticketId=5
+        [HttpGet]
+        public async Task<IActionResult> Confirm(string cardName, int ticketId)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
 
-            if (currentUser == null)
-                return Unauthorized();
+            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+            if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
 
-            string userEmail = currentUser.Email;
-            string fullName  = currentUser.FullName;
+            ViewBag.CardName = cardName;
+            ViewBag.Ticket = ticket;
+            return View();
+        }
 
-            string uniqueCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+        // POST: /Payment/SendConfirmationEmail
+        [HttpPost]
+        public async Task<IActionResult> SendConfirmationEmail(string cardName, int ticketId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+            if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
+
+            // Mark ticket as paid
+            ticket.IsPaid = true;
+            await _database.SaveChangesAsync();
+
+            string reservationCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+            string parkingName = ticket.ParkingObject?.name ?? "ParkirajBa Parking";
+            string userEmail = user.Email!;
+            string fullName = user.FullName ?? cardName;
 
             try
             {
-                using (MailMessage mail = new MailMessage())
-                {
-                    mail.From = new MailAddress(_parkingBaEmail);
-                    mail.To.Add(userEmail);
-                    mail.Subject = "Potvrda rezervacije - ParkirajBa";
-                    mail.Body    = $"Poštovani/a {fullName},\n\nVaša uplata je uspješna. U prilogu se nalazi Vaš QR kod za pristup parkingu.\n\nKod rezervacije: {uniqueCode}\n\nHvala što koristite ParkirajBa!";
-                    mail.IsBodyHtml = false;
+                using var mail = new MailMessage();
+                mail.From = new MailAddress(_senderEmail, "ParkirajBa");
+                mail.To.Add(userEmail);
+                mail.Subject = $"Reservation Confirmed - {reservationCode}";
+                mail.Body = $"Dear {fullName},\n\n" +
+                            $"Your payment has been successfully processed.\n\n" +
+                            $"Reservation Code: {reservationCode}\n" +
+                            $"Parking: {parkingName}\n" +
+                            $"Amount Paid: {ticket.Price:0.00} KM\n" +
+                            $"Valid Until: {(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")}\n\n" +
+                            $"Please present the attached QR code at the parking entrance.\n\n" +
+                            $"Thank you for using ParkirajBa!";
+                mail.IsBodyHtml = false;
 
-                    using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-                    using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(uniqueCode, QRCodeGenerator.ECCLevel.Q))
-                    using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
-                    {
-                        byte[] qrCodeBytes = qrCode.GetGraphic(20);
+                using var qrGenerator = new QRCodeGenerator();
+                using var qrData = qrGenerator.CreateQrCode(reservationCode, QRCodeGenerator.ECCLevel.Q);
+                using var qrCode = new PngByteQRCode(qrData);
+                byte[] qrBytes = qrCode.GetGraphic(20);
 
-                        using (MemoryStream ms = new MemoryStream(qrCodeBytes))
-                        {
-                            Attachment attachment = new Attachment(ms, "ParkirajBa-QR.png", "image/png");
-                            mail.Attachments.Add(attachment);
+                using var ms = new MemoryStream(qrBytes);
+                var attachment = new Attachment(ms, "ParkirajBa-QR.png", "image/png");
+                mail.Attachments.Add(attachment);
 
-                            using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
-                            {
-                                smtp.Credentials = new NetworkCredential(_parkingBaEmail, _parkingBaEmailConnection);
-                                smtp.EnableSsl   = true;
-                                smtp.Send(mail);
-                            }
-                        }
-                    }
-                }
-                return RedirectToAction("Uspjeh");
+                using var smtp = new SmtpClient("smtp.gmail.com", 587);
+                smtp.Credentials = new NetworkCredential(_senderEmail, _senderPassword);
+                smtp.EnableSsl = true;
+                smtp.Send(mail);
             }
             catch (Exception ex)
             {
-                return Content("Greška pri slanju maila: " + ex.Message);
+                TempData["EmailError"] = "Payment confirmed but email could not be sent: " + ex.Message;
             }
+
+            return RedirectToAction("Success", new { code = reservationCode, ticketId });
         }
 
-        public IActionResult Uspjeh() => View();
+        // GET: /Payment/Success
+        [HttpGet]
+        public async Task<IActionResult> Success(string code, int ticketId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+            ViewBag.ReservationCode = code;
+            ViewBag.Ticket = ticket;
+            return View();
+        }
     }
 }

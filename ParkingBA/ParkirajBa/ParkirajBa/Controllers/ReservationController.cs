@@ -41,9 +41,8 @@ namespace ParkirajBa.Controllers
             return View();
         }
 
-        // POST: /Reservation/Create
         [HttpPost]
-        public async Task<IActionResult> Create(int parkingObjectId, DateTime expiresAt)
+        public async Task<IActionResult> Create(int parkingObjectId, DateTime startsAt, DateTime expiresAt)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
@@ -55,9 +54,12 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Objekti", "Home");
             }
 
-            if (expiresAt <= DateTime.Now)
+            if (startsAt < DateTime.Now.AddMinutes(-5))
+                startsAt = DateTime.Now;
+
+            if (expiresAt <= startsAt)
             {
-                ViewBag.Error = "Datum isteka mora biti u budućnosti.";
+                ViewBag.Error = "Datum isteka mora biti nakon početka rezervacije.";
                 ViewBag.Parking = parking;
                 ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
                 return View();
@@ -68,7 +70,7 @@ namespace ParkirajBa.Controllers
             decimal cijena = 0;
             if (hourlyPricing != null)
             {
-                double sati = (expiresAt - DateTime.Now).TotalHours;
+                double sati = (expiresAt - startsAt).TotalHours;
                 cijena = hourlyPricing.price * (decimal)Math.Ceiling(sati);
             }
 
@@ -76,7 +78,7 @@ namespace ParkirajBa.Controllers
             {
                 ApplicationUserId = user.Id,
                 ParkingObjectId = parkingObjectId,
-                IssuedAt = DateTime.Now,
+                IssuedAt = startsAt,
                 ExpiresAt = expiresAt,
                 Price = cijena
             };
@@ -89,7 +91,7 @@ namespace ParkirajBa.Controllers
 
             await _database.SaveChangesAsync();
 
-            return RedirectToAction("Details", new { id = ticket.Id });
+            return RedirectToAction("Checkout", "Payment", new { ticketId = ticket.Id });
         }
 
         // GET: /Reservation/Details/5
@@ -133,7 +135,7 @@ namespace ParkirajBa.Controllers
 
             _database.Tickets.Remove(ticket);
 
-            // Vrati slobodno mjesto
+            // free up parking slot
             var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
             if (parking != null && parking.availableSpots < parking.totalSpots)
                 parking.availableSpots++;

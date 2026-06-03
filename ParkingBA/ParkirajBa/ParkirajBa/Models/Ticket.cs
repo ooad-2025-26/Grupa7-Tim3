@@ -16,6 +16,8 @@ namespace ParkirajBa.Models
 
         public decimal Price { get; set; }
 
+        public bool IsPaid { get; set; } = false;
+
         public string ApplicationUserId { get; set; }
 
         [ForeignKey("ApplicationUserId")]

@@ -1,0 +1,61 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Payment Successful";
+    ViewBag.HideHeader = true;
+    var ticket = ViewBag.Ticket as ParkirajBa.Models.Ticket;
+    string code = ViewBag.ReservationCode ?? "";
+}
+
+<div class="main-container">
+    <div class="map-layer"><img src="/images/map.png" alt="Map" /></div>
+    <div class="custom-overlay"></div>
+    @await Html.PartialAsync("_PaymentHeader")
+
+    <div class="content-wrapper">
+        <div class="payment-card confirmation-style">
+            <h2 class="pay-title" style="margin-top:30px;">Payment</h2>
+
+            <div class="stepper">
+                <div class="circle active"></div>
+                <div class="line active"></div>
+                <div class="circle active"></div>
+                <div class="line active"></div>
+                <div class="circle active"></div>
+            </div>
+
+            <div class="form-body">
+                @if (TempData["EmailError"] != null)
+                {
+                    <div style="background:#fff3cd;color:#856404;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;">
+                        ⚠️ @TempData["EmailError"]
+                    </div>
+                }
+
+                <div style="margin:20px 0;">
+                    <svg viewBox="0 0 24 24" width="72" height="72" fill="#28a745">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/>
+                    </svg>
+                </div>
+
+                <p style="font-size:16px;font-weight:600;color:#333;margin-bottom:4px;">Payment Successful!</p>
+
+                <div style="background:#f4f7ff;border-radius:10px;padding:14px 18px;margin:16px 0;width:100%;box-sizing:border-box;">
+                    <div style="font-size:11px;color:#aaa;text-transform:uppercase;margin-bottom:4px;">Reservation Code</div>
+                    <div style="font-size:18px;font-weight:700;color:#6287f9;letter-spacing:1px;">@code</div>
+                </div>
+
+                @if (ticket != null)
+                {
+                    <p style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.5;">
+                        Confirmation and QR code sent to your email.<br />
+                        <strong>@(ticket.ParkingObject?.name)</strong> — valid until <strong>@(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</strong>
+                    </p>
+                }
+
+                <div class="footer-buttons">
+                    <a href="/Home/Rezervacije" class="btn-blue" style="width:100%;text-decoration:none;text-align:center;">View My Reservations</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
