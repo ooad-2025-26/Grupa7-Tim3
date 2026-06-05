@@ -72,6 +72,10 @@ namespace ParkirajBa.Controllers
 
         public async Task<IActionResult> Index()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+                return RedirectToAction("Dashboard", "Admin");
+
             ViewBag.FullName = await GetFullNameAsync();
             ViewData["GoogleMapsApiKey"] = _configuration["GoogleMaps:ApiKey"];
 
