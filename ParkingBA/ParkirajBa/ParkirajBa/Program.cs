@@ -21,6 +21,31 @@ namespace ParkirajBa
             }
         }
 
+        static async Task SeedAdminAsync(WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            string adminEmail = "admin@parkirajba.ba";
+            string adminPassword = "Admin123!";
+
+            var existing = await userManager.FindByEmailAsync(adminEmail);
+            if (existing == null)
+            {
+                var admin = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FirstName = "Admin",
+                    LastName = "ParkirajBa",
+                    EmailConfirmed = true
+                };
+                var result = await userManager.CreateAsync(admin, adminPassword);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(admin, "Admin");
+            }
+        }
+
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -65,6 +90,7 @@ namespace ParkirajBa
             var app = builder.Build();
 
             await SeedRolesAsync(app);
+            await SeedAdminAsync(app);
 
             if (app.Environment.IsDevelopment())
                 app.UseMigrationsEndPoint();

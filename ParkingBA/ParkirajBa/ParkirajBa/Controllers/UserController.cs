@@ -58,7 +58,12 @@ namespace ParkirajBa.Controllers
                 user.UserName, password, isPersistent: false, lockoutOnFailure: false);
 
             if (result.Succeeded)
+            {
+                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    return RedirectToAction("Dashboard", "Admin");
+
                 return RedirectToAction("Index", "Home");
+            }
 
             ViewBag.Error = "Pogrešan password.";
             return View();
@@ -89,6 +94,22 @@ namespace ParkirajBa.Controllers
             string ime, string prezime, string email,
             string password, string confirmPassword)
         {
+            ViewBag.HideHeader = true;
+
+            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$");
+
+            if (string.IsNullOrWhiteSpace(ime) || !nameRegex.IsMatch(ime))
+            {
+                ViewBag.Error = "Ime može sadržavati samo slova, razmak i crticu.";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(prezime) || !nameRegex.IsMatch(prezime))
+            {
+                ViewBag.Error = "Prezime može sadržavati samo slova, razmak i crticu.";
+                return View();
+            }
+
             if (password != confirmPassword)
             {
                 ViewBag.Error = "Passwordi se ne poklapaju.";
@@ -167,6 +188,22 @@ namespace ParkirajBa.Controllers
             string ime, string prezime, string email,
             string password, string confirmPassword)
         {
+            ViewBag.HideHeader = true;
+
+            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$");
+
+            if (string.IsNullOrWhiteSpace(ime) || !nameRegex.IsMatch(ime))
+            {
+                ViewBag.Error = "Ime može sadržavati samo slova, razmak i crticu.";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(prezime) || !nameRegex.IsMatch(prezime))
+            {
+                ViewBag.Error = "Prezime može sadržavati samo slova, razmak i crticu.";
+                return View();
+            }
+
             if (password != confirmPassword)
             {
                 ViewBag.Error = "Passwordi se ne poklapaju.";
