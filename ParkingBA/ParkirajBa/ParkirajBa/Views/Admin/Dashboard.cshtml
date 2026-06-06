@@ -1,6 +1,6 @@
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Admin Panel";
 
     int userCount = ViewBag.UserCount ?? 0;
     int ownerCount = ViewBag.OwnerCount ?? 0;
@@ -18,18 +18,18 @@
     decimal revChange = revenueLastMonth > 0 ? Math.Round((revenueThisMonth - revenueLastMonth) / revenueLastMonth * 100, 1) : 0;
 }
 
-<div style="min-height:100vh;background:#f4f7ff;padding:28px 36px;">
+<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
 
-    <!-- HEADER -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
         <div>
-            <h1 style="margin:0;font-size:26px;font-weight:700;color:#1a1a2e;">Admin Dashboard</h1>
-            <p style="margin:4px 0 0;color:#888;font-size:14px;">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+            <h1 style="margin:0;font-size:26px;font-weight:700;color:var(--text);">Admin Panel</h1>
+            <p style="margin:4px 0 0;color:var(--text3);font-size:14px;">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
         </div>
-        <div style="display:flex;gap:10px;">
-            <a href="/Admin/Users" class="adm-btn-outline">Manage Users</a>
-            <a href="/Admin/Parkings" class="adm-btn-outline">Manage Parkings</a>
-            <a href="/Admin/Reservations" class="adm-btn-primary">All Reservations</a>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="/Admin/Users" class="adm-btn-outline">Korisnici</a>
+            <a href="/Admin/Parkings" class="adm-btn-outline">Parkinzi</a>
+            <a href="/Admin/Reservations" class="adm-btn-outline">Rezervacije</a>
+            <a href="/Admin/Reports" class="adm-btn-primary">Izvještaji</a>
         </div>
     </div>
 
@@ -38,62 +38,55 @@
         <div class="adm-alert-success">✓ @TempData["Success"]</div>
     }
 
-    <!-- KPI ROW 1 -->
     <div class="adm-grid-4" style="margin-bottom:20px;">
         <div class="adm-kpi-card">
             <div class="adm-kpi-icon" style="background:#eef1ff;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#6287f9"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#6287f9"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
             </div>
             <div>
                 <div class="adm-kpi-value">@userCount</div>
-                <div class="adm-kpi-label">Total Users</div>
-                <div class="adm-kpi-sub">@regularCount regular · @ownerCount owners</div>
+                <div class="adm-kpi-label">Ukupno korisnika</div>
+                <div class="adm-kpi-sub">@regularCount obični · @ownerCount vlasnika</div>
             </div>
         </div>
-
         <div class="adm-kpi-card">
             <div class="adm-kpi-icon" style="background:#fff3e0;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#ff9800"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#ff9800"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" /></svg>
             </div>
             <div>
                 <div class="adm-kpi-value">@totalTickets</div>
-                <div class="adm-kpi-label">Total Reservations</div>
-                <div class="adm-kpi-sub">@activeTickets active · @paidTickets paid</div>
+                <div class="adm-kpi-label">Ukupno rezervacija</div>
+                <div class="adm-kpi-sub">@activeTickets aktivnih · @paidTickets plaćenih</div>
             </div>
         </div>
-
         <div class="adm-kpi-card">
             <div class="adm-kpi-icon" style="background:#e8f5e9;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#28a745"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#28a745"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" /></svg>
             </div>
             <div>
                 <div class="adm-kpi-value">@totalRevenue.ToString("0.00") KM</div>
-                <div class="adm-kpi-label">Total Revenue</div>
-                <div class="adm-kpi-sub">@revenueThisMonth.ToString("0.00") KM this month</div>
+                <div class="adm-kpi-label">Ukupan prihod</div>
+                <div class="adm-kpi-sub">@revenueThisMonth.ToString("0.00") KM ovaj mjesec</div>
             </div>
         </div>
-
         <div class="adm-kpi-card">
             <div class="adm-kpi-icon" style="background:#fce4ec;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#e91e63"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#e91e63"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z" /></svg>
             </div>
             <div>
                 <div class="adm-kpi-value">@totalParkings</div>
-                <div class="adm-kpi-label">Parking Locations</div>
-                <div class="adm-kpi-sub">@availableSpots / @totalSpots spots free</div>
+                <div class="adm-kpi-label">Parking lokacija</div>
+                <div class="adm-kpi-sub">@availableSpots / @totalSpots mjesta slobodnih</div>
             </div>
         </div>
     </div>
 
-    <!-- REVENUE TREND + OCCUPANCY ROW -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-
-        <!-- Revenue trend -->
         <div class="adm-card">
             <div class="adm-card-header">
-                <span>Monthly Revenue</span>
+                <span>Prihod po mjesecima</span>
                 <span style="font-size:13px;color:@(revChange >= 0 ? "#28a745" : "#dc3545");font-weight:600;">
-                    @(revChange >= 0 ? "↑" : "↓") @Math.Abs(revChange)% vs last month
+                    @(revChange >= 0 ? "↑" : "↓") @Math.Abs(revChange)% vs prošli mjesec
                 </span>
             </div>
             @{
@@ -107,17 +100,15 @@
                     decimal pct = maxRev > 0 ? (decimal)m.Revenue / maxRev * 100 : 0;
                     bool isCurrent = m.Label == DateTime.Now.ToString("MMM yyyy");
                     <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <div style="font-size:10px;color:#888;font-weight:600;">@((decimal)m.Revenue == 0 ? "—" : ((decimal)m.Revenue).ToString("0"))</div>
-                        <div style="width:100%;background:@(isCurrent ? "#6287f9" : "#dde4ff");border-radius:4px 4px 0 0;height:@(Math.Max((double)pct, 4))%;min-height:4px;"></div>
-                        <div style="font-size:9px;color:#aaa;text-align:center;white-space:nowrap;">@(m.Label.ToString().Substring(0, 3))</div>
+                        <div style="font-size:10px;color:var(--text3);font-weight:600;">@((decimal)m.Revenue == 0 ? "—" : ((decimal)m.Revenue).ToString("0"))</div>
+                        <div style="width:100%;background:@(isCurrent ? "var(--accent)" : "var(--surface2)");border-radius:4px 4px 0 0;height:@(Math.Max((double)pct, 4))%;min-height:4px;border:1px solid var(--border);"></div>
+                        <div style="font-size:9px;color:var(--text3);text-align:center;">@(m.Label.ToString().Substring(0, 3))</div>
                     </div>
                 }
             </div>
         </div>
-
-        <!-- Occupancy + quick stats -->
         <div class="adm-card">
-            <div class="adm-card-header"><span>System Overview</span></div>
+            <div class="adm-card-header"><span>Pregled sistema</span></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
                 @{
                     double occ = totalSpots > 0 ? (double)(totalSpots - availableSpots) / totalSpots * 100 : 0;
@@ -125,54 +116,43 @@
                 }
                 <div class="adm-stat-box">
                     <div style="font-size:22px;font-weight:700;color:@occColor;">@occ.ToString("0")<span style="font-size:14px;">%</span></div>
-                    <div style="font-size:11px;color:#888;">Overall Occupancy</div>
-                    <div style="height:5px;background:#f0f0f0;border-radius:3px;margin-top:8px;overflow:hidden;">
+                    <div style="font-size:11px;color:var(--text3);">Popunjenost parkinga</div>
+                    <div style="height:5px;background:var(--surface2);border-radius:3px;margin-top:8px;overflow:hidden;">
                         <div style="height:100%;width:@occ.ToString("0.0")%;background:@occColor;border-radius:3px;"></div>
                     </div>
                 </div>
                 <div class="adm-stat-box">
-                    <div style="font-size:22px;font-weight:700;color:#6287f9;">@(totalTickets > 0 ? ((double)paidTickets / totalTickets * 100).ToString("0") : "0")<span style="font-size:14px;">%</span></div>
-                    <div style="font-size:11px;color:#888;">Payment Rate</div>
-                    <div style="height:5px;background:#f0f0f0;border-radius:3px;margin-top:8px;overflow:hidden;">
-                        <div style="height:100%;width:@(totalTickets > 0 ? ((double)paidTickets / totalTickets * 100).ToString("0.0") : "0")%;background:#6287f9;border-radius:3px;"></div>
+                    <div style="font-size:22px;font-weight:700;color:var(--accent);">@(totalTickets > 0 ? ((double)paidTickets / totalTickets * 100).ToString("0") : "0")<span style="font-size:14px;">%</span></div>
+                    <div style="font-size:11px;color:var(--text3);">Stopa naplate</div>
+                    <div style="height:5px;background:var(--surface2);border-radius:3px;margin-top:8px;overflow:hidden;">
+                        <div style="height:100%;width:@(totalTickets > 0 ? ((double)paidTickets / totalTickets * 100).ToString("0.0") : "0")%;background:var(--accent);border-radius:3px;"></div>
                     </div>
                 </div>
                 <div class="adm-stat-box">
-                    <div style="font-size:18px;font-weight:700;color:#333;">@revenueThisMonth.ToString("0.00")</div>
-                    <div style="font-size:11px;color:#888;">KM this month</div>
+                    <div style="font-size:18px;font-weight:700;color:var(--text);">@revenueThisMonth.ToString("0.00")</div>
+                    <div style="font-size:11px;color:var(--text3);">KM ovaj mjesec</div>
                 </div>
                 <div class="adm-stat-box">
-                    <div style="font-size:18px;font-weight:700;color:#333;">@revenueLastMonth.ToString("0.00")</div>
-                    <div style="font-size:11px;color:#888;">KM last month</div>
+                    <div style="font-size:18px;font-weight:700;color:var(--text);">@revenueLastMonth.ToString("0.00")</div>
+                    <div style="font-size:11px;color:var(--text3);">KM prošli mjesec</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- RECENT RESERVATIONS -->
     <div class="adm-card">
         <div class="adm-card-header">
-            <span>Recent Reservations</span>
-            <a href="/Admin/Reservations" style="font-size:13px;color:#6287f9;font-weight:600;text-decoration:none;">View all →</a>
+            <span>Nedavne rezervacije</span>
+            <a href="/Admin/Reservations" style="font-size:13px;color:var(--accent);font-weight:600;text-decoration:none;">Sve →</a>
         </div>
         @if (!recentTickets.Any())
         {
-            <p style="color:#aaa;text-align:center;padding:20px 0;">No reservations yet.</p>
+            <p style="color:var(--text3);text-align:center;padding:20px 0;">Nema rezervacija.</p>
         }
         else
         {
             <table class="adm-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>User</th>
-                        <th>Parking</th>
-                        <th>Created</th>
-                        <th>Expires</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Korisnik</th><th>Parking</th><th>Kreirano</th><th>Ističe</th><th>Iznos</th><th>Status</th></tr></thead>
                 <tbody>
                     @foreach (var t in recentTickets)
                     {
@@ -180,28 +160,31 @@
                         bool isActive = t.IssuedAt <= now2 && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now2);
                         bool isExpired = t.ExpiresAt.HasValue && t.ExpiresAt < now2;
                         <tr>
-                            <td style="color:#aaa;font-size:12px;">#@t.Id</td>
-                            <td>@(t.ApplicationUser?.FullName ?? t.ApplicationUserId?.Substring(0,8) + "…")</td>
+                            <td style="color:var(--text3);font-size:12px;">#@t.Id</td>
+                            <td>@(t.ApplicationUser?.FullName ?? "—")</td>
                             <td>@(t.ParkingObject?.name ?? "—")</td>
                             <td style="font-size:13px;">@t.IssuedAt.ToString("dd.MM.yyyy HH:mm")</td>
                             <td style="font-size:13px;">@(t.ExpiresAt.HasValue ? t.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</td>
-                            <td style="font-weight:600;color:#6287f9;">@t.Price.ToString("0.00") KM</td>
+                            <td style="font-weight:600;color:var(--accent);">@t.Price.ToString("0.00") KM</td>
                             <td>
                                 @if (t.IsPaid)
                                 {
-                                    <span class="adm-badge green">Paid</span>
+                                    <span class="adm-badge green">Plaćeno</span>
                                 }
                                 else if (isActive)
                                 {
-                                    <span class="adm-badge blue">Active</span>
+
+                                    <span class="adm-badge blue">Aktivno</span>
                                 }
                                 else if (isExpired)
                                 {
-                                    <span class="adm-badge gray">Expired</span>
+
+                                    <span class="adm-badge gray">Isteklo</span>
                                 }
                                 else
                                 {
-                                    <span class="adm-badge orange">Pending</span>
+
+                                    <span class="adm-badge orange">Na čekanju</span>
                                 }
                             </td>
                         </tr>
@@ -212,26 +195,6 @@
     </div>
 </div>
 
-<style>
-    .adm-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-    .adm-kpi-card { background: white; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .adm-kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .adm-kpi-value { font-size: 22px; font-weight: 700; color: #1a1a2e; line-height: 1; }
-    .adm-kpi-label { font-size: 12px; color: #888; margin-top: 2px; }
-    .adm-kpi-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .adm-card { background: white; border-radius: 16px; padding: 22px 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .adm-card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #333; font-size: 15px; margin-bottom: 14px; }
-    .adm-stat-box { background: #f8f9ff; border-radius: 10px; padding: 14px; }
-    .adm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .adm-table th { text-align: left; padding: 10px 14px; background: #f4f7ff; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-    .adm-table td { padding: 12px 14px; border-bottom: 1px solid #f5f5f5; color: #333; }
-    .adm-table tr:last-child td { border-bottom: none; }
-    .adm-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-    .adm-badge.green { background: #d4edda; color: #155724; }
-    .adm-badge.blue { background: #dce8ff; color: #1a56db; }
-    .adm-badge.gray { background: #e9ecef; color: #6c757d; }
-    .adm-badge.orange { background: #fff3cd; color: #856404; }
-    .adm-btn-primary { background: #6287f9; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 600; }
-    .adm-btn-outline { border: 1px solid #ddd; color: #555; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 500; }
-    .adm-alert-success { background: #d4edda; color: #155724; padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; }
-</style>
+@section Scripts {
+    <partial name="_AdminStyles" />
+}

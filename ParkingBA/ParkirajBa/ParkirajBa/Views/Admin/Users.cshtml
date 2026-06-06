@@ -1,102 +1,98 @@
 @model List<ParkirajBa.Controllers.AdminUserViewModel>
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "Upravljanje korisnicima";
     string search = ViewBag.SearchTerm ?? "";
     string roleFilter = ViewBag.RoleFilter ?? "";
 }
 
-<div style="min-height:100vh;background:#f4f7ff;padding:28px 36px;">
+<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
         <div>
-            <a href="/Admin/Dashboard" style="color:#6287f9;font-size:13px;text-decoration:none;">← Back to Dashboard</a>
-            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:#1a1a2e;">User Management</h1>
+            <a href="/Admin/Dashboard" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na panel</a>
+            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Upravljanje korisnicima</h1>
         </div>
-        <span style="background:#6287f9;color:white;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">@Model.Count users</span>
+        <span style="background:var(--accent);color:white;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">@Model.Count korisnika</span>
     </div>
 
-    @if (TempData["Success"] != null) { <div class="adm-alert-success" style="margin-bottom:16px;">✓ @TempData["Success"]</div> }
+    @if (TempData["Success"] != null)
+    {
+        <div class="adm-alert-success" style="margin-bottom:16px;">✓ @TempData["Success"]</div>
+    }
 
-    <!-- FILTERS -->
     <form method="get" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-        <input name="search" value="@search" placeholder="Search name or email..." style="padding:10px 14px;border:1px solid #ddd;border-radius:10px;font-size:13px;width:260px;outline:none;" />
-        <select name="role" style="padding:10px 14px;border:1px solid #ddd;border-radius:10px;font-size:13px;outline:none;">
-            <option value="" selected="@(roleFilter=="" ? "selected" : null)">All Roles</option>
-            <option value="Admin" selected="@(roleFilter=="Admin" ? "selected" : null)">Admin</option>
-            <option value="Owner" selected="@(roleFilter=="Owner" ? "selected" : null)">Owner</option>
-            <option value="User" selected="@(roleFilter=="User" ? "selected" : null)">User</option>
+        <input name="search" value="@search" placeholder="Pretraži ime ili email..." style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;width:260px;outline:none;" />
+        <select name="role" style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;outline:none;">
+            <option value="" selected="@(roleFilter == "" ? "selected" : null)">Sve uloge</option>
+            <option value="Admin" selected="@(roleFilter == "Admin" ? "selected" : null)">Admin</option>
+            <option value="Owner" selected="@(roleFilter == "Owner" ? "selected" : null)">Vlasnik</option>
+            <option value="User" selected="@(roleFilter == "User" ? "selected" : null)">Korisnik</option>
         </select>
-        <button type="submit" style="padding:10px 20px;background:#6287f9;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Search</button>
-        <a href="/Admin/Users" style="padding:10px 20px;border:1px solid #ddd;color:#555;border-radius:10px;font-size:13px;text-decoration:none;">Clear</a>
+        <button type="submit" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Pretraži</button>
+        <a href="/Admin/Users" style="padding:10px 20px;border:1px solid var(--border);color:var(--text2);border-radius:10px;font-size:13px;text-decoration:none;">Poništi</a>
     </form>
 
-    <div class="adm-card" style="background:white;border-radius:16px;padding:0;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-        <table class="adm-table" style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead>
-                <tr>
-                    <th>Name</th><th>Email</th><th>Role</th><th>Email Verified</th><th>Status</th><th>Actions</th>
-                </tr>
-            </thead>
+    <div class="adm-card" style="padding:0;overflow:hidden;">
+        <table class="adm-table">
+            <thead><tr><th>Ime i prezime</th><th>Email</th><th>Uloga</th><th>Email potvrđen</th><th>Status</th><th>Akcije</th></tr></thead>
             <tbody>
                 @foreach (var u in Model)
                 {
                     <tr>
                         <td style="font-weight:600;">@u.FullName</td>
-                        <td style="color:#666;">@u.Email</td>
+                        <td style="color:var(--text2);">@u.Email</td>
                         <td>
                             @foreach (var r in u.Roles)
                             {
-                                <span class="adm-badge @(r=="Admin" ? "orange" : r=="Owner" ? "blue" : "gray")">@r</span>
+                                <span class="adm-badge @(r == "Admin" ? "orange" : r == "Owner" ? "blue" : "gray")">@(r == "Admin" ? "Admin" : r == "Owner" ? "Vlasnik" : "Korisnik")</span>
                             }
                         </td>
-                        <td>
-                            @if (u.EmailConfirmed) { <span class="adm-badge green">Verified</span> }
-                            else { <span class="adm-badge gray">Pending</span> }
-                        </td>
-                        <td>
-                            @if (u.IsLocked) { <span class="adm-badge orange">🔒 Locked</span> }
-                            else { <span class="adm-badge green">Active</span> }
-                        </td>
-                        <td>
-                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                <!-- Change role -->
-                                <form asp-action="ChangeRole" method="post" style="display:flex;gap:4px;">
-                                    <input type="hidden" name="userId" value="@u.Id" />
-                                    <select name="newRole" style="padding:4px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
-                                        <option value="User">User</option>
-                                        <option value="Owner">Owner</option>
-                                        <option value="Admin">Admin</option>
-                                    </select>
-                                    <button type="submit" style="padding:4px 10px;background:#6287f9;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Set</button>
-                                </form>
-                                <!-- Lock/Unlock -->
-                                <form asp-action="ToggleLock" method="post">
-                                    <input type="hidden" name="userId" value="@u.Id" />
-                                    <button type="submit" style="padding:5px 10px;background:@(u.IsLocked ? "#d4edda" : "#fff3cd");color:@(u.IsLocked ? "#155724" : "#856404");border:none;border-radius:6px;font-size:12px;cursor:pointer;">
-                                        @(u.IsLocked ? "Unlock" : "Lock")
-                                    </button>
-                                </form>
-                                <!-- Delete -->
-                                <form asp-action="DeleteUser" method="post" onsubmit="return confirm('Delete this user and all their data?');">
-                                    <input type="hidden" name="userId" value="@u.Id" />
-                                    <button type="submit" style="padding:5px 10px;background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:6px;font-size:12px;cursor:pointer;">Delete</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                        <td>@if(u.EmailConfirmed){
+                            <span class="adm-badge green">Potvrđen</span>
+                        }else
+                        {
+
+                            <span class="adm-badge gray">Na čekanju</span>
+                        }
+                    </td>
+                    <td>@if(u.IsLocked){
+                        <span class="adm-badge orange">🔒 Zaključan</span>
+                    }else
+                    {
+
+                        <span class="adm-badge green">Aktivan</span>
+                    }
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <form asp-action="ChangeRole" method="post" style="display:flex;gap:4px;">
+                            <input type="hidden" name="userId" value="@u.Id" />
+                            <select name="newRole" style="padding:4px 8px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:12px;">
+                                <option value="User">Korisnik</option>
+                                <option value="Owner">Vlasnik</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                            <button type="submit" style="padding:4px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Postavi</button>
+                        </form>
+                        <form asp-action="ToggleLock" method="post">
+                            <input type="hidden" name="userId" value="@u.Id" />
+                            <button type="submit" style="padding:5px 10px;background:@(u.IsLocked ? "#d4edda" : "#fff3cd");color:@(u.IsLocked ? "#155724" : "#856404");border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+                                @(u.IsLocked ? "Otključaj" : "Zaključaj")
+                            </button>
+                        </form>
+                        <form asp-action="DeleteUser" method="post" onsubmit="event.preventDefault();admConfirm(this,'Brisanje korisnika','Jeste li sigurni da želite obrisati korisnika @u.FullName i sve njegove podatke?');">
+                            <input type="hidden" name="userId" value="@u.Id" />
+                            <button type="submit" style="padding:5px 10px;background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:6px;font-size:12px;cursor:pointer;">Obriši</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
 </div>
 
-<style>
-    .adm-table th { text-align:left;padding:12px 16px;background:#f4f7ff;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600; }
-    .adm-table td { padding:13px 16px;border-bottom:1px solid #f5f5f5;color:#333; }
-    .adm-badge { padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block;margin:1px; }
-    .adm-badge.green { background:#d4edda;color:#155724; }
-    .adm-badge.blue { background:#dce8ff;color:#1a56db; }
-    .adm-badge.gray { background:#e9ecef;color:#6c757d; }
-    .adm-badge.orange { background:#fff3cd;color:#856404; }
-    .adm-alert-success { background:#d4edda;color:#155724;padding:12px 18px;border-radius:10px;font-size:14px; }
-</style>
+@section Scripts {
+    <partial name="_AdminStyles" />
+}

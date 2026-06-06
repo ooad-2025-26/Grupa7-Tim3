@@ -98,7 +98,7 @@ input:focus {
 
 .owner-button {
     background: #6287f9;
-    color: white;
+    color: white !important;
     padding: 8px 18px;
     border-radius: 20px;
     font-size: 14px;
@@ -990,14 +990,19 @@ label {
     }
 
 .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    padding: 60px 20px;
-    color: #aaa;
+    min-height: 60vh; 
+    padding: 20px;
 }
 
-    .empty-state svg {
-        margin-bottom: 16px;
-        opacity: 0.4;
+    .empty-state p {
+        margin-top: 16px;
+        color: #64748b;
+        font-size: 15px;
     }
 
     .empty-state p {
