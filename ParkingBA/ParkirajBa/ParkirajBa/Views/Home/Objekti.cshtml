@@ -13,20 +13,26 @@
         <div class="tab"><a href="/Home/Rezervacije">Rezervacije</a></div>
     </div>
 
-    <div class="objects-container">
-
-        @if (Model == null || !Model.Any())
-        {
-            <div class="empty-state">
+    @if (Model == null || !Model.Any())
+    {
+        @* Rješenje: Koristimo izolovan kontejner koji ignoriše potencijalne
+    grid/flex postavke iz .objects-container klase i garantuje centriranje na ekranu.
+    *@
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 50vh; text-align: center; margin: 0 auto; box-sizing: border-box; padding: 60px 20px;">
+            <div style="margin-bottom: 16px; display: inline-block;">
                 <svg viewBox="0 0 24 24" width="64" height="64" fill="#6287f9">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                 </svg>
-                <p>Nema dostupnih parking objekata.</p>
             </div>
-        }
-        else
-        {
-            foreach (var parking in Model)
+            <h3 style="color: #718096; font-size: 19px; font-weight: 500; margin: 0; line-height: 1.4;">
+                Nema dostupnih parking objekata.
+            </h3>
+        </div>
+    }
+    else
+    {
+        <div class="objects-container">
+            @foreach (var parking in Model)
             {
                 <a href="/Parking/Details/@parking.ID" class="object-card object-card-link">
 
@@ -73,9 +79,8 @@
 
                 </a>
             }
-        }
-
-    </div>
+        </div>
+    }
 </div>
 
 <style>
