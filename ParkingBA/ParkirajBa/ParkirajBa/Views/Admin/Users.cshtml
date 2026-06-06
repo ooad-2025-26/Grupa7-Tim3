@@ -6,13 +6,31 @@
     string roleFilter = ViewBag.RoleFilter ?? "";
 }
 
-<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
+<style>
+    .admin-search-input::placeholder {
+        color: #718096 !important;
+        opacity: 1 !important;
+    }
+
+    .btn-custom-postavi {
+        background: #3182ce !important;
+        color: white !important;
+    }
+
+        .btn-custom-postavi:hover {
+            background: #2b6cb0 !important;
+        }
+</style>
+
+<div style="min-height:100vh;background:#f7fafc;padding:28px 36px;">
+    @* GORNJI DIO: Naslov i brojač korisnika *@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
         <div>
-            <a href="/Admin/Dashboard" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na panel</a>
-            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Upravljanje korisnicima</h1>
+            <a href="/Admin/Dashboard" style="color:#3182ce;font-size:13px;text-decoration:none;font-weight:600;">← Nazad na panel</a>
+            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:#1a202c;">Upravljanje korisnicima</h1>
         </div>
-        <span style="background:var(--accent);color:white;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">@Model.Count korisnika</span>
+        @* POPRAVLJENO: Broj korisnika desno sada ima sivu pozadinu i taman tekst *@
+        <span style="background:#e2e8f0;color:#2d3748;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">@Model.Count korisnika</span>
     </div>
 
     @if (TempData["Success"] != null)
@@ -20,77 +38,101 @@
         <div class="adm-alert-success" style="margin-bottom:16px;">✓ @TempData["Success"]</div>
     }
 
+    @* FORMA ZA PRETRAGU: Sva polja i dugmad su sada kontrastni *@
     <form method="get" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-        <input name="search" value="@search" placeholder="Pretraži ime ili email..." style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;width:260px;outline:none;" />
-        <select name="role" style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;outline:none;">
+        <input name="search"
+               value="@search"
+               placeholder="Pretraži ime ili email..."
+               class="admin-search-input"
+               style="padding:10px 14px;border:1px solid #cbd5e1;background:#ffffff;color:#2d3748;border-radius:10px;font-size:13px;width:260px;outline:none;" />
+
+        <select name="role" style="padding:10px 14px;border:1px solid #cbd5e1;background:#ffffff;color:#2d3748;border-radius:10px;font-size:13px;outline:none;">
             <option value="" selected="@(roleFilter == "" ? "selected" : null)">Sve uloge</option>
             <option value="Admin" selected="@(roleFilter == "Admin" ? "selected" : null)">Admin</option>
             <option value="Owner" selected="@(roleFilter == "Owner" ? "selected" : null)">Vlasnik</option>
             <option value="User" selected="@(roleFilter == "User" ? "selected" : null)">Korisnik</option>
         </select>
-        <button type="submit" style="padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Pretraži</button>
-        <a href="/Admin/Users" style="padding:10px 20px;border:1px solid var(--border);color:var(--text2);border-radius:10px;font-size:13px;text-decoration:none;">Poništi</a>
+
+        @* POPRAVLJENO: Dugme "Pretraži" sada ima plavu pozadinu i bijeli tekst *@
+        <button type="submit" style="padding:10px 20px;background:#3182ce;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Pretraži</button>
+        <a href="/Admin/Users" style="padding:10px 20px;border:1px solid #cbd5e1;background:#ffffff;color:#4a5568;border-radius:10px;font-size:13px;text-decoration:none;font-weight:500;">Poništi</a>
     </form>
 
-    <div class="adm-card" style="padding:0;overflow:hidden;">
-        <table class="adm-table">
-            <thead><tr><th>Ime i prezime</th><th>Email</th><th>Uloga</th><th>Email potvrđen</th><th>Status</th><th>Akcije</th></tr></thead>
+    @* TABELA SA KORISNICIMA *@
+    <div class="adm-card" style="padding:0;overflow:hidden;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;">
+        <table class="adm-table" style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f7fafc;border-bottom:1px solid #e2e8f0;text-align:left;">
+                    <th style="padding:14px;color:#4a5568;">Ime i prezime</th>
+                    <th style="padding:14px;color:#4a5568;">Email</th>
+                    <th style="padding:14px;color:#4a5568;">Uloga</th>
+                    <th style="padding:14px;color:#4a5568;">Email potvrđen</th>
+                    <th style="padding:14px;color:#4a5568;">Status</th>
+                    <th style="padding:14px;color:#4a5568;">Akcije</th>
+                </tr>
+            </thead>
             <tbody>
                 @foreach (var u in Model)
                 {
-                    <tr>
-                        <td style="font-weight:600;">@u.FullName</td>
-                        <td style="color:var(--text2);">@u.Email</td>
-                        <td>
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                        <td style="padding:14px;font-weight:600;color:#1a202c;">@u.FullName</td>
+                        <td style="padding:14px;color:#4a5568;">@u.Email</td>
+                        <td style="padding:14px;">
                             @foreach (var r in u.Roles)
                             {
                                 <span class="adm-badge @(r == "Admin" ? "orange" : r == "Owner" ? "blue" : "gray")">@(r == "Admin" ? "Admin" : r == "Owner" ? "Vlasnik" : "Korisnik")</span>
                             }
                         </td>
-                        <td>@if(u.EmailConfirmed){
-                            <span class="adm-badge green">Potvrđen</span>
-                        }else
-                        {
+                        <td style="padding:14px;">
+                            @if (u.EmailConfirmed)
+                            {
+                                <span class="adm-badge green">Potvrđen</span>
+                            }
+                            else
+                            {
+                                <span class="adm-badge gray">Na čekanju</span>
+                            }
+                        </td>
+                        <td style="padding:14px;">
+                            @if (u.IsLocked)
+                            {
+                                <span class="adm-badge orange">🔒 Zaključan</span>
+                            }
+                            else
+                            {
+                                <span class="adm-badge green">Aktivan</span>
+                            }
+                        </td>
+                        <td style="padding:14px;">
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                <form asp-action="ChangeRole" method="post" style="display:flex;gap:4px;margin:0;">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <select name="newRole" style="padding:6px 10px;border:1px solid #cbd5e1;background:#ffffff;color:#2d3748;border-radius:6px;font-size:12px;outline:none;">
+                                        <option value="User">Korisnik</option>
+                                        <option value="Owner">Vlasnik</option>
+                                        <option value="Admin">Admin</option>
+                                    </select>
+                                    <button type="submit" class="btn-custom-postavi" style="padding:6px 12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Postavi</button>
+                                </form>
 
-                            <span class="adm-badge gray">Na čekanju</span>
-                        }
-                    </td>
-                    <td>@if(u.IsLocked){
-                        <span class="adm-badge orange">🔒 Zaključan</span>
-                    }else
-                    {
+                                <form asp-action="ToggleLock" method="post" style="margin:0;">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <button type="submit" style="padding:6px 12px;background:@(u.IsLocked ? "#e6fffa" : "#fffaf0");color:@(u.IsLocked ? "#319795" : "#dd6b20");border:1px solid @(u.IsLocked ? "#b2f5ea" : "#fbd38d");border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
+                                        @(u.IsLocked ? "Otključaj" : "Zaključaj")
+                                    </button>
+                                </form>
 
-                        <span class="adm-badge green">Aktivan</span>
-                    }
-                </td>
-                <td>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                        <form asp-action="ChangeRole" method="post" style="display:flex;gap:4px;">
-                            <input type="hidden" name="userId" value="@u.Id" />
-                            <select name="newRole" style="padding:4px 8px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:12px;">
-                                <option value="User">Korisnik</option>
-                                <option value="Owner">Vlasnik</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                            <button type="submit" style="padding:4px 10px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Postavi</button>
-                        </form>
-                        <form asp-action="ToggleLock" method="post">
-                            <input type="hidden" name="userId" value="@u.Id" />
-                            <button type="submit" style="padding:5px 10px;background:@(u.IsLocked ? "#d4edda" : "#fff3cd");color:@(u.IsLocked ? "#155724" : "#856404");border:none;border-radius:6px;font-size:12px;cursor:pointer;">
-                                @(u.IsLocked ? "Otključaj" : "Zaključaj")
-                            </button>
-                        </form>
-                        <form asp-action="DeleteUser" method="post" onsubmit="event.preventDefault();admConfirm(this,'Brisanje korisnika','Jeste li sigurni da želite obrisati korisnika @u.FullName i sve njegove podatke?');">
-                            <input type="hidden" name="userId" value="@u.Id" />
-                            <button type="submit" style="padding:5px 10px;background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:6px;font-size:12px;cursor:pointer;">Obriši</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-</div>
+                                <form asp-action="DeleteUser" method="post" style="margin:0;" onsubmit="event.preventDefault();admConfirm(this,'Brisanje korisnika','Jeste li sigurni da želite obrisati korisnika @u.FullName i sve njegove podatke?');">
+                                    <input type="hidden" name="userId" value="@u.Id" />
+                                    <button type="submit" style="padding:6px 12px;background:#fff5f5;color:#e53e3e;border:1px solid #fed7d7;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Obriši</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts {
