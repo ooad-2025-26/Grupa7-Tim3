@@ -168,7 +168,47 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Users");
         }
 
-        // ── PARKING MANAGEMENT ────────────────────────────────
+        // ── REPORTS ───────────────────────────────────────────
+        public async Task<IActionResult> Reports(int? year, int? month)
+        {
+            var now = DateTime.Now;
+            int selYear = year ?? now.Year;
+            int selMonth = month ?? now.Month;
+
+            var allTickets = await _database.Tickets
+                .Include(t => t.ParkingObject)
+                .Include(t => t.ApplicationUser)
+                .ToListAsync();
+
+            var filtered = allTickets.Where(t => t.IssuedAt.Year == selYear && t.IssuedAt.Month == selMonth).ToList();
+
+            // Revenue per parking
+            var revenuePerParking = filtered
+                .Where(t => t.IsPaid)
+                .GroupBy(t => t.ParkingObject?.name ?? "Nepoznato")
+                .Select(g => new { Name = g.Key, Revenue = g.Sum(t => t.Price), Count = g.Count() })
+                .OrderByDescending(x => x.Revenue)
+                .ToList();
+
+            // Daily revenue
+            var dailyRevenue = filtered
+                .Where(t => t.IsPaid)
+                .GroupBy(t => t.IssuedAt.Day)
+                .Select(g => new { Day = g.Key, Revenue = g.Sum(t => t.Price) })
+                .OrderBy(x => x.Day)
+                .ToList();
+
+            ViewBag.SelYear = selYear;
+            ViewBag.SelMonth = selMonth;
+            ViewBag.TotalRevenue = filtered.Where(t => t.IsPaid).Sum(t => t.Price);
+            ViewBag.TotalRes = filtered.Count;
+            ViewBag.PaidRes = filtered.Count(t => t.IsPaid);
+            ViewBag.UnpaidRes = filtered.Count(t => !t.IsPaid);
+            ViewBag.RevenuePerParking = revenuePerParking;
+            ViewBag.DailyRevenue = dailyRevenue;
+            ViewBag.Years = Enumerable.Range(now.Year - 3, 4).Reverse().ToList();
+            return View();
+        }
         public async Task<IActionResult> Parkings()
         {
             var parkings = await _parkingRepository.GetAllWithOwnerAsync();
