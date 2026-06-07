@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ParkirajBa.Data;
 
 #nullable disable
 
-namespace ParkirajBa.Data.Migrations
+namespace ParkirajBa.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260603204414_AddIsPaidAndStartsAt")]
-    partial class AddIsPaidAndStartsAt
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,6 +277,26 @@ namespace ParkirajBa.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Owner", (string)null);
+                });
+
+            modelBuilder.Entity("ParkirajBa.Models.ParkingImage", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ParkingObjectID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("ParkingImage", (string)null);
                 });
 
             modelBuilder.Entity("ParkirajBa.Models.ParkingObject", b =>
