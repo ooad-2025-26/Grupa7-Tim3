@@ -198,75 +198,10 @@ namespace ParkirajBa.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register_Owner()
-        {
-            ViewBag.HideHeader = true;
-            return View("RegisterOwner");
-        }
-
-        [HttpGet]
         public IActionResult RegisterOwner()
         {
             ViewBag.HideHeader = true;
             return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RegisterOwner(
-            string ime, string prezime, string email,
-            string password, string confirmPassword)
-        {
-            ViewBag.HideHeader = true;
-
-            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$");
-
-            if (string.IsNullOrWhiteSpace(ime) || !nameRegex.IsMatch(ime))
-            {
-                ViewBag.Error = "Ime može sadržavati samo slova, razmak i crticu.";
-                return View();
-            }
-
-            if (string.IsNullOrWhiteSpace(prezime) || !nameRegex.IsMatch(prezime))
-            {
-                ViewBag.Error = "Prezime može sadržavati samo slova, razmak i crticu.";
-                return View();
-            }
-
-            if (password != confirmPassword)
-            {
-                ViewBag.Error = "Passwordi se ne poklapaju.";
-                return View();
-            }
-
-            var postoji = await _userManager.FindByEmailAsync(email);
-            if (postoji != null)
-            {
-                ViewBag.Error = "Korisnik već postoji.";
-                return View();
-            }
-
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                FirstName = ime,
-                LastName = prezime
-            };
-
-            var result = await _userManager.CreateAsync(user, password);
-
-            if (!result.Succeeded)
-            {
-                ViewBag.Error = string.Join(", ", result.Errors.Select(e => e.Description));
-                return View();
-            }
-
-            await _userManager.AddToRoleAsync(user, "Owner");
-
-            // Email potvrda i za ownera
-            await SendConfirmationEmailAsync(user);
-
-            return View("EmailConfirmationSent");
         }
 
         [HttpGet]
