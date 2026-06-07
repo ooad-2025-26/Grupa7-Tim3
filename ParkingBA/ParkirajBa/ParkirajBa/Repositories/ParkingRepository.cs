@@ -118,6 +118,34 @@ namespace ParkirajBa.Repositories
                 .FirstOrDefaultAsync(p => p.ID == id);
         }
 
+        // --Parking image getters
+        public async Task<List<string?>> GetImagePathsByParkingIDAsync(int parkingID)
+        {
+            var images = await _Database.ParkingImages.Where(i => i.ParkingObjectID == parkingID).ToListAsync();
+            List<string?> paths=new List<string?>();
+            foreach (var image in images)
+            {
+                paths.Add(image.ImagePath);
+            }
+            return paths;
+        }
+
+        public async Task<List<ParkingImage?>?> GetImagesByParkingIDAsync(int parkingID)
+        {
+            return await _Database.ParkingImages.Where(i=> i.ParkingObjectID== parkingID).ToListAsync();
+        }
+
+        public async Task<string?> GetPrimaryImagePathByParkingIDAsync(int parkingID)
+        {
+            ParkingImage img= await GetPrimaryImageByParkingIDAsync(parkingID);
+            return img.ImagePath;
+
+        }
+        public async Task<ParkingImage?> GetPrimaryImageByParkingIDAsync(int parkingID)
+        {
+            return await _Database.ParkingImages.Where(i => i.ParkingObjectID == parkingID).OrderBy(i => i.Position).FirstOrDefaultAsync();
+        }
+
         // ── Prices
 
         public async Task<List<Pricing>> GetPricingsByParkingIdAsync(int parkingObjectId)

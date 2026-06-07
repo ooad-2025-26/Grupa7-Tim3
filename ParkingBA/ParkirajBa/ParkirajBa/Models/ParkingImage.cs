@@ -11,6 +11,8 @@ namespace ParkirajBa.Models
 
         public string ImagePath {  get; set; }
 
+        public int? Position {  get; set; }
+
         [ForeignKey("ParkingObject")]
         public int ParkingObjectID {  get; set; }
 
