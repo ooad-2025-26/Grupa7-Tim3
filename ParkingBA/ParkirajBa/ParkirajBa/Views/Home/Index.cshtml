@@ -433,6 +433,8 @@
 
             refreshMap(parkingLocations);
         }
+        //Initialisation here
+
         const parkingLocations = @Html.Raw(Json.Serialize(Model));
 
         let parkingMarkers=[]
@@ -444,24 +446,27 @@
 
         let map;
 
-        init();
+        let AllowMap =0;
 
-        document.getElementById("SearchInput").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); // Prevent form submission
-                searchParking();
-            }
-        });
+        if(AllowMap!=0){
+            init();
 
-        document.getElementById("HasGarage").addEventListener("change", searchParking);
-        document.getElementById("HasEVCharger").addEventListener("change", searchParking);
-        document.getElementById("HasCameras").addEventListener("change", searchParking);
-        document.getElementById("PriceSlider").addEventListener("change", searchParking);
+            document.getElementById("SearchInput").addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent form submission
+                    searchParking();
+                }
+            });
 
-        document.getElementById("ClearButton").addEventListener("click",clearFilter);
+            document.getElementById("HasGarage").addEventListener("change", searchParking);
+            document.getElementById("HasEVCharger").addEventListener("change", searchParking);
+            document.getElementById("HasCameras").addEventListener("change", searchParking);
+            document.getElementById("PriceSlider").addEventListener("change", searchParking);
 
-        let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
+            document.getElementById("ClearButton").addEventListener("click",clearFilter);
 
+            let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
+        }
 
     </script>
 }
