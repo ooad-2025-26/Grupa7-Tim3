@@ -55,23 +55,11 @@
     <div class="content">
 
         <!-- LEFT LIST -->
-        <div class="sidebar">
-            @foreach (var p in Model)
-            {
-                bool isFull = p.availableSpots <= 0;
-                <a href="/Parking/Details/@p.ID" class="card">
-                    <img src="~/images/parking.jpg" alt="@p.name" />
-                    <div>
-                        <h4>@p.name</h4>
-                        <p>@(p.address ?? "")</p>
-                        <span class="spots-badge" style="background:@(isFull ? "#fde8e8" : "#e8f5e9"); color:@(isFull ? "#c0392b" : "#27ae60");">
-                            @(isFull ? "Popunjeno" : $"{p.availableSpots} slobodnih")
-                        </span>
-                    </div>
-                </a>
-            }
+        <div class="sidebar" id="ParkingSidebar">
+            
         </div>
 
+        
         <!-- MAP -->
         <div class="container mt-4" style="flex: 1; padding: 20px;">
             <div id="map" style="height: calc(100% - 60px); width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
@@ -301,7 +289,7 @@
 
     <!--Initialisation of the map-->
     <script>
-        async function init() {
+        async function Init() {
             // Load the libraries into temporary variables
             const mapsLibrary = await google.maps.importLibrary('maps');
             const markerLibrary = await google.maps.importLibrary("marker");
@@ -322,10 +310,10 @@
                 mapId: "DEMO_MAP_ID"
             });
 
-            loadMarkers(parkingLocations);
+            await LoadMarkers(parkingLocations);
         }
 
-        async function loadMarkers(locations) {
+        async function LoadMarkers(locations) {
 
             // Checking if the list is empty or null
             if (!locations || locations.length === 0) {
@@ -378,17 +366,17 @@
             });
         }
 
-        async function refreshMap(locations){
+        async function RefreshMap(locations){
             parkingMarkers.forEach(marker=>{
                 marker.map=null;
             });
             parkingMarkers=[];
 
-            await loadMarkers(locations);
+            await LoadMarkers(locations);
         }
 
 
-        function readFilterValues(){
+        function ReadFilterValues(){
             // Read current values from HTML elements
             searchText = document.getElementById("SearchInput").value;
             hasGarage = document.getElementById("HasGarage").checked;
@@ -401,8 +389,8 @@
         }
 
 
-        async function searchParking(){
-            readFilterValues();
+        async function SearchParking(){
+            ReadFilterValues();
 
             const url =
             `/Home/Search?searchText=${encodeURIComponent(searchText)}&hasGarage=${hasGarage}&hasEvCharger=${hasEVCharger}&hasCameras=${hasCameras}&isDisabledAccessible=${isDisabledAccessible}&regime=${regime}&maxPrice=${maxPrice}`;
@@ -414,7 +402,8 @@
                 const filteredData = await response.json();
 
                 // Pass new data to the map rendering function
-                refreshMap(filteredData);
+                await RefreshMap(filteredData);
+                await LoadSidebar(filteredData);
 
             } catch (error) {
                 console.error("Error during parking search:", error);
@@ -431,9 +420,68 @@
 
             document.getElementById("PriceSlider").value=50;
 
-            refreshMap(parkingLocations);
+            RefreshMap(parkingLocations);
         }
-        //Initialisation here
+        //-- Image functions here
+        async function GetPrimaryParkingImage(Parking){
+            const GetterPath=`/Home/GetPrimaryParkingImage?parkingID=${Parking.id}`;
+            try{
+                const response= await fetch(GetterPath);
+                if (!response.ok)
+                    throw new Error("Server error occurred.");
+                return await response.json();
+               
+            }catch(error){
+                console.error("Error while retrieving image:" , error);
+                return null;
+            }
+        }
+
+        async function CreateCard(Parking, Image) {
+            const isFull = Parking.availablespots <= 0;
+
+            const backgroundColor = isFull ? "#fde8e8" : "#e8f5e9";
+            const color = isFull ? "#c0392b" : "#27ae60";
+            const spotsText = isFull ? "Popunjeno" : `${Parking.availableSpots} slobodnih`;
+
+            const imageSrc = (Image && Image.imagePath) ? Image.imagePath : "/images/Parkings/NoImageAvailable.png";
+
+            return `
+                <a href="/Parking/Details/${Parking.id}" class="card">
+                    <img src="${imageSrc}" alt="${Parking.name}" />
+                    <div>
+                        <h4>${Parking.name || 'Nepoznat naziv'}</h4>
+                        <p>${Parking.address || ''}</p>
+                        <span class="spots-badge" style="background:${backgroundColor}; color:${color};">
+                            ${spotsText}
+                        </span>
+                    </div>
+                </a>
+            `;
+        }
+
+        async function LoadSidebar(Locations){
+            
+            const sidebar=document.getElementById("ParkingSidebar");
+
+            sidebar.innerHTML='';
+
+            if (!Locations || Locations.length === 0) {
+                sidebar.innerHTML = '<p class="no-data">Nema pronadenih parkinga.</p>';
+                return;
+            }
+
+            for(let p of Locations){
+                const Image = await GetPrimaryParkingImage(p);
+                const Card = await CreateCard(p,Image);
+
+                sidebar.innerHTML +=Card;
+            }
+        }
+        
+        //----
+
+        //-- Initialisation here
 
         const parkingLocations = @Html.Raw(Json.Serialize(Model));
 
@@ -443,30 +491,33 @@
         let PinElement;
         let InfoWindow;
 
+        LoadSidebar(parkingLocations);
 
         let map;
 
-        let AllowMap =0;
+        let AllowMap =1;
 
         if(AllowMap!=0){
-            init();
+            Init();
 
             document.getElementById("SearchInput").addEventListener("keydown", function(event) {
                 if (event.key === "Enter") {
                     event.preventDefault(); // Prevent form submission
-                    searchParking();
+                    SearchParking();
                 }
             });
 
-            document.getElementById("HasGarage").addEventListener("change", searchParking);
-            document.getElementById("HasEVCharger").addEventListener("change", searchParking);
-            document.getElementById("HasCameras").addEventListener("change", searchParking);
-            document.getElementById("PriceSlider").addEventListener("change", searchParking);
+            document.getElementById("HasGarage").addEventListener("change", SearchParking);
+            document.getElementById("HasEVCharger").addEventListener("change", SearchParking);
+            document.getElementById("HasCameras").addEventListener("change", SearchParking);
+            document.getElementById("PriceSlider").addEventListener("change", SearchParking);
 
             document.getElementById("ClearButton").addEventListener("click",clearFilter);
 
             
         }
+
         let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
+        //----
     </script>
 }

@@ -25,8 +25,10 @@ namespace ParkirajBa.Controllers
             var parking = await _parkingRepository.GetByIdAsync(id);
 
             if (parking == null)
+            {
+                Console.WriteLine("Id is " + id);
                 return RedirectToAction("Objekti", "Home");
-
+            }
             var pricings = await _parkingRepository.GetPricingsByParkingIdAsync(id);
             ViewBag.Pricings = pricings;
 
