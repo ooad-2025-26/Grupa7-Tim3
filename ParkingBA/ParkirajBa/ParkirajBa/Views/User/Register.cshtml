@@ -1,4 +1,5 @@
-﻿@{
+﻿@model ParkirajBa.Models.ExtendedRegisterViewModel
+@{
     Layout = "_Layout";
     ViewData["Title"] = "Register";
 }
@@ -22,27 +23,35 @@
                 </div>
             }
 
-            <form method="post" action="/User/Register">
+            @* Dodajemo 'novalidate' da ugasimo fabričke poruke pretraživača na engleskom,
+            te koristimo asp-action i asp-controller za čistiji MVC pristup.
+            *@
+            <form asp-controller="User" asp-action="Register" method="post" novalidate>
 
                 <input type="text"
-                       name="ime"
+                       asp-for="Ime"
                        placeholder="Ime" />
+                <span asp-validation-for="Ime" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
 
                 <input type="text"
-                       name="prezime"
+                       asp-for="Prezime"
                        placeholder="Prezime" />
+                <span asp-validation-for="Prezime" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
 
                 <input type="email"
-                       name="email"
+                       asp-for="Email"
                        placeholder="Email" />
+                <span asp-validation-for="Email" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
 
                 <input type="password"
-                       name="password"
+                       asp-for="Password"
                        placeholder="Password" />
+                <span asp-validation-for="Password" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
 
                 <input type="password"
-                       name="confirmPassword"
+                       asp-for="ConfirmPassword"
                        placeholder="Potvrdi password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
 
                 <button type="submit">
                     Registracija putem Email-a
@@ -71,3 +80,8 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @* Ovo aktivira jQuery klijentsku validaciju i automatski ispisuje poruke na bosanskom iz tvog modela *@
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

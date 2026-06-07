@@ -25,13 +25,16 @@
             </div>
         }
 
-        <form method="post">
+        @* Dodajemo novalidate da pretraživač ne miješa svoje poruke *@
+        <form method="post" novalidate>
 
             <label>Ime</label>
-            <input type="text" name="firstName" value="@Model.FirstName" />
+            <input type="text" asp-for="FirstName" />
+            <span asp-validation-for="FirstName" class="text-danger" style="font-size: 12px; display: block; margin-top: 5px; margin-bottom: 10px; color: #ff6b6b; text-align: left;"></span>
 
             <label>Prezime</label>
-            <input type="text" name="lastName" value="@Model.LastName" />
+            <input type="text" asp-for="LastName" />
+            <span asp-validation-for="LastName" class="text-danger" style="font-size: 12px; display: block; margin-top: 5px; margin-bottom: 10px; color: #ff6b6b; text-align: left;"></span>
 
             <label>Trenutna lozinka</label>
             <input type="password" name="currentPassword" />
@@ -51,3 +54,8 @@
     </div>
 
 </div>
+
+@section Scripts {
+    @* Bez ovoga jQuery klijentska validacija neće raditi odmah na stranici *@
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

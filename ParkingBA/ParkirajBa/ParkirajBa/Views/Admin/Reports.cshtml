@@ -1,0 +1,189 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Izvještaji";
+    int selYear = ViewBag.SelYear;
+    int selMonth = ViewBag.SelMonth;
+    decimal totalRevenue = ViewBag.TotalRevenue ?? 0m;
+    int totalRes = ViewBag.TotalRes ?? 0;
+    int paidRes = ViewBag.PaidRes ?? 0;
+    int unpaidRes = ViewBag.UnpaidRes ?? 0;
+    var revenuePerParking = ViewBag.RevenuePerParking as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var dailyRevenue = ViewBag.DailyRevenue as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var years = ViewBag.Years as List<int> ?? new();
+    string[] monthNames = { "Januar", "Februar", "Mart", "April", "Maj", "Juni", "Juli", "August", "Septembar", "Oktobar", "Novembar", "Decembar" };
+}
+
+<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <a href="/Admin/Dashboard" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na panel</a>
+            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Izvještaji</h1>
+        </div>
+        <form method="get" style="display:flex;gap:10px;align-items:center;">
+            <select name="year" style="padding:9px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;outline:none;">
+                @foreach (var y in years)
+                {
+                    <option value="@y" selected="@(y == selYear ? "selected" : null)">@y</option>
+                }
+            </select>
+            <select name="month" style="padding:9px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;outline:none;">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i" selected="@(i == selMonth ? "selected" : null)">@monthNames[i - 1]</option>
+                }
+            </select>
+            <button type="submit" style="padding:9px 20px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Filtriraj</button>
+        </form>
+    </div>
+
+    <h3 style="margin:0 0 16px;font-size:15px;color:var(--text2);">@monthNames[selMonth - 1] @selYear</h3>
+
+    <!-- KPI -->
+    <div class="adm-grid-4" style="margin-bottom:24px;">
+        <div class="adm-kpi-card">
+            <div class="adm-kpi-icon" style="background:#e8f5e9;">💰</div>
+            <div>
+                <div class="adm-kpi-value">@totalRevenue.ToString("0.00") KM</div>
+                <div class="adm-kpi-label">Ukupan prihod</div>
+            </div>
+        </div>
+        <div class="adm-kpi-card">
+            <div class="adm-kpi-icon" style="background:#eef1ff;">📋</div>
+            <div>
+                <div class="adm-kpi-value">@totalRes</div>
+                <div class="adm-kpi-label">Ukupno rezervacija</div>
+            </div>
+        </div>
+        <div class="adm-kpi-card">
+            <div class="adm-kpi-icon" style="background:#d4edda;">✓</div>
+            <div>
+                <div class="adm-kpi-value">@paidRes</div>
+                <div class="adm-kpi-label">Plaćenih</div>
+            </div>
+        </div>
+        <div class="adm-kpi-card">
+            <div class="adm-kpi-icon" style="background:#fff3cd;">⏳</div>
+            <div>
+                <div class="adm-kpi-value">@unpaidRes</div>
+                <div class="adm-kpi-label">Neplaćenih</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <!-- Revenue per parking -->
+        <div class="adm-card">
+            <div class="adm-card-header"><span>Prihod po parkingu</span></div>
+            @if (!revenuePerParking.Any())
+            {
+                <p style="color:var(--text3);text-align:center;padding:20px 0;">Nema podataka za ovaj period.</p>
+            }
+            else
+            {
+                decimal maxP = 1;
+                foreach (var p in revenuePerParking) { if ((decimal)p.Revenue > maxP) maxP = (decimal)p.Revenue; }
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+                    @foreach (var p in revenuePerParking)
+                    {
+                        double pct = (double)((decimal)p.Revenue / maxP * 100);
+                        <div>
+                            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+                                <span style="color:var(--text);font-weight:500;">@p.Name</span>
+                                <span style="color:var(--accent);font-weight:600;">@((decimal)p.Revenue).ToString("0.00") KM · @p.Count rez.</span>
+                            </div>
+                            <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+                                <div style="height:100%;width:@pct.ToString("0.0")%;background:var(--accent);border-radius:4px;"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Daily revenue chart -->
+        <div class="adm-card">
+            <div class="adm-card-header"><span>Dnevni prihod</span></div>
+            @if (!dailyRevenue.Any())
+            {
+                <p style="color:var(--text3);text-align:center;padding:20px 0;">Nema podataka za ovaj period.</p>
+            }
+            else
+            {
+                decimal maxD = 1;
+                foreach (var d in dailyRevenue) { if ((decimal)d.Revenue > maxD) maxD = (decimal)d.Revenue; }
+                int daysInMonth = DateTime.DaysInMonth(selYear, selMonth);
+                var dailyDict = dailyRevenue.ToDictionary(d => (int)d.Day, d => (decimal)d.Revenue);
+                <div style="display:flex;align-items:flex-end;gap:3px;height:130px;padding-top:10px;overflow-x:auto;">
+                    @for (int d = 1; d <= daysInMonth; d++)
+                    {
+                        decimal rev = dailyDict.ContainsKey(d) ? dailyDict[d] : 0;
+                        double pct = (double)(rev / maxD * 100);
+                        <div style="flex:1;min-width:12px;display:flex;flex-direction:column;align-items:center;gap:2px;" title="@d. — @rev.ToString("0.00") KM">
+                            <div style="width:100%;background:@(rev > 0 ? "var(--accent)" : "var(--surface2)");border-radius:3px 3px 0 0;height:@(Math.Max(pct, 2))%;min-height:2px;border:1px solid var(--border);"></div>
+                            <div style="font-size:8px;color:var(--text3);">@d</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .adm-table th {
+        text-align: left;
+        padding: 12px 16px;
+        background: #f4f7ff;
+        color: #888;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .adm-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f5f5f5;
+        color: #333;
+    }
+
+    .adm-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+        .adm-badge.green {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .adm-badge.blue {
+            background: #dce8ff;
+            color: #1a56db;
+        }
+
+        .adm-badge.gray {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .adm-badge.orange {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+    .adm-alert-success {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+</style>
+
+
+@section Scripts {
+    <partial name="_AdminStyles" />
+}

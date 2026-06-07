@@ -90,58 +90,86 @@ namespace ParkirajBa.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(
-            string ime, string prezime, string email,
-            string password, string confirmPassword)
+        public async Task<IActionResult> Register(ExtendedRegisterViewModel model)
         {
             ViewBag.HideHeader = true;
 
-            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$");
-
-            if (string.IsNullOrWhiteSpace(ime) || !nameRegex.IsMatch(ime))
+            // Ako anotacije iz ValidationModels.cs ne prolaze (npr. lozinka preslaba, pogrešan email)
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Ime može sadržavati samo slova, razmak i crticu.";
-                return View();
+                // Uzimamo prvu grešku i šaljemo je u ViewBag.Error da ne kvari tvoj trenutni dizajn pogleda
+                ViewBag.Error = ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage;
+                return View(model);
             }
 
-            if (string.IsNullOrWhiteSpace(prezime) || !nameRegex.IsMatch(prezime))
-            {
-                ViewBag.Error = "Prezime može sadržavati samo slova, razmak i crticu.";
-                return View();
-            }
-
-            if (password != confirmPassword)
-            {
-                ViewBag.Error = "Passwordi se ne poklapaju.";
-                return View();
-            }
-
-            var postoji = await _userManager.FindByEmailAsync(email);
+            var postoji = await _userManager.FindByEmailAsync(model.Email);
             if (postoji != null)
             {
                 ViewBag.Error = "Korisnik već postoji.";
-                return View();
+                return View(model);
             }
 
             var user = new ApplicationUser
             {
-                UserName = email,
-                Email = email,
-                FirstName = ime,
-                LastName = prezime
+                UserName = model.Email, 
+                Email = model.Email,
+                FirstName = model.Ime,
+                LastName = model.Prezime
             };
 
-            var result = await _userManager.CreateAsync(user, password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
             {
                 ViewBag.Error = string.Join(", ", result.Errors.Select(e => e.Description));
-                return View();
+                return View(model);
             }
 
             await _userManager.AddToRoleAsync(user, "User");
 
             // Pošalji email potvrdu
+            await SendConfirmationEmailAsync(user);
+
+            return View("EmailConfirmationSent");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RegisterOwner(ExtendedRegisterViewModel model)
+        {
+            ViewBag.HideHeader = true;
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Error = ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage;
+                return View(model);
+            }
+
+            var postoji = await _userManager.FindByEmailAsync(model.Email);
+            if (postoji != null)
+            {
+                ViewBag.Error = "Korisnik već postoji.";
+                return View(model);
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FirstName = model.Ime,
+                LastName = model.Prezime
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (!result.Succeeded)
+            {
+                ViewBag.Error = string.Join(", ", result.Errors.Select(e => e.Description));
+                return View(model);
+            }
+
+            await _userManager.AddToRoleAsync(user, "Owner");
+
+            // Email potvrda i za ownera
             await SendConfirmationEmailAsync(user);
 
             return View("EmailConfirmationSent");
@@ -257,6 +285,20 @@ namespace ParkirajBa.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login");
 
+            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$");
+
+            if (string.IsNullOrWhiteSpace(firstName) || !nameRegex.IsMatch(firstName))
+            {
+                ViewBag.Error = "Ime može sadržavati samo slova, razmak i crticu.";
+                return View(user);
+            }
+
+            if (string.IsNullOrWhiteSpace(lastName) || !nameRegex.IsMatch(lastName))
+            {
+                ViewBag.Error = "Prezime može sadržavati samo slova, razmak i crticu.";
+                return View(user);
+            }
+
             user.FirstName = firstName;
             user.LastName = lastName;
 
@@ -278,7 +320,17 @@ namespace ParkirajBa.Controllers
                 var passwordResult = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
                 if (!passwordResult.Succeeded)
                 {
-                    ViewBag.Error = string.Join(", ", passwordResult.Errors.Select(e => e.Description));
+                    var prvaGreska = passwordResult.Errors.First();
+
+                    if (prvaGreska.Code == "PasswordMismatch")
+                    {
+                        ViewBag.Error = "Trenutna lozinka nije ispravna.";
+                    }
+                    else
+                    {
+                        ViewBag.Error = "Lozinka ne ispunjava sigurnosne uslove (mora imati velika, mala slova i brojeve).";
+                    }
+
                     return View(user);
                 }
             }

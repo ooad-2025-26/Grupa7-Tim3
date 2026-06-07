@@ -27,7 +27,7 @@
         <input type="text" id="SearchInput" placeholder="Search..." />
 
         <label><input type="checkbox" id="HasGarage" /> Garaža</label>
-        <label><input type="checkbox" id= "HasEVCharger" /> EV punjač</label>
+        <label><input type="checkbox" id="HasEVCharger" /> EV punjač</label>
         <label><input type="checkbox" id="HasCameras" /> Video nadzor</label>
         <label><input type="checkbox" id="isDisabledAccessible" /> Dostupno osobama sa invaliditetom</label>
 
@@ -56,15 +56,19 @@
 
         <!-- LEFT LIST -->
         <div class="sidebar">
-            @for (int i = 0; i < 5; i++)
+            @foreach (var p in Model)
             {
-                <div class="card">
-                    <img src="~/images/parking.jpg" />
+                bool isFull = p.availableSpots <= 0;
+                <a href="/Parking/Details/@p.ID" class="card">
+                    <img src="~/images/parking.jpg" alt="@p.name" />
                     <div>
-                        <h4>Parking @i</h4>
-                        <p>Kratki opis parkinga...</p>
+                        <h4>@p.name</h4>
+                        <p>@(p.address ?? "")</p>
+                        <span class="spots-badge" style="background:@(isFull ? "#fde8e8" : "#e8f5e9"); color:@(isFull ? "#c0392b" : "#27ae60");">
+                            @(isFull ? "Popunjeno" : $"{p.availableSpots} slobodnih")
+                        </span>
                     </div>
-                </div>
+                </a>
             }
         </div>
 
@@ -76,6 +80,48 @@
         <!--------->
     </div>
 </div>
+
+
+<style>
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 64px);
+    }
+
+    .content {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    #map {
+        height: 100%;
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .filters output {
+        font-weight: 600;
+        color: var(--accent);
+        min-width: 28px;
+    }
+
+    #ClearButton {
+        padding: 7px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text2);
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+        #ClearButton:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+</style>
 <style>
     body {
         margin: 0;

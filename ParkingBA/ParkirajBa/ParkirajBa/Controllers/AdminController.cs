@@ -33,14 +33,14 @@ namespace ParkirajBa.Controllers
         {
             var now = DateTime.Now;
 
-            // Users
+            // Korisnici
             var allUsers = _userManager.Users.ToList();
             var userCount = allUsers.Count;
             var ownerCount = (await _userManager.GetUsersInRoleAsync("Owner")).Count;
             var adminCount = (await _userManager.GetUsersInRoleAsync("Admin")).Count;
             var regularCount = userCount - ownerCount - adminCount;
 
-            // Tickets
+            // Karte/Rezervacije
             var tickets = await _database.Tickets.Include(t => t.ParkingObject).ToListAsync();
             var activeTickets = tickets.Count(t => t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
             var expiredTickets = tickets.Count(t => t.ExpiresAt.HasValue && t.ExpiresAt < now);
@@ -49,16 +49,16 @@ namespace ParkirajBa.Controllers
             var revenueThisMonth = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == now.Month && t.IssuedAt.Year == now.Year).Sum(t => t.Price);
             var revenueLastMonth = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == now.AddMonths(-1).Month && t.IssuedAt.Year == now.AddMonths(-1).Year).Sum(t => t.Price);
 
-            // Parkings
+            // Parkinzi
             var parkings = await _parkingRepository.GetAllAsync();
             var totalParkings = parkings.Count;
             var totalSpots = parkings.Sum(p => p.totalSpots ?? 0);
             var availableSpots = parkings.Sum(p => p.availableSpots);
 
-            // Recent activity
+            // Nedavne aktivnosti
             var recentTickets = tickets.OrderByDescending(t => t.IssuedAt).Take(10).ToList();
 
-            // Revenue by month (last 6)
+            // Zarada po mjesecima (posljednjih 6)
             var revenueByMonth = Enumerable.Range(0, 6)
                 .Select(i => now.AddMonths(-i))
                 .Select(m => new
@@ -89,7 +89,7 @@ namespace ParkirajBa.Controllers
             return View();
         }
 
-        // ── USER MANAGEMENT ───────────────────────────────────
+        // ── UPRAVLJANJE KORISNICIMA ───────────────────────────────────
         public async Task<IActionResult> Users(string? search, string? role)
         {
             var allUsers = _userManager.Users.ToList();
@@ -120,7 +120,7 @@ namespace ParkirajBa.Controllers
             return View(result);
         }
 
-        // POST: Toggle user lock
+        // POST: Zaključaj/Otključaj korisnika
         [HttpPost]
         public async Task<IActionResult> ToggleLock(string userId)
         {
@@ -128,15 +128,20 @@ namespace ParkirajBa.Controllers
             if (user == null) return NotFound();
 
             if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.Now)
+            {
                 await _userManager.SetLockoutEndDateAsync(user, null);
+                TempData["Success"] = "Korisnički račun je uspješno otključan.";
+            }
             else
+            {
                 await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddYears(100));
+                TempData["Success"] = "Korisnički račun je uspješno zaključan.";
+            }
 
-            TempData["Success"] = "User lock status updated.";
             return RedirectToAction("Users");
         }
 
-        // POST: Change user role
+        // POST: Promjena uloge korisnika
         [HttpPost]
         public async Task<IActionResult> ChangeRole(string userId, string newRole)
         {
@@ -145,37 +150,82 @@ namespace ParkirajBa.Controllers
 
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            // Prevod naziva uloge za ispisanu poruku
+            string prikazUloge = newRole == "Owner" ? "Vlasnik" : (newRole == "Admin" ? "Administrator" : "Korisnik");
+
             await _userManager.AddToRoleAsync(user, newRole);
 
-            TempData["Success"] = $"Role changed to {newRole}.";
+            TempData["Success"] = $"Uloga korisnika uspješno promijenjena u {prikazUloge}.";
             return RedirectToAction("Users");
         }
 
-        // POST: Delete user
+        // POST: Brisanje korisnika
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
-            // Remove their tickets first
+            // Prvo brišemo njihove karte/rezervacije zbog stranog ključa
             var tickets = _database.Tickets.Where(t => t.ApplicationUserId == userId);
             _database.Tickets.RemoveRange(tickets);
             await _database.SaveChangesAsync();
 
             await _userManager.DeleteAsync(user);
-            TempData["Success"] = "User deleted.";
+            TempData["Success"] = "Korisnik je uspješno obrisan iz sistema.";
             return RedirectToAction("Users");
         }
 
-        // ── PARKING MANAGEMENT ────────────────────────────────
+        // ── IZVJEŠTAJI ───────────────────────────────────────────
+        public async Task<IActionResult> Reports(int? year, int? month)
+        {
+            var now = DateTime.Now;
+            int selYear = year ?? now.Year;
+            int selMonth = month ?? now.Month;
+
+            var allTickets = await _database.Tickets
+                .Include(t => t.ParkingObject)
+                .Include(t => t.ApplicationUser)
+                .ToListAsync();
+
+            var filtered = allTickets.Where(t => t.IssuedAt.Year == selYear && t.IssuedAt.Month == selMonth).ToList();
+
+            // Zarada po parkingu
+            var revenuePerParking = filtered
+                .Where(t => t.IsPaid)
+                .GroupBy(t => t.ParkingObject?.name ?? "Nepoznato")
+                .Select(g => new { Name = g.Key, Revenue = g.Sum(t => t.Price), Count = g.Count() })
+                .OrderByDescending(x => x.Revenue)
+                .ToList();
+
+            // Dnevna zarada
+            var dailyRevenue = filtered
+                .Where(t => t.IsPaid)
+                .GroupBy(t => t.IssuedAt.Day)
+                .Select(g => new { Day = g.Key, Revenue = g.Sum(t => t.Price) })
+                .OrderBy(x => x.Day)
+                .ToList();
+
+            ViewBag.SelYear = selYear;
+            ViewBag.SelMonth = selMonth;
+            ViewBag.TotalRevenue = filtered.Where(t => t.IsPaid).Sum(t => t.Price);
+            ViewBag.TotalRes = filtered.Count;
+            ViewBag.PaidRes = filtered.Count(t => t.IsPaid);
+            ViewBag.UnpaidRes = filtered.Count(t => !t.IsPaid);
+            ViewBag.RevenuePerParking = revenuePerParking;
+            ViewBag.DailyRevenue = dailyRevenue;
+            ViewBag.Years = Enumerable.Range(now.Year - 3, 4).Reverse().ToList();
+            return View();
+        }
+
         public async Task<IActionResult> Parkings()
         {
             var parkings = await _parkingRepository.GetAllWithOwnerAsync();
             return View(parkings);
         }
 
-        // POST: Delete parking
+        // POST: Brisanje parkinga
         [HttpPost]
         public async Task<IActionResult> DeleteParking(int id)
         {
@@ -187,11 +237,11 @@ namespace ParkirajBa.Controllers
             _database.ParkingObject.Remove(parking);
             await _database.SaveChangesAsync();
 
-            TempData["Success"] = "Parking deleted.";
+            TempData["Success"] = "Parking objekat je uspješno uklonjen iz sistema.";
             return RedirectToAction("Parkings");
         }
 
-        // ── RESERVATIONS ──────────────────────────────────────
+        // ── REZERVACIJE ──────────────────────────────────────
         public async Task<IActionResult> Reservations(string? status)
         {
             var now = DateTime.Now;
@@ -214,7 +264,7 @@ namespace ParkirajBa.Controllers
             return View(tickets);
         }
 
-        // POST: Delete reservation
+        // POST: Brisanje rezervacije
         [HttpPost]
         public async Task<IActionResult> DeleteReservation(int id)
         {
@@ -227,7 +277,7 @@ namespace ParkirajBa.Controllers
             _database.Tickets.Remove(ticket);
             await _database.SaveChangesAsync();
 
-            TempData["Success"] = "Reservation deleted.";
+            TempData["Success"] = "Rezervacija je uspješno obrisana, a parking mjesto oslobođeno.";
             return RedirectToAction("Reservations");
         }
     }
