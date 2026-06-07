@@ -187,7 +187,7 @@ namespace ParkirajBa.Controllers
             return user != null ? user.FirstName + " " + user.LastName : "Guest";
         }
 
-        //-- Mapa --
+        //-- Map --
         [HttpGet]
         public async Task<IActionResult> Search(string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice)
         {
@@ -199,6 +199,15 @@ namespace ParkirajBa.Controllers
             return Json(results);
         }
 
+
+        //----
+
+        //-- Parking Image --
+        [HttpGet]
+        public async Task<IActionResult> GetPrimaryParkingImage(int parkingID)
+        {
+            return Json(await _parkingRepository.GetPrimaryImageByParkingIDAsync(parkingID));
+        }
 
         //----
     }

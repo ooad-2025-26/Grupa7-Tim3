@@ -56,22 +56,10 @@
 
         <!-- LEFT LIST -->
         <div class="sidebar" id="ParkingSidebar">
-            @foreach (var p in Model)
-            {
-                bool isFull = p.availableSpots <= 0;
-                <a href="/Parking/Details/@p.ID" class="card">
-                    <img src="~/images/parking.jpg" alt="@p.name" />
-                    <div>
-                        <h4>@p.name</h4>
-                        <p>@(p.address ?? "")</p>
-                        <span class="spots-badge" style="background:@(isFull ? "#fde8e8" : "#e8f5e9"); color:@(isFull ? "#c0392b" : "#27ae60");">
-                            @(isFull ? "Popunjeno" : $"{p.availableSpots} slobodnih")
-                        </span>
-                    </div>
-                </a>
-            }
+            
         </div>
 
+        
         <!-- MAP -->
         <div class="container mt-4" style="flex: 1; padding: 20px;">
             <div id="map" style="height: calc(100% - 60px); width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
@@ -322,7 +310,7 @@
                 mapId: "DEMO_MAP_ID"
             });
 
-            LoadMarkers(parkingLocations);
+            await LoadMarkers(parkingLocations);
         }
 
         async function LoadMarkers(locations) {
@@ -414,7 +402,8 @@
                 const filteredData = await response.json();
 
                 // Pass new data to the map rendering function
-                RefreshMap(filteredData);
+                await RefreshMap(filteredData);
+                await LoadSidebar(filteredData);
 
             } catch (error) {
                 console.error("Error during parking search:", error);
@@ -433,9 +422,65 @@
 
             RefreshMap(parkingLocations);
         }
+        //-- Image functions here
+        async function GetPrimaryParkingImage(Parking){
+            const GetterPath=`/Home/GetPrimaryParkingImage?parkingID=${Parking.id}`;
+            try{
+                const response= await fetch(GetterPath);
+                if (!response.ok)
+                    throw new Error("Server error occurred.");
+                return await response.json();
+               
+            }catch(error){
+                console.error("Error while retrieving image:" , error);
+                return null;
+            }
+        }
+
+        async function CreateCard(Parking, Image) {
+            const isFull = Parking.availablespots <= 0;
+
+            const backgroundColor = isFull ? "#fde8e8" : "#e8f5e9";
+            const color = isFull ? "#c0392b" : "#27ae60";
+            const spotsText = isFull ? "Popunjeno" : `${Parking.availableSpots} slobodnih`;
+
+            const imageSrc = (Image && Image.imagePath) ? Image.imagePath : "/images/Parkings/NoImageAvailable.png";
+
+            return `
+                <a href="/Parking/Details/${Parking.id}" class="card">
+                    <img src="${imageSrc}" alt="${Parking.name}" />
+                    <div>
+                        <h4>${Parking.name || 'Nepoznat naziv'}</h4>
+                        <p>${Parking.address || ''}</p>
+                        <span class="spots-badge" style="background:${backgroundColor}; color:${color};">
+                            ${spotsText}
+                        </span>
+                    </div>
+                </a>
+            `;
+        }
+
+        async function LoadSidebar(Locations){
+            
+            const sidebar=document.getElementById("ParkingSidebar");
+
+            sidebar.innerHTML='';
+
+            if (!Locations || Locations.length === 0) {
+                sidebar.innerHTML = '<p class="no-data">Nema pronadenih parkinga.</p>';
+                return;
+            }
+
+            for(let p of Locations){
+                const Image = await GetPrimaryParkingImage(p);
+                const Card = await CreateCard(p,Image);
+
+                sidebar.innerHTML +=Card;
+            }
+        }
         
-        async function GetParkingImage()
-        
+        //----
+
         //-- Initialisation here
 
         const parkingLocations = @Html.Raw(Json.Serialize(Model));
@@ -446,10 +491,11 @@
         let PinElement;
         let InfoWindow;
 
+        LoadSidebar(parkingLocations);
 
         let map;
 
-        let AllowMap =0;
+        let AllowMap =1;
 
         if(AllowMap!=0){
             Init();
@@ -472,5 +518,6 @@
         }
 
         let searchText,hasGarage,hasEVCharger,hasCameras,isDisabledAccessible,regime,maxPrice;
+        //----
     </script>
 }
