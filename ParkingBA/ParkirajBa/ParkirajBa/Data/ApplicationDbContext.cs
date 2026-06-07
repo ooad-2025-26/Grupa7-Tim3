@@ -13,6 +13,8 @@ namespace ParkirajBa.Data
         public DbSet<AdminProfile> Administrators { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
 
+        public DbSet<ParkingImage> ParkingImages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -21,6 +23,7 @@ namespace ParkirajBa.Data
             modelBuilder.Entity<Pricing>().ToTable("Pricing");
             modelBuilder.Entity<OwnerProfile>().ToTable("Owner");
             modelBuilder.Entity<AdminProfile>().ToTable("Administrator");
+            modelBuilder.Entity<ParkingImage>().ToTable("ParkingImage");
 
             modelBuilder.Entity<Ticket>()
                 .Property(t => t.Price)
