@@ -37,6 +37,17 @@ namespace ParkirajBa.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                ViewBag.Error = string.IsNullOrWhiteSpace(email) && string.IsNullOrWhiteSpace(password)
+                    ? "Niste unijeli email niti lozinku."
+                    : string.IsNullOrWhiteSpace(email)
+                        ? "Niste unijeli email adresu."
+                        : "Niste unijeli lozinku.";
+                ViewBag.HideHeader = true;
+                return View();
+            }
+
             var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
@@ -111,7 +122,7 @@ namespace ParkirajBa.Controllers
 
             var user = new ApplicationUser
             {
-                UserName = model.Email, 
+                UserName = model.Email,
                 Email = model.Email,
                 FirstName = model.Ime,
                 LastName = model.Prezime

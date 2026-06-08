@@ -28,19 +28,16 @@ namespace ParkirajBa.Controllers
             _parkingRepository = parkingRepository;
         }
 
-        // ── DASHBOARD ─────────────────────────────────────────
         public async Task<IActionResult> Dashboard()
         {
             var now = DateTime.Now;
 
-            // Korisnici
             var allUsers = _userManager.Users.ToList();
             var userCount = allUsers.Count;
             var ownerCount = (await _userManager.GetUsersInRoleAsync("Owner")).Count;
             var adminCount = (await _userManager.GetUsersInRoleAsync("Admin")).Count;
             var regularCount = userCount - ownerCount - adminCount;
 
-            // Karte/Rezervacije
             var tickets = await _database.Tickets.Include(t => t.ParkingObject).ToListAsync();
             var activeTickets = tickets.Count(t => t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
             var expiredTickets = tickets.Count(t => t.ExpiresAt.HasValue && t.ExpiresAt < now);
@@ -49,16 +46,13 @@ namespace ParkirajBa.Controllers
             var revenueThisMonth = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == now.Month && t.IssuedAt.Year == now.Year).Sum(t => t.Price);
             var revenueLastMonth = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == now.AddMonths(-1).Month && t.IssuedAt.Year == now.AddMonths(-1).Year).Sum(t => t.Price);
 
-            // Parkinzi
             var parkings = await _parkingRepository.GetAllAsync();
             var totalParkings = parkings.Count;
             var totalSpots = parkings.Sum(p => p.totalSpots ?? 0);
             var availableSpots = parkings.Sum(p => p.availableSpots);
 
-            // Nedavne aktivnosti
             var recentTickets = tickets.OrderByDescending(t => t.IssuedAt).Take(10).ToList();
 
-            // Zarada po mjesecima (posljednjih 6)
             var revenueByMonth = Enumerable.Range(0, 6)
                 .Select(i => now.AddMonths(-i))
                 .Select(m => new
@@ -89,7 +83,6 @@ namespace ParkirajBa.Controllers
             return View();
         }
 
-        // ── UPRAVLJANJE KORISNICIMA ───────────────────────────────────
         public async Task<IActionResult> Users(string? search, string? role)
         {
             var allUsers = _userManager.Users.ToList();
@@ -120,7 +113,6 @@ namespace ParkirajBa.Controllers
             return View(result);
         }
 
-        // POST: Zaključaj/Otključaj korisnika
         [HttpPost]
         public async Task<IActionResult> ToggleLock(string userId)
         {
@@ -141,7 +133,6 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Users");
         }
 
-        // POST: Promjena uloge korisnika
         [HttpPost]
         public async Task<IActionResult> ChangeRole(string userId, string newRole)
         {
@@ -151,7 +142,6 @@ namespace ParkirajBa.Controllers
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-            // Prevod naziva uloge za ispisanu poruku
             string prikazUloge = newRole == "Owner" ? "Vlasnik" : (newRole == "Admin" ? "Administrator" : "Korisnik");
 
             await _userManager.AddToRoleAsync(user, newRole);
@@ -160,14 +150,12 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Users");
         }
 
-        // POST: Brisanje korisnika
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
-            // Prvo brišemo njihove karte/rezervacije zbog stranog ključa
             var tickets = _database.Tickets.Where(t => t.ApplicationUserId == userId);
             _database.Tickets.RemoveRange(tickets);
             await _database.SaveChangesAsync();
@@ -177,7 +165,6 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Users");
         }
 
-        // ── IZVJEŠTAJI ───────────────────────────────────────────
         public async Task<IActionResult> Reports(int? year, int? month)
         {
             var now = DateTime.Now;
@@ -191,7 +178,6 @@ namespace ParkirajBa.Controllers
 
             var filtered = allTickets.Where(t => t.IssuedAt.Year == selYear && t.IssuedAt.Month == selMonth).ToList();
 
-            // Zarada po parkingu
             var revenuePerParking = filtered
                 .Where(t => t.IsPaid)
                 .GroupBy(t => t.ParkingObject?.name ?? "Nepoznato")
@@ -199,7 +185,6 @@ namespace ParkirajBa.Controllers
                 .OrderByDescending(x => x.Revenue)
                 .ToList();
 
-            // Dnevna zarada
             var dailyRevenue = filtered
                 .Where(t => t.IsPaid)
                 .GroupBy(t => t.IssuedAt.Day)
@@ -225,7 +210,6 @@ namespace ParkirajBa.Controllers
             return View(parkings);
         }
 
-        // POST: Brisanje parkinga
         [HttpPost]
         public async Task<IActionResult> DeleteParking(int id)
         {
@@ -241,7 +225,6 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Parkings");
         }
 
-        // ── REZERVACIJE ──────────────────────────────────────
         public async Task<IActionResult> Reservations(string? status)
         {
             var now = DateTime.Now;
@@ -264,7 +247,6 @@ namespace ParkirajBa.Controllers
             return View(tickets);
         }
 
-        // POST: Brisanje rezervacije
         [HttpPost]
         public async Task<IActionResult> DeleteReservation(int id)
         {

@@ -11,13 +11,13 @@
     <!-- NAV -->
     <div class="tabs">
         <div class="tab active">
-            <a href="/Home/Index">Mapa</a>
+            <a href="/Home/Index">🗺️ Mapa</a>
         </div>
         <div class="tab">
-            <a href="/Home/Objekti">Objekti</a>
+            <a href="/Home/Objekti">🅿️ Objekti</a>
         </div>
         <div class="tab">
-            <a href="/Home/Rezervacije">Rezervacije</a>
+            <a href="/Home/Rezervacije">🎫 Rezervacije</a>
         </div>
     </div>
 
@@ -56,7 +56,6 @@
 
         <!-- LEFT LIST -->
         <div class="sidebar" id="ParkingSidebar">
-            
         </div>
 
         
@@ -133,11 +132,11 @@
         transition: 0.3s;
     }
 
-    .tab.active {
-        background: #6287f9; 
-        color: white;
-        box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
-    }
+        .tab.active {
+            background: #6287f9;
+            color: white;
+            box-shadow: 0 4px 10px rgba(98, 135, 249, 0.3);
+        }
 
     .dropdown {
         display: none;
@@ -227,13 +226,13 @@
             border-color: #e0e0e0;
         }
 
-            .card img {
-                width: 80px;
-                height: 60px;
-                object-fit: cover;
-                border-radius: 6px;
-                background: #eee;
-            }
+        .card img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #eee;
+        }
 
     .map {
         flex: 1;
@@ -248,7 +247,10 @@
 
     .custom-overlay {
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background-image: url('/images/backgroundColor.png');
         background-position: center;
         background-size: cover;
@@ -430,7 +432,7 @@
                 if (!response.ok)
                     throw new Error("Server error occurred.");
                 return await response.json();
-               
+
             }catch(error){
                 console.error("Error while retrieving image:" , error);
                 return null;
@@ -461,7 +463,7 @@
         }
 
         async function LoadSidebar(Locations){
-            
+
             const sidebar=document.getElementById("ParkingSidebar");
 
             sidebar.innerHTML='';
@@ -478,7 +480,7 @@
                 sidebar.innerHTML +=Card;
             }
         }
-        
+
         //----
 
         //-- Initialisation here

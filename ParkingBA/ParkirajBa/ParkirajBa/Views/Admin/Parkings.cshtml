@@ -55,6 +55,7 @@
                         <td>
                             <div style="display:flex;gap:6px;">
                                 <a href="/Parking/Details/@p.ID" style="padding:5px 12px;background:var(--surface2);color:var(--accent);border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;">Pregledaj</a>
+                                <a href="/Parking/Edit/@p.ID" style="padding:5px 12px;background:#fff8e1;color:#f59e0b;border:1px solid #fcd34d;border-radius:6px;font-size:12px;text-decoration:none;">Uredi</a>
                                 <form asp-action="DeleteParking" method="post" onsubmit="event.preventDefault();admConfirm(this,'Brisanje parkinga','Jeste li sigurni da želite obrisati parking &quot;@p.name&quot; i sve njegove rezervacije?');">
                                     <input type="hidden" name="id" value="@p.ID" />
                                     <button type="submit" style="padding:5px 12px;background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:6px;font-size:12px;cursor:pointer;">Obriši</button>
