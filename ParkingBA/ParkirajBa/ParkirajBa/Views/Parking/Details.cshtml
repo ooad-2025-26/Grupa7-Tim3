@@ -30,7 +30,7 @@
         </div>
 
         <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 3px 14px rgba(0,0,0,0.08); margin-bottom: 20px;">
-            <img src="/images/parking.png" alt="@Model.name"
+            <img src="/images/parking.png" alt="Slika objekta - @Model.name"
                  style="width: 100%; height: 220px; object-fit: cover;" />
 
             <div style="padding: 28px 32px;">
@@ -50,7 +50,6 @@
                     }
                 </div>
 
-                <!-- BADGES -->
                 <div class="object-badges" style="margin-bottom: 20px;">
                     @if (Model.hasCameras == true)
                     {
@@ -70,7 +69,6 @@
                     }
                 </div>
 
-                <!-- INFO GRID -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px;">
 
                     <div class="parking-info-item">
@@ -111,10 +109,9 @@
 
                 </div>
 
-                <!-- USABILITY -->
                 @{
                     double occ = (Model.totalSpots.HasValue && Model.totalSpots.Value > 0)
-                        ? Math.Min((double)(Model.totalSpots.Value - Model.availableSpots) / Model.totalSpots.Value * 100, 100) : 0;
+                    ? Math.Min((double)(Model.totalSpots.Value - Model.availableSpots) / Model.totalSpots.Value * 100, 100) : 0;
 
                     string occColor = occ >= 80 ? "#dc3545" : occ >= 50 ? "#fd7e14" : "#28a745";
                 }
@@ -131,7 +128,6 @@
             </div>
         </div>
 
-        <!-- PRICES -->
         @if (pricings.Any())
         {
             <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
@@ -139,16 +135,30 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
                     @foreach (var p in pricings)
                     {
+                        string tipString = p.pricingType.ToString().ToLower();
+
+                        string prevedeniTip = tipString switch
+                        {
+                            "hourly" or "posatu" or "po satu" => "Po satu",
+                            "daily" or "podanu" or "po danu" => "Po danu",
+                            "weekly" or "posedmici" or "po sedmici" => "Po sedmici",
+                            "monthly" or "mjesecno" or "mjesečno" => "Mjesečno",
+                            _ => "Standardno"
+                        };
+
                         <div style="background: #f4f7ff; border-radius: 12px; padding: 16px; text-align: center;">
-                            <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;">@p.pricingType</div>
-                            <div style="font-size: 20px; font-weight: 700; color: #6287f9;">@p.price.ToString("0.00") KM</div>
+                            <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+                                @prevedeniTip
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: #333;">
+                                @p.price.ToString("0.00") KM
+                            </div>
                         </div>
                     }
                 </div>
             </div>
         }
 
-        <!-- OPTIONS -->
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             @if (Model.availableSpots > 0)
             {
@@ -159,7 +169,7 @@
             else
             {
                 <span class="btn-gray" style="padding: 12px 28px; opacity: 0.6; cursor: not-allowed;">
-                    No Spots Available
+                    Nema dostupnih mjesta
                 </span>
             }
         </div>
@@ -175,5 +185,17 @@
         padding: 12px 16px;
         background: #f8f9fa;
         border-radius: 10px;
+    }
+
+    .badge-feature {
+        background: #f0f4ff;
+        color: #4a67d6;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+        margin-right: 6px;
+        margin-bottom: 6px;
     }
 </style>

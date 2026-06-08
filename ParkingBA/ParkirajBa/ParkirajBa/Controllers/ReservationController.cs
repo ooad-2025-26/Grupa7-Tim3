@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
@@ -13,15 +14,18 @@ namespace ParkirajBa.Controllers
         private readonly ApplicationDbContext _database;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IParkingRepository _parkingRepository;
+        private readonly IEmailSender _emailSender;
 
         public ReservationController(
             ApplicationDbContext database,
             UserManager<ApplicationUser> userManager,
-            IParkingRepository parkingRepository)
+            IParkingRepository parkingRepository,
+            IEmailSender emailSender)
         {
             _database = database;
             _userManager = userManager;
             _parkingRepository = parkingRepository;
+            _emailSender = emailSender;
         }
 
         // GET: /Reservation/Create?parkingObjectId=1
@@ -42,7 +46,7 @@ namespace ParkirajBa.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(int parkingObjectId, DateTime startsAt, DateTime expiresAt)
+        public async Task<IActionResult> Create(int parkingObjectId, DateTime? startsAt, DateTime? expiresAt)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
@@ -54,10 +58,26 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Objekti", "Home");
             }
 
-            if (startsAt < DateTime.Now.AddMinutes(-5))
+            if (!startsAt.HasValue)
+            {
+                ViewBag.Error = "Molimo unesite datum i vrijeme početka rezervacije.";
+                ViewBag.Parking = parking;
+                ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
+                return View();
+            }
+
+            if (!expiresAt.HasValue)
+            {
+                ViewBag.Error = "Molimo unesite datum i vrijeme isteka rezervacije.";
+                ViewBag.Parking = parking;
+                ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
+                return View();
+            }
+
+            if (startsAt.Value < DateTime.Now.AddMinutes(-5))
                 startsAt = DateTime.Now;
 
-            if (expiresAt <= startsAt)
+            if (expiresAt.Value <= startsAt.Value)
             {
                 ViewBag.Error = "Datum isteka mora biti nakon početka rezervacije.";
                 ViewBag.Parking = parking;
@@ -70,7 +90,7 @@ namespace ParkirajBa.Controllers
             decimal cijena = 0;
             if (hourlyPricing != null)
             {
-                double sati = (expiresAt - startsAt).TotalHours;
+                double sati = (expiresAt.Value - startsAt.Value).TotalHours;
                 cijena = hourlyPricing.price * (decimal)Math.Ceiling(sati);
             }
 
@@ -78,14 +98,13 @@ namespace ParkirajBa.Controllers
             {
                 ApplicationUserId = user.Id,
                 ParkingObjectId = parkingObjectId,
-                IssuedAt = startsAt,
-                ExpiresAt = expiresAt,
+                IssuedAt = startsAt.Value,
+                ExpiresAt = expiresAt.Value,
                 Price = cijena
             };
 
             _database.Tickets.Add(ticket);
 
-            // Smanji broj slobodnih mjesta
             if (parking.availableSpots > 0)
                 parking.availableSpots--;
 
@@ -133,14 +152,36 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Details", new { id });
             }
 
+            string parkingName = ticket.ParkingObject?.name ?? "ParkirajBa Parking";
+            string vrijediDo = ticket.ExpiresAt.HasValue
+                ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm")
+                : "—";
+            decimal cijena = ticket.Price;
+            string korisnikIme = user.FullName ?? user.Email ?? "Korisnik";
+
             _database.Tickets.Remove(ticket);
 
-            // free up parking slot
             var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
             if (parking != null && parking.availableSpots < parking.totalSpots)
                 parking.availableSpots++;
 
             await _database.SaveChangesAsync();
+
+            try
+            {
+                await _emailSender.SendEmailAsync(
+                    user.Email!,
+                    "Otkazivanje rezervacije - ParkirajBa",
+                    $"<p>Poštovani/a <strong>{korisnikIme}</strong>,</p>" +
+                    $"<p>Vaša rezervacija je uspješno otkazana.</p>" +
+                    $"<p><strong>Parking:</strong> {parkingName}<br/>" +
+                    $"<strong>Iznos:</strong> {cijena:0.00} KM<br/>" +
+                    $"<strong>Vrijedio do:</strong> {vrijediDo}</p>" +
+                    $"<p>Sredstva će biti vraćena na vašu platnu karticu.</p>" +
+                    $"<p>Hvala što koristite ParkirajBa!</p>"
+                );
+            }
+            catch { /* ne blokiraj otkazivanje ako mail ne stigne */ }
 
             TempData["Success"] = "Rezervacija je uspješno otkazana.";
             return RedirectToAction("Rezervacije", "Home");

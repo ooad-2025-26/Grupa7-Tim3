@@ -1,9 +1,14 @@
-﻿@{
+﻿@using System.Globalization
+@{
     Layout = "_Layout";
     ViewData["Title"] = "Nova rezervacija";
     var parking = ViewBag.Parking as ParkirajBa.Models.ParkingObject;
     var pricings = ViewBag.Pricings as List<ParkirajBa.Models.Pricing> ?? new();
     var hourly = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Hourly);
+
+    // Inicijalne vrijednosti za datume na serveru
+    var trenutnoVrijeme = DateTime.Now;
+    var inicijalniIstek = trenutnoVrijeme.AddHours(1);
 }
 
 <div class="app-container">
@@ -14,10 +19,10 @@
         <div class="tab active"><a href="/Home/Rezervacije">Rezervacije</a></div>
     </div>
 
-    <div class="rezervacije-container">
+    <div class="rezervacije-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
 
         <div style="margin-bottom: 24px;">
-            <a href="/Parking/Details/@parking?.ID" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+            <a href="/Parking/Details/@parking?.ID" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 500;">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#6287f9"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
                 Nazad na parking
             </a>
@@ -25,10 +30,11 @@
 
         @if (ViewBag.Error != null)
         {
-            <div style="background:#fdf0f0;color:#dc3545;padding:12px 16px;border-radius:10px;margin-bottom:16px;">@ViewBag.Error</div>
+            <div style="background:#fdf0f0;color:#dc3545;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:14px;border:1px solid #f8d7da;">
+                ⚠️ @ViewBag.Error
+            </div>
         }
 
-        <!-- PARKING INFO -->
         @if (parking != null)
         {
             <div style="background:white;border-radius:16px;padding:22px 28px;box-shadow:0 3px 14px rgba(0,0,0,0.07);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
@@ -49,40 +55,41 @@
             </div>
         }
 
-        <!-- FORM -->
         <div style="background:white;border-radius:16px;padding:28px 32px;box-shadow:0 3px 14px rgba(0,0,0,0.07);">
             <h3 style="margin:0 0 20px;font-size:16px;color:#333;font-weight:600;">Odaberi trajanje rezervacije</h3>
 
-            <form method="post" asp-action="Create">
+            <form method="post" asp-action="Create" id="reservationForm">
                 <input type="hidden" name="parkingObjectId" value="@parking?.ID" />
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
                     <div>
-                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;">Početak *</label>
+                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;font-weight:600;">Početak *</label>
                         <input type="datetime-local" name="startsAt" id="startsAt" required
-                               min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
-                               value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
-                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;" />
+                               min="@trenutnoVrijeme.ToString("yyyy-MM-ddTHH:mm")"
+                               value="@trenutnoVrijeme.ToString("yyyy-MM-ddTHH:mm")"
+                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;font-family:inherit;" />
                     </div>
                     <div>
-                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;">Ističe *</label>
+                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;font-weight:600;">Ističe *</label>
                         <input type="datetime-local" name="expiresAt" id="expiresAt" required
-                               min="@DateTime.Now.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm")"
-                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;" />
+                               min="@trenutnoVrijeme.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm")"
+                               value="@inicijalniIstek.ToString("yyyy-MM-ddTHH:mm")"
+                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;font-family:inherit;" />
                     </div>
                 </div>
 
-                <!-- PRICE PREVIEW -->
-                <div id="pricePreview" style="display:none;background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+                <div id="pricePreview" style="background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:20px;border: 1px solid #e2e9ff;">
                     <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:14px;color:#555;" id="durationLabel"></span>
-                        <span style="font-size:20px;font-weight:700;color:#6287f9;" id="priceLabel"></span>
+                        <span style="font-size:14px;color:#4a5568;font-weight:500;">
+                            Predviđeno trajanje: <strong id="durationLabel" style="color: #2d3748;"></strong>
+                        </span>
+                        <span style="font-size:22px;font-weight:700;color:#6287f9;" id="priceLabel"></span>
                     </div>
                 </div>
 
-                <div style="display:flex;gap:12px;">
-                    <a href="/Parking/Details/@parking?.ID" class="btn-gray" style="padding:12px 24px;">Odustani</a>
-                    <button type="submit" class="btn-blue" style="padding:12px 28px;">Rezerviši i plati →</button>
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <a href="/Parking/Details/@parking?.ID" class="btn-gray" style="padding:12px 24px; text-decoration:none; text-align:center; border-radius:10px; background:#edf2f7; color:#4a5568; font-weight:600;">Odustani</a>
+                    <button type="submit" class="btn-blue" style="padding:12px 28px; border-radius:10px; background:#6287f9; color:white; border:none; font-weight:600; cursor:pointer; transition:0.2s;">Rezerviši i plati →</button>
                 </div>
             </form>
         </div>
@@ -92,36 +99,100 @@
 
 @section Scripts {
     <script>
-        const hourlyRate = @(hourly?.price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) ?? "0");
-        const startsAtEl  = document.getElementById('startsAt');
+        // Osiguravamo invariantnu kulturu za decimalni broj u JS
+        const hourlyRate = @(hourly?.price.ToString("0.00", CultureInfo.InvariantCulture) ?? "0");
+        const startsAtEl = document.getElementById('startsAt');
         const expiresAtEl = document.getElementById('expiresAt');
+        const formEl = document.getElementById('reservationForm');
+        startsAtEl.addEventListener('invalid', function () {
+            if (startsAtEl.validity.valueMissing) {
+                startsAtEl.setCustomValidity('Molimo unesite datum i vrijeme početka.');
+            }
+            else {
+                startsAtEl.setCustomValidity('Molimo unesite ispravan datum i vrijeme.');
+            }
+        });
+
+        startsAtEl.addEventListener('input', function () {
+            startsAtEl.setCustomValidity('');
+        });
+
+        expiresAtEl.addEventListener('invalid', function () {
+            if (expiresAtEl.validity.valueMissing) {
+                expiresAtEl.setCustomValidity('Molimo unesite datum i vrijeme isteka.');
+            }
+            else {
+                expiresAtEl.setCustomValidity('Molimo unesite ispravan datum i vrijeme.');
+            }
+        });
+
+        expiresAtEl.addEventListener('input', function () {
+            expiresAtEl.setCustomValidity('');
+        });
 
         function updatePreview() {
             const start = new Date(startsAtEl.value);
-            const end   = new Date(expiresAtEl.value);
+            const end = new Date(expiresAtEl.value);
+
             if (!startsAtEl.value || !expiresAtEl.value || end <= start) {
                 document.getElementById('pricePreview').style.display = 'none';
                 return;
             }
-            const hours = Math.ceil((end - start) / 3600000);
+
+            // Računanje razlike u milisekundama i pretvaranje u sate (zaokruživanje naviše)
+            const diffMs = end - start;
+            const hours = Math.ceil(diffMs / 3600000);
             const price = (hours * hourlyRate).toFixed(2);
-            document.getElementById('durationLabel').textContent = hours + (hours === 1 ? ' sat' : hours < 5 ? ' sata' : ' sati');
+
+            let SatTekst = ' sati';
+            if (hours % 10 === 1 && hours % 100 !== 11) {
+                SatTekst = ' sat';
+            } else if ((hours % 10 >= 2 && hours % 10 <= 4) && (hours % 100 < 12 || hours % 100 > 14)) {
+                SatTekst = ' sata';
+            }
+
+            document.getElementById('durationLabel').textContent = hours + SatTekst;
             document.getElementById('priceLabel').textContent = price + ' KM';
             document.getElementById('pricePreview').style.display = 'block';
         }
 
+        // Event listener za promjenu vremena početka
         startsAtEl.addEventListener('change', function () {
-            // Expires must be at least 30min after start
             const start = new Date(this.value);
-            start.setMinutes(start.getMinutes() + 30);
+            if (isNaN(start.getTime())) return;
+
+            // Istek mora biti minimalno 30 minuta nakon početka
+            const minEnd = new Date(start.getTime() + 30 * 60000);
+
             const pad = n => String(n).padStart(2, '0');
-            const minVal = `${start.getFullYear()}-${pad(start.getMonth()+1)}-${pad(start.getDate())}T${pad(start.getHours())}:${pad(start.getMinutes())}`;
+            const minVal = `${minEnd.getFullYear()}-${pad(minEnd.getMonth() + 1)}-${pad(minEnd.getDate())}T${pad(minEnd.getHours())}:${pad(minEnd.getMinutes())}`;
+
             expiresAtEl.min = minVal;
-            if (expiresAtEl.value && new Date(expiresAtEl.value) <= new Date(this.value))
-                expiresAtEl.value = '';
+
+            // Ako je trenutni istek manji ili jednak novom početku, pomjeri ga automatski na +1 sat
+            if (!expiresAtEl.value || new Date(expiresAtEl.value) <= start) {
+                const defaultEnd = new Date(start.getTime() + 60 * 60000);
+                expiresAtEl.value = `${defaultEnd.getFullYear()}-${pad(defaultEnd.getMonth() + 1)}-${pad(defaultEnd.getDate())}T${pad(defaultEnd.getHours())}:${pad(defaultEnd.getMinutes())}`;
+            }
             updatePreview();
         });
 
         expiresAtEl.addEventListener('change', updatePreview);
+
+        // Klijentska provjera prije submita kako bi se spriječili nevalidni podaci
+        formEl.addEventListener('submit', function (e) {
+            const start = new Date(startsAtEl.value);
+            const end = new Date(expiresAtEl.value);
+
+            if (end <= start) {
+                e.preventDefault();
+                alert('Vrijeme isteka rezervacije mora biti nakon vremena početka.');
+            }
+        });
+
+        // POKRETANJE KALKULACIJE ODMAH PRI UČITAVANJU STRANICE
+        document.addEventListener("DOMContentLoaded", function () {
+            updatePreview();
+        });
     </script>
 }

@@ -4,29 +4,44 @@
     ViewData["Title"] = "Detalji rezervacije";
 
     var now = DateTime.Now;
-    string status, statusLabel;
+    string statusClass, statusLabel;
+
     if (Model.ExpiresAt.HasValue && Model.ExpiresAt < now)
-    { status = "expired"; statusLabel = "Istekla"; }
+    {
+        statusClass = "expired";
+        statusLabel = "Istekla";
+    }
     else if (Model.IssuedAt <= now && (!Model.ExpiresAt.HasValue || Model.ExpiresAt >= now))
-    { status = "active"; statusLabel = "Aktivna"; }
+    {
+        statusClass = "active";
+        statusLabel = "Aktivna";
+    }
     else
-    { status = "pending"; statusLabel = "Na čekanju"; }
+    {
+        statusClass = "pending";
+        statusLabel = "Na čekanju";
+    }
 
     var parking = Model.ParkingObject;
+    string parkingName = parking != null ? parking.name : "Nepoznat parking";
+    string parkingAddress = parking != null ? parking.address : "Nepoznata adresa";
 }
 
 <div class="app-container">
 
-    <div class="tabs">
-        <div class="tab"><a href="/Home/Index">Mapa</a></div>
-        <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
-        <div class="tab active"><a href="/Home/Rezervacije">Rezervacije</a></div>
-    </div>
+    @if (ViewBag.IsAdminView != true)
+    {
+        <div class="tabs">
+            <div class="tab"><a href="/Home/Index">Mapa</a></div>
+            <div class="tab"><a href="/Home/Objekti">Objekti</a></div>
+            <div class="tab active"><a href="/Home/Rezervacije">Rezervacije</a></div>
+        </div>
+    }
 
     <div class="rezervacije-container">
 
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
-            <a href="/Home/Rezervacije" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+            <a href="/Home/Rezervacije" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; font-weight: 500;">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#6287f9"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
                 Nazad na rezervacije
             </a>
@@ -34,20 +49,19 @@
 
         @if (ViewBag.Error != null)
         {
-            <div class="error-message" style="margin-bottom: 16px;">@ViewBag.Error</div>
+            <div class="error-message" style="margin-bottom: 16px; background:#fdf0f0; color:#dc3545; padding:12px; border-radius:8px;">@ViewBag.Error</div>
         }
 
-        <!-- HEADER -->
         <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <h2 style="margin: 0; font-size: 22px; color: #222;">@(parking?.name ?? "Nepoznat parking")</h2>
-                        <span class="rezervacija-badge @status">@statusLabel</span>
+                        <h2 style="margin: 0; font-size: 22px; color: #222;">@parkingName</h2>
+                        <span class="rezervacija-badge @statusClass">@statusLabel</span>
                     </div>
                     <p style="margin: 0; color: #777; font-size: 14px;">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="#aaa" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
-                        @(parking?.address ?? "")
+                        @parkingAddress
                     </p>
                 </div>
                 <div style="text-align: right;">
@@ -58,7 +72,6 @@
 
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #f0f0f0;" />
 
-            <!-- TIMING INFORMATION -->
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                 <div>
                     <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Kreirana</div>
@@ -86,14 +99,12 @@
             </div>
         </div>
 
-        <!-- PARKING INFORMATION -->
         @if (parking != null)
         {
             <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
                 <h3 style="margin: 0 0 20px; font-size: 16px; color: #333; font-weight: 600;">Informacije o parkingu</h3>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
-
                     <div class="parking-info-item">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" /></svg>
                         <div>
@@ -123,10 +134,8 @@
                             </div>
                         </div>
                     }
-
                 </div>
 
-                <!-- FEATURES -->
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
                     @if (parking.hasCameras == true)
                     {
@@ -160,38 +169,51 @@
             </div>
         }
 
-        <!-- ACTIONS -->
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            @if (status == "active" && Model.IsPaid == false)
+            @if (statusLabel == "Aktivna" && Model.IsPaid == false)
             {
-                <a href="/Payment/Checkout?ticketId=@Model.Id" class="btn-blue">
-                    Pay Reservation
+                <a href="/Payment/Checkout?ticketId=@Model.Id" class="btn-blue" style="text-decoration: none;">
+                    Plati rezervaciju
                 </a>
             }
             else if (Model.IsPaid == true)
             {
                 <span class="btn-gray" style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;cursor:default;">
-                    ✓ Paid
+                    ✓ Plaćeno
                 </span>
             }
 
-            <a href="/Report/TicketPdf/@Model.Id" class="btn-gray" style="display: inline-flex; align-items: center; gap: 6px;">
+            <a href="/Report/TicketPdf/@Model.Id" class="btn-gray" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" /></svg>
-                Preuzmi PDF tiketu
+                Preuzmi PDF karte
             </a>
 
-            @if (status != "expired")
+            @if (statusLabel != "Istekla")
             {
-                <form asp-controller="Reservation" asp-action="Cancel" method="post" style="display: inline;"
-                      onsubmit="return confirm('Jeste li sigurni da želite otkazati ovu rezervaciju?');">
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="btn-gray" style="color: #dc3545; background: #fdf0f0; border: 1px solid #f5c6cb;">
-                        Otkaži rezervaciju
-                    </button>
-                </form>
+                <button type="button" class="btn-gray" onclick="prikaziOtkaziModal()" style="color: #dc3545; background: #fdf0f0; border: 1px solid #f5c6cb; font-weight:600; cursor:pointer;">
+                    Otkaži rezervaciju
+                </button>
             }
         </div>
 
+    </div>
+</div>
+
+<div id="customOtkaziModal" class="custom-modal-overlay" style="display: none;">
+    <div class="custom-modal-box">
+        <div class="custom-modal-icon">⚠️</div>
+        <h3>Potvrda otkazivanja</h3>
+        <p>Jeste li sigurni da želite otkazati rezervaciju za objekat <strong>@parkingName</strong>?</p>
+        <p class="custom-modal-subtext">Sredstva će automatski biti vraćena na vašu platnu karticu.</p>
+
+        <div class="custom-modal-buttons">
+            <button type="button" class="btn-custom-sekundarno" onclick="sakrijOtkaziModal()">Odustani</button>
+
+            <form asp-controller="Reservation" asp-action="Cancel" method="post" style="margin: 0; display: inline;">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="btn-custom-primarno">Potvrdi i otkaži</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -216,4 +238,118 @@
         font-size: 12px;
         font-weight: 500;
     }
+
+    .custom-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+
+    .custom-modal-box {
+        background: white;
+        padding: 32px;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 420px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        animation: modalLaganiUlaz 0.2s ease-out;
+    }
+
+    .custom-modal-icon {
+        font-size: 42px;
+        margin-bottom: 12px;
+    }
+
+    .custom-modal-box h3 {
+        margin: 0 0 10px 0;
+        color: #2d3748;
+        font-size: 20px;
+    }
+
+    .custom-modal-box p {
+        color: #4a5568;
+        font-size: 14px;
+        margin: 0 0 6px 0;
+        line-height: 1.5;
+    }
+
+    .custom-modal-subtext {
+        font-size: 12px !important;
+        color: #718096 !important;
+        margin-bottom: 24px !important;
+    }
+
+    .custom-modal-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .btn-custom-sekundarno {
+        background: #edf2f7;
+        color: #4a5568;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .btn-custom-sekundarno:hover {
+            background: #e2e8f0;
+        }
+
+    .btn-custom-primarno {
+        background: #e53e3e;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .btn-custom-primarno:hover {
+            background: #c53030;
+        }
+
+    @@keyframes modalLaganiUlaz {
+        from {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
 </style>
+
+<script>
+    function prikaziOtkaziModal() {
+        document.getElementById('customOtkaziModal').style.display = 'flex';
+    }
+
+    function sakrijOtkaziModal() {
+        document.getElementById('customOtkaziModal').style.display = 'none';
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('customOtkaziModal');
+        if (event.target === modal) {
+            sakrijOtkaziModal();
+        }
+    }
+</script>

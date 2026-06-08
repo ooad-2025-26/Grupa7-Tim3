@@ -67,8 +67,7 @@
                         </td>
                         <td>
                             <div style="display:flex;gap:6px;">
-                                <a href="/Reservation/Details/@t.Id" style="padding:5px 12px;background:var(--surface2);color:var(--accent);border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;">Pregledaj</a>
-                                <form asp-action="DeleteReservation" method="post" onsubmit="event.preventDefault();admConfirm(this,'Brisanje rezervacije','Jeste li sigurni da želite obrisati rezervaciju #@t.Id?');">
+                                <a href="/Admin/ReservationDetails/@t.Id" style="padding:5px 12px;background:var(--surface2);color:var(--accent);border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;">Pregledaj</a>                                <form asp-action="DeleteReservation" method="post" onsubmit="event.preventDefault();admConfirm(this,'Brisanje rezervacije','Jeste li sigurni da želite obrisati rezervaciju #@t.Id?');">
                                     <input type="hidden" name="id" value="@t.Id" />
                                     <button type="submit" style="padding:5px 12px;background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:6px;font-size:12px;cursor:pointer;">Obriši</button>
                                 </form>

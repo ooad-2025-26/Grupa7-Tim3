@@ -91,15 +91,15 @@ namespace ParkirajBa.Controllers
                 using var mail = new MailMessage();
                 mail.From = new MailAddress(_senderEmail, "ParkirajBa");
                 mail.To.Add(userEmail);
-                mail.Subject = $"Reservation Confirmed - {reservationCode}";
-                mail.Body = $"Dear {fullName},\n\n" +
-                            $"Your payment has been successfully processed.\n\n" +
-                            $"Reservation Code: {reservationCode}\n" +
+                mail.Subject = $"Potvrda rezervacije - {reservationCode}";
+                mail.Body = $"Poštovani/a {fullName},\n\n" +
+                            $"Vaše plaćanje je uspješno obrađeno.\n\n" +
+                            $"Kod rezervacije: {reservationCode}\n" +
                             $"Parking: {parkingName}\n" +
-                            $"Amount Paid: {ticket.Price:0.00} KM\n" +
-                            $"Valid Until: {(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")}\n\n" +
-                            $"Please present the attached QR code at the parking entrance.\n\n" +
-                            $"Thank you for using ParkirajBa!";
+                            $"Plaćeni iznos: {ticket.Price:0.00} KM\n" +
+                            $"Vrijedi do: {(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")}\n\n" +
+                            $"Molimo pokažite priloženi QR kod na ulazu u parking.\n\n" +
+                            $"Hvala što koristite ParkirajBa!";
                 mail.IsBodyHtml = false;
 
                 using var qrGenerator = new QRCodeGenerator();
@@ -118,7 +118,7 @@ namespace ParkirajBa.Controllers
             }
             catch (Exception ex)
             {
-                TempData["EmailError"] = "Payment confirmed but email could not be sent: " + ex.Message;
+                TempData["EmailError"] = "Plaćanje potvrđeno, ali email nije mogao biti poslan: " + ex.Message;
             }
 
             return RedirectToAction("Success", new { code = reservationCode, ticketId });

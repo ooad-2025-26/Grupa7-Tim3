@@ -1,23 +1,24 @@
+@model dynamic
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Payment";
+    ViewData["Title"] = "Plaćanje";
     ViewBag.HideHeader = true;
     var ticket = ViewBag.Ticket as ParkirajBa.Models.Ticket;
     string fullName = ViewBag.UserFullName ?? "";
 }
 
 <div class="main-container">
-    <div class="map-layer"><img src="/images/map.png" alt="Map" /></div>
+    <div class="map-layer"><img src="/images/map.png" alt="Mapa" /></div>
     <div class="custom-overlay"></div>
     @await Html.PartialAsync("_PaymentHeader")
 
-    <div class="content-wrapper">
+    <div class="content-wrapper" style="margin-top: 80px;">
         <div class="payment-card">
-            <div class="payment-card-top">
-                <a href="/Reservation/Details/@ticket?.Id" class="btn-back-link">&lt; Back to reservation</a>
+            <div class="payment-card-top" style="padding-top: 12px;">
+                <a href="/Reservation/Details/@ticket?.Id" class="btn-back-link">&lt; Nazad na rezervaciju</a>
             </div>
 
-            <h2 class="pay-title">Payment</h2>
+            <h2 class="pay-title">Plaćanje</h2>
 
             <div class="stepper">
                 <div class="circle active"></div>
@@ -31,9 +32,9 @@
             {
                 <div style="background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;">
                     <div>
-                        <div style="font-size:13px;color:#888;">Parking</div>
+                        <div style="font-size:13px;color:#888;">Parking objekat</div>
                         <div style="font-weight:600;color:#333;">@(ticket.ParkingObject?.name ?? "Parking")</div>
-                        <div style="font-size:12px;color:#aaa;">Until @(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</div>
+                        <div style="font-size:12px;color:#aaa;">Vrijedi do @(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</div>
                     </div>
                     <div style="text-align:right;">
                         <div style="font-size:22px;font-weight:700;color:#6287f9;">@ticket.Price.ToString("0.00") KM</div>
@@ -42,19 +43,19 @@
             }
 
             <div class="form-body">
-                <p class="section-label">Card Details</p>
+                <p class="section-label">Detalji kartice</p>
 
-                <input type="text" id="cardName" placeholder="Cardholder name*" class="custom-input" value="@fullName" />
-                <input type="text" id="cardNumber" placeholder="Card number*" class="custom-input" maxlength="19" />
+                <input type="text" id="cardName" placeholder="Ime i prezime na kartici*" class="custom-input" value="@fullName" />
+                <input type="text" id="cardNumber" placeholder="Broj kartice*" class="custom-input" maxlength="19" />
 
                 <div class="input-row">
-                    <input type="text" id="expiryDate" placeholder="MM/YY*" class="custom-input" maxlength="5" />
+                    <input type="text" id="expiryDate" placeholder="MM/GG*" class="custom-input" maxlength="5" />
                     <input type="text" id="cvv" placeholder="CVV*" class="custom-input" maxlength="4" />
                 </div>
 
                 <div class="footer-buttons">
-                    <button class="btn-gray" onclick="history.back()">Back</button>
-                    <button id="btnSubmit" class="btn-blue">Continue</button>
+                    <button class="btn-gray" onclick="history.back()">Nazad</button>
+                    <button id="btnSubmit" class="btn-blue">Nastavi</button>
                 </div>
             </div>
         </div>
@@ -66,10 +67,10 @@
         const ticketId = @(ticket?.Id ?? 0);
 
         document.getElementById('btnSubmit').addEventListener('click', function () {
-            const cardName   = document.getElementById('cardName');
+            const cardName = document.getElementById('cardName');
             const cardNumber = document.getElementById('cardNumber');
             const expiryDate = document.getElementById('expiryDate');
-            const cvv        = document.getElementById('cvv');
+            const cvv = document.getElementById('cvv');
             let isValid = true;
 
             [cardName, cardNumber, expiryDate, cvv].forEach(f => f.classList.remove('input-error'));
@@ -107,10 +108,10 @@
         }
 
         document.getElementById('cardNumber').addEventListener('input', e => {
-            e.target.value = e.target.value.replace(/[^\d]/g,'').replace(/(.{4})/g,'$1 ').trim();
+            e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim();
         });
         document.getElementById('expiryDate').addEventListener('input', e => {
-            e.target.value = e.target.value.replace(/[^\d]/g,'').replace(/^(.{2})/,'$1/').substring(0,5);
+            e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/^(.{2})/, '$1/').substring(0, 5);
         });
     </script>
 }

@@ -15,9 +15,6 @@
 
     @if (Model == null || !Model.Any())
     {
-        @* Rješenje: Koristimo izolovan kontejner koji ignoriše potencijalne
-    grid/flex postavke iz .objects-container klase i garantuje centriranje na ekranu.
-    *@
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 50vh; text-align: center; margin: 0 auto; box-sizing: border-box; padding: 60px 20px;">
             <div style="margin-bottom: 16px; display: inline-block;">
                 <svg viewBox="0 0 24 24" width="64" height="64" fill="#6287f9">
@@ -34,49 +31,52 @@
         <div class="objects-container">
             @foreach (var parking in Model)
             {
-                <a href="/Parking/Details/@parking.ID" class="object-card object-card-link">
+                <a href="/Parking/Details/@parking.ID" class="object-card-link">
 
-                    <img src="/images/parking.png" alt="@parking.name" />
+                    <div class="object-card">
 
-                    <div class="object-card-body">
+                        <img src="/images/parking.png" alt="Slika parkinga - @parking.name" />
 
-                        <h3>@parking.name</h3>
+                        <div class="object-card-body">
 
-                        <p class="object-address">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="#6287f9" style="vertical-align:middle; margin-right:4px;">
-                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                            </svg>
-                            @parking.address
-                        </p>
+                            <h3>@parking.name</h3>
 
-                        <div class="object-badges">
-                            @if (parking.hasCameras == true)
-                            {
-                                <span class="badge-feature">📷 Kamere</span>
-                            }
-                            @if (parking.hasEVCharger == true)
-                            {
-                                <span class="badge-feature">⚡ EV punjač</span>
-                            }
-                            @if (parking.isDisabledAccessible == true)
-                            {
-                                <span class="badge-feature">♿ Pristupačno</span>
-                            }
-                            @if (parking.isUnderground == true)
-                            {
-                                <span class="badge-feature">🏢 Podzemno</span>
-                            }
-                        </div>
+                            <p class="object-address">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="#6287f9" style="vertical-align:middle; margin-right:4px;">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                @parking.address
+                            </p>
 
-                        <div class="object-footer">
-                            <span class="object-spots">@parking.totalSpots mjesta</span>
-                            <span class="btn-blue" style="padding: 8px 18px; font-size: 13px; border-radius: 20px; pointer-events: none;">
-                                Pogledaj →
-                            </span>
+                            <div class="object-badges">
+                                @if (parking.hasCameras == true)
+                                {
+                                    <span class="badge-feature">📷 Kamere</span>
+                                }
+                                @if (parking.hasEVCharger == true)
+                                {
+                                    <span class="badge-feature">⚡ EV punjač</span>
+                                }
+                                @if (parking.isDisabledAccessible == true)
+                                {
+                                    <span class="badge-feature">♿ Pristupačno</span>
+                                }
+                                @if (parking.isUnderground == true)
+                                {
+                                    <span class="badge-feature">🏢 Podzemno</span>
+                                }
+                            </div>
+
+                            <div class="object-footer">
+                                <span class="object-spots">@parking.totalSpots mjesta</span>
+                                <span class="btn-blue" style="padding: 8px 18px; font-size: 13px; border-radius: 20px; pointer-events: none;">
+                                    Pogledaj →
+                                </span>
+                            </div>
+
                         </div>
 
                     </div>
-
                 </a>
             }
         </div>
@@ -84,13 +84,103 @@
 </div>
 
 <style>
+    /* KONTEJNER: Prilagodi grid raspored kartica */
+    .objects-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px 40px;
+    }
+
     .object-card-link {
         text-decoration: none;
         color: inherit;
-        display: block;
+        display: contents;
     }
 
-        .object-card-link:hover {
-            color: inherit;
+    /* KARTICA: Dodan FIKSAN height i flex organizacija */
+    .object-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+        transition: 0.3s;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        height: 420px; /* <--- FIKSNA VISINA ZA SVE KARTICE */
+    }
+
+        .object-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
+
+        .object-card img {
+            width: 100%;
+            height: 180px; /* <--- Fiksna visina slike */
+            object-fit: cover;
+        }
+
+    .object-card-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1; /* Popunjava ostatak kartice */
+    }
+
+        /* NASLOV: Ograničen na 1 red, dodaje tri tačkice ako je predug */
+        .object-card-body h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #222;
+            white-space: nowrap;
+            overflow: hidden;
+            text-transform: capitalize;
+            text-overflow: ellipsis;
+        }
+
+    /* ADRESA: Ograničena na 1 red, dodaje tri tačkice ako je preduga */
+    .object-address {
+        margin: 0 0 16px 0;
+        font-size: 14px;
+        color: #777;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* BADGES: Drži ih u njihovoj zoni */
+    .object-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        overflow: hidden;
+        height: 28px; /* Osigurava da predugačak red bedževa ne gura footer dole */
+    }
+
+    .badge-feature {
+        background: #f0f4ff;
+        color: #4a67d6;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* FOOTER: Gurnut na dno i poravnat */
+    .object-footer {
+        margin-top: auto; /* <--- Ključno: Lijepi footer na samo dno kartice */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .object-spots {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+    }
 </style>

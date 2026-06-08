@@ -209,7 +209,19 @@ namespace ParkirajBa.Controllers
             var parkings = await _parkingRepository.GetAllWithOwnerAsync();
             return View(parkings);
         }
+        public async Task<IActionResult> ParkingDetails(int id)
+        {
+            var parking = await _parkingRepository.GetByIdWithPricingsAsync(id);
 
+            if (parking == null)
+            {
+                TempData["Error"] = "Parking nije pronađen.";
+                return RedirectToAction("Parkings");
+            }
+
+            ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(id);
+            return View(parking); // koristi Views/Admin/ParkingDetails.cshtml
+        }
         [HttpPost]
         public async Task<IActionResult> DeleteParking(int id)
         {
@@ -246,6 +258,24 @@ namespace ParkirajBa.Controllers
             ViewBag.StatusFilter = status;
             return View(tickets);
         }
+
+        public async Task<IActionResult> ReservationDetails(int id)
+        {
+            var ticket = await _database.Tickets
+                .Include(t => t.ParkingObject)
+                .Include(t => t.ApplicationUser)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (ticket == null)
+            {
+                TempData["Error"] = "Rezervacija nije pronađena.";
+                return RedirectToAction("Reservations");
+            }
+
+            ViewBag.IsAdminView = true; 
+            return View("~/Views/Reservation/Details.cshtml", ticket);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> DeleteReservation(int id)

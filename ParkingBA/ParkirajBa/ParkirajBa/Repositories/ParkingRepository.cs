@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
 
@@ -61,8 +62,7 @@ namespace ParkirajBa.Repositories
             return newParking;
         }
 
-        // ── Getting parkings
-
+      
         public async Task<List<ParkingObject>> GetAllAsync()
         {
             return await _Database.ParkingObject
