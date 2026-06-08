@@ -26,11 +26,17 @@
 
                 <input type="email"
                        name="email"
-                       placeholder="Email" />
+                       id="emailInput"
+                       placeholder="Email"
+                       oninvalid="this.setCustomValidity('Molimo unesite ispravnu email adresu.')"
+                       oninput="this.setCustomValidity('')" />
 
                 <input type="password"
                        name="password"
-                       placeholder="Password" />
+                       id="passwordInput"
+                       placeholder="Lozinka"
+                       oninvalid="this.setCustomValidity('Molimo unesite lozinku.')"
+                       oninput="this.setCustomValidity('')" />
 
                 <button type="submit">
                     Prijava putem Email-a
