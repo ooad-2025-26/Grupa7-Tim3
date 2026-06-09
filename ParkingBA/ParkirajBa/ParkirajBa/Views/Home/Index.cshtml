@@ -10,40 +10,64 @@
 
     <div class="tabs">
         <div class="tab active">
-            <a href="/Home/Index">🗺️ Mapa</a>
+            <a href="/Home/Index">Mapa</a>
         </div>
         <div class="tab">
-            <a href="/Home/Objekti">🅿️ Objekti</a>
+            <a href="/Home/Objekti">Objekti</a>
         </div>
         <div class="tab">
-            <a href="/Home/Rezervacije">🎫 Rezervacije</a>
+            <a href="/Home/Rezervacije">Rezervacije</a>
         </div>
     </div>
 
     <div class="filters">
-        <input type="text" id="SearchInput" placeholder="Pretraži..." />
-
-        <label><input type="checkbox" id="HasGarage" /> Garaža</label>
-        <label><input type="checkbox" id="HasEVCharger" /> EV punjač</label>
-        <label><input type="checkbox" id="HasCameras" /> Video nadzor</label>
-        <label><input type="checkbox" id="isDisabledAccessible" /> Dostupno osobama sa invaliditetom</label>
-
-        <div class="price">
-            Cijena do:
-            <input type="range" id="PriceSlider" min="1" max="50" value="50" oninput="this.nextElementSibling.value = this.value" />
-            <output>50</output> KM
+        <div class="filter-search-wrap">
+            <svg class="filter-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="#aaa"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /></svg>
+            <input type="text" id="SearchInput" placeholder="Pretraži parking..." />
         </div>
-        <select id="regime">
-            <option value="Hour">Po satu</option>
-            <option value="Day">Po danu</option>
-            <option value="Week">Po sedmici</option>
-            <option value="Month">Po mjesecu</option>
-            <option value="Year">Po godini</option>
-        </select>
-        <button id="ClearButton">
-            Očisti filtere
-        </button>
 
+        <div class="filter-pills">
+            <label class="filter-pill" id="pill-garage">
+                <input type="checkbox" id="HasGarage" hidden />
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20 4H4v2l8 5 8-5V4zm0 4.55L12 13 4 8.55V20h16V8.55z" /></svg>
+                Garaža
+            </label>
+            <label class="filter-pill" id="pill-ev">
+                <input type="checkbox" id="HasEVCharger" hidden />
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z" /></svg>
+                EV punjač
+            </label>
+            <label class="filter-pill" id="pill-cam">
+                <input type="checkbox" id="HasCameras" hidden />
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" /></svg>
+                Video nadzor
+            </label>
+            <label class="filter-pill" id="pill-acc">
+                <input type="checkbox" id="isDisabledAccessible" hidden />
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z" /></svg>
+                Invalidski pristup
+            </label>
+        </div>
+
+        <div class="filter-right">
+            <div class="filter-price-wrap">
+                <span class="filter-price-label">Do <output id="PriceOutput">50</output> KM</span>
+                <input type="range" id="PriceSlider" min="1" max="50" value="50" oninput="document.getElementById('PriceOutput').textContent = this.value" />
+            </div>
+
+            <select id="regime" class="filter-select">
+                <option value="Hour">Po satu</option>
+                <option value="Day">Po danu</option>
+                <option value="Week">Po sedmici</option>
+                <option value="Month">Po mjesecu</option>
+                <option value="Year">Po godini</option>
+            </select>
+
+            <button id="ClearButton">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+                Očisti
+            </button>
+        </div>
     </div>
 
     <div class="content">
@@ -85,18 +109,142 @@
     }
 
     #ClearButton {
-        padding: 7px 16px;
-        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 14px;
+        border-radius: 20px;
         border: 1px solid var(--border);
         background: var(--surface2);
         color: var(--text2);
         cursor: pointer;
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
     }
 
         #ClearButton:hover {
             border-color: var(--accent);
             color: var(--accent);
+        }
+
+    /* Filter bar layout */
+    .filters {
+        padding: 10px 24px;
+        background: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid #eee;
+        flex-wrap: wrap;
+    }
+
+    .filter-search-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-search-icon {
+        position: absolute;
+        left: 10px;
+        pointer-events: none;
+    }
+
+    .filter-search-wrap input[type="text"] {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        padding: 8px 14px 8px 34px;
+        border-radius: 20px;
+        outline: none;
+        font-family: inherit;
+        font-size: 13px;
+        width: 200px;
+        transition: border-color 0.2s;
+    }
+
+        .filter-search-wrap input[type="text"]:focus {
+            border-color: #6287f9;
+            background: white;
+        }
+
+    .filter-pills {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 13px;
+        border-radius: 20px;
+        border: 1px solid #e0e0e0;
+        background: #f8f9fa;
+        color: #555;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.18s;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+        .filter-pill:hover {
+            border-color: #6287f9;
+            color: #6287f9;
+        }
+
+        .filter-pill.active {
+            background: #eef1ff;
+            border-color: #6287f9;
+            color: #6287f9;
+        }
+
+    .filter-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-price-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .filter-price-label {
+        font-size: 11px;
+        color: #888;
+        font-weight: 500;
+    }
+
+        .filter-price-label output {
+            font-weight: 700;
+            color: #6287f9;
+        }
+
+    .filter-price-wrap input[type="range"] {
+        width: 100px;
+    }
+
+    .filter-select {
+        padding: 7px 10px;
+        border-radius: 20px;
+        border: 1px solid #e0e0e0;
+        background: #f8f9fa;
+        color: #555;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+        outline: none;
+    }
+
+        .filter-select:focus {
+            border-color: #6287f9;
         }
 </style>
 <style>
@@ -165,24 +313,6 @@
         .nav-item.active {
             background: #1e5cc3;
             color: white;
-        }
-
-    .filters {
-        padding: 15px 40px;
-        background: white;
-        display: flex;
-        gap: 20px;
-        align-items: center;
-        border-bottom: 1px solid #eee;
-        flex-wrap: wrap;
-    }
-
-        .filters input[type="text"] {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            padding: 8px 15px;
-            border-radius: 10px;
-            outline: none;
         }
 
     .content {
@@ -418,7 +548,10 @@
             document.getElementById("isDisabledAccessible").checked = false;
             document.getElementById("regime").value = "Hour";
             document.getElementById("PriceSlider").value = 50;
-            document.getElementById("PriceSlider").nextElementSibling.value = 50;
+            document.getElementById("PriceOutput").textContent = 50;
+
+            // sync pill states
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
 
             RefreshMap(parkingLocations);
             LoadSidebar(parkingLocations);
@@ -437,7 +570,6 @@
         }
 
         async function CreateCard(Parking, Image) {
-            // ISPRAVLJENO: Promijenjeno iz availablespots u availableSpots (C# JSON CamelCase formatiranje)
             const isFull = Parking.availableSpots <= 0;
 
             const backgroundColor = isFull ? "#fde8e8" : "#e8f5e9";
@@ -476,7 +608,6 @@
             }
         }
 
-        // Inicijalizacija podataka
         const parkingLocations = @Html.Raw(Json.Serialize(Model));
         let parkingMarkers = [];
 
@@ -487,7 +618,7 @@
         LoadSidebar(parkingLocations);
 
         let map;
-        let AllowMap = 0;
+        let AllowMap = 1;
 
         if (AllowMap != 0) {
             Init();
@@ -499,10 +630,19 @@
                 }
             });
 
-            document.getElementById("HasGarage").addEventListener("change", SearchParking);
-            document.getElementById("HasEVCharger").addEventListener("change", SearchParking);
-            document.getElementById("HasCameras").addEventListener("change", SearchParking);
-            document.getElementById("isDisabledAccessible").addEventListener("change", SearchParking);
+            // pill toggle active state on checkbox change
+            [
+                ["HasGarage", "pill-garage"],
+                ["HasEVCharger", "pill-ev"],
+                ["HasCameras", "pill-cam"],
+                ["isDisabledAccessible", "pill-acc"]
+            ].forEach(([cbId, pillId]) => {
+                document.getElementById(cbId).addEventListener("change", function () {
+                    document.getElementById(pillId).classList.toggle("active", this.checked);
+                    SearchParking();
+                });
+            });
+
             document.getElementById("regime").addEventListener("change", SearchParking);
             document.getElementById("PriceSlider").addEventListener("change", SearchParking);
 
