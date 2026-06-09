@@ -108,15 +108,35 @@ namespace ParkirajBa.Controllers
 
         public async Task<IActionResult> TicketPdf(int id)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("Login", "User");
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login", "User");
 
-            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
+            Ticket? ticket;
+            ApplicationUser? ticketOwner;
 
-            if (ticket == null) return RedirectToAction("Index", "Home");
+            bool isAdmin = await _userManager.IsInRoleAsync(currentUser, "Admin");
 
-            ViewBag.UserFullName = user.FullName;
-            ViewBag.UserEmail = user.Email;
+            if (isAdmin)
+            {
+                // Admin može pregledati bilo čiji tiket
+                ticket = await _database.Tickets
+                    .Include(t => t.ParkingObject)
+                    .Include(t => t.ApplicationUser)
+                    .FirstOrDefaultAsync(t => t.Id == id);
+
+                if (ticket == null) return RedirectToAction("Reservations", "Admin");
+
+                ticketOwner = ticket.ApplicationUser;
+            }
+            else
+            {
+                ticket = await _parkingRepository.GetTicketByIdAsync(id, currentUser.Id);
+                if (ticket == null) return RedirectToAction("Index", "Home");
+                ticketOwner = currentUser;
+            }
+
+            ViewBag.UserFullName = ticketOwner?.FullName ?? ticketOwner?.Email ?? "—";
+            ViewBag.UserEmail = ticketOwner?.Email ?? "—";
             return View(ticket);
         }
 

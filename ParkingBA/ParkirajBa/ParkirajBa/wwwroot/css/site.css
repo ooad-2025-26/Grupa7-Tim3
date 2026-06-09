@@ -995,7 +995,7 @@ label {
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 60vh; 
+    min-height: 60vh;
     padding: 20px;
 }
 
@@ -1052,15 +1052,18 @@ input[type="range"] {
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
     width: 100%;
     white-space: nowrap;
     line-height: 60px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+    color: #888;
+    font-size: 13px;
 }
 
 main {
-    padding-bottom: 100px;
+    padding-bottom: 0;
 }
 
 .btn-primary {

@@ -8,9 +8,9 @@
 <div class="app-container">
 
     <div class="tabs">
-        <div class="tab"><a href="/Home/Index">🗺️ Mapa</a></div>
-        <div class="tab active"><a href="/Home/Objekti">🅿️ Objekti</a></div>
-        <div class="tab"><a href="/Home/Rezervacije">🎫 Rezervacije</a></div>
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab active"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab"><a href="/Home/Rezervacije">Rezervacije</a></div>
     </div>
 
     @if (Model == null || !Model.Any())
@@ -84,7 +84,6 @@
 </div>
 
 <style>
-    /* KONTEJNER: Prilagodi grid raspored kartica */
     .objects-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -98,7 +97,6 @@
         display: contents;
     }
 
-    /* KARTICA: Dodan FIKSAN height i flex organizacija */
     .object-card {
         background: white;
         border-radius: 16px;
@@ -109,7 +107,7 @@
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        height: 420px; /* <--- FIKSNA VISINA ZA SVE KARTICE */
+        height: 420px; 
     }
 
         .object-card:hover {
@@ -119,7 +117,7 @@
 
         .object-card img {
             width: 100%;
-            height: 180px; /* <--- Fiksna visina slike */
+            height: 180px; 
             object-fit: cover;
         }
 
@@ -127,10 +125,9 @@
         padding: 20px;
         display: flex;
         flex-direction: column;
-        flex: 1; /* Popunjava ostatak kartice */
+        flex: 1;
     }
 
-        /* NASLOV: Ograničen na 1 red, dodaje tri tačkice ako je predug */
         .object-card-body h3 {
             margin: 0 0 8px 0;
             font-size: 18px;
@@ -141,7 +138,6 @@
             text-overflow: ellipsis;
         }
 
-    /* ADRESA: Ograničena na 1 red, dodaje tri tačkice ako je preduga */
     .object-address {
         margin: 0 0 16px 0;
         font-size: 14px;
@@ -151,14 +147,13 @@
         text-overflow: ellipsis;
     }
 
-    /* BADGES: Drži ih u njihovoj zoni */
     .object-badges {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
         margin-bottom: 16px;
         overflow: hidden;
-        height: 28px; /* Osigurava da predugačak red bedževa ne gura footer dole */
+        height: 28px; 
     }
 
     .badge-feature {
@@ -170,9 +165,8 @@
         font-weight: 500;
     }
 
-    /* FOOTER: Gurnut na dno i poravnat */
     .object-footer {
-        margin-top: auto; /* <--- Ključno: Lijepi footer na samo dno kartice */
+        margin-top: auto; 
         display: flex;
         justify-content: space-between;
         align-items: center;
