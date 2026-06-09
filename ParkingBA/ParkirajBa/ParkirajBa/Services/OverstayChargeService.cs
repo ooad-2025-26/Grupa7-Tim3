@@ -115,6 +115,7 @@ public class OverstayChargeService : BackgroundService
         ParkirajBa
         """);
             ticket.OverstayEmailSent = true;
+            await db.SaveChangesAsync();
         }
     }
 }
