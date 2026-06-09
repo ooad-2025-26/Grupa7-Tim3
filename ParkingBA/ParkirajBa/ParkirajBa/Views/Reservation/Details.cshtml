@@ -186,23 +186,16 @@
 
         </div>
 
-        @if (Model.AdditionalCharge > 0)
+        @if (Model.AdditionalCharge > 0 && !Model.AdditionalChargePaid)
         {
-            <form asp-controller="Payment"
-                  asp-action="PayAdditionalCharge"
-                  method="post">
+            <div style="display:flex;justify-content:center;margin-top:20px;">
 
-                <input type="hidden"
-                       name="ticketId"
-                       value="@Model.Id" />
-
-                <button type="submit"
-                        class="btn-blue">
-
+                <a href="/Payment/Checkout?ticketId=@Model.Id&additionalCharge=true"
+                   class="btn-blue">
                     Plati doplatu
-                </button>
+                </a>
 
-            </form>
+            </div>
 
             <div style="background:#fff3cd;
                     border:1px solid #ffeeba;
@@ -663,4 +656,11 @@
     }
 
     //-------------------------------
+
+    //Refreshanje stranice kako bi se vidjelo da treba doplata
+        setTimeout(() => {
+
+        location.reload();
+
+    }, 60000);
 </script>

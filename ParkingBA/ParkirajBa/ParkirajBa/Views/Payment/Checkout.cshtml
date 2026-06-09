@@ -37,7 +37,11 @@
                         <div style="font-size:12px;color:#aaa;">Vrijedi do @(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:22px;font-weight:700;color:#6287f9;">@ticket.Price.ToString("0.00") KM</div>
+                        <div style="font-size:22px;font-weight:700;color:#6287f9;">
+                            @((ViewBag.IsAdditionalCharge
+                                                    ? ticket.AdditionalCharge
+                                                    : ticket.Price).ToString("0.00")) KM
+                    </div>
                     </div>
                 </div>
             }
