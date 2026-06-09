@@ -35,7 +35,7 @@
         </div>
     }
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
 
         <div style="display:flex;flex-direction:column;gap:20px;">
 
@@ -129,16 +129,17 @@
             }
         </div>
 
-        <div style="background:white;border-radius:16px;padding:28px 32px;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;flex-direction:column;">
+        <div style="background:white;border-radius:16px;padding:28px 32px;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;flex-direction:column;position:sticky;top:28px;">
             <h3 style="margin:0 0 20px;font-size:16px;font-weight:600;color:var(--text);">Uredi podatke</h3>
 
-            <form method="post" action="/Parking/Edit/@Model.ID" style="display:flex;flex-direction:column;flex:1;">
+            <form method="post" action="/Parking/Edit/@Model.ID" style="display:flex;flex-direction:column;flex:1;" id="parkingEditForm" novalidate>
                 @Html.AntiForgeryToken()
 
                 <div style="margin-bottom:14px;">
                     <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Naziv parkinga *</label>
-                    <input type="text" name="name" value="@Model.name" required
+                    <input type="text" name="name" id="fieldName" value="@Model.name" required
                            style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                    <span class="val-err" id="errName"></span>
                 </div>
 
                 <div style="margin-bottom:14px;">
@@ -150,13 +151,15 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
                     <div>
                         <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Ukupno mjesta *</label>
-                        <input type="number" name="totalSpots" value="@Model.totalSpots" min="1" required
+                        <input type="number" name="totalSpots" id="fieldSpots" value="@Model.totalSpots" min="1" required
                                style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                        <span class="val-err" id="errSpots"></span>
                     </div>
                     <div>
                         <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Maks. visina (m)</label>
-                        <input type="number" name="maxHeight" value="@Model.maxHeight" step="0.1" min="0"
+                        <input type="number" name="maxHeight" id="fieldHeight" value="@Model.maxHeight" step="0.1" min="0"
                                style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                        <span class="val-err" id="errHeight"></span>
                     </div>
                 </div>
 
@@ -179,6 +182,39 @@
                     </label>
                 </div>
 
+                @if (pricings.Any())
+                {
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:10px;">Cjenovnik</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            @foreach (var p in pricings)
+                            {
+                                string prevedeniTip = p.pricingType.ToString().ToLower() switch
+                                {
+                                    "hourly" => "Po satu",
+                                    "daily" => "Po danu",
+                                    "weekly" => "Po sedmici",
+                                    "monthly" => "Mjesečno",
+                                    "yearly" => "Godišnje",
+                                    _ => "Standardno"
+                                };
+                                <div style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border-radius:8px;padding:10px 13px;">
+                                    <span style="font-size:13px;color:#555;min-width:90px;font-weight:500;">@prevedeniTip</span>
+                                    <input type="hidden" name="pricingIds" value="@p.ID" />
+                                    <div style="position:relative;flex:1;">
+                                        <input type="number" name="pricingValues" id="price_@p.ID"
+                                               value="@p.price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                               step="0.01" min="0"
+                                               style="width:100%;padding:8px 36px 8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                                        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#aaa;pointer-events:none;">KM</span>
+                                    </div>
+                                    <span class="val-err" id="errPrice_@p.ID" style="min-height:0;"></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
                 <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:auto;padding-top:10px;">
                     <a href="/Admin/Parkings" style="padding:10px 22px;background:#f1f3f5;color:#555;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
                         Odustani
@@ -192,3 +228,68 @@
 
     </div>
 </div>
+
+<style>
+    .val-err {
+        display: block;
+        font-size: 12px;
+        color: #dc3545;
+        margin-top: 4px;
+        min-height: 16px;
+    }
+</style>
+
+<script>
+    document.getElementById('parkingEditForm').addEventListener('submit', function (e) {
+        let valid = true;
+
+        const name = document.getElementById('fieldName');
+        const spots = document.getElementById('fieldSpots');
+        const height = document.getElementById('fieldHeight');
+
+        // reset basic fields
+        ['errName', 'errSpots', 'errHeight'].forEach(id => document.getElementById(id).textContent = '');
+        [name, spots, height].forEach(el => el.style.borderColor = '#e0e0e0');
+
+        if (!name.value.trim()) {
+            document.getElementById('errName').textContent = 'Naziv parkinga je obavezan.';
+            name.style.borderColor = '#dc3545';
+            valid = false;
+        }
+
+        const spotsVal = parseInt(spots.value);
+        if (!spots.value || isNaN(spotsVal) || spotsVal < 1) {
+            document.getElementById('errSpots').textContent = 'Broj mjesta mora biti najmanje 1.';
+            spots.style.borderColor = '#dc3545';
+            valid = false;
+        }
+
+        if (height.value !== '') {
+            const heightVal = parseFloat(height.value);
+            if (isNaN(heightVal) || heightVal < 0) {
+                document.getElementById('errHeight').textContent = 'Visina ne može biti negativna.';
+                height.style.borderColor = '#dc3545';
+                valid = false;
+            }
+        }
+
+        // validate price fields
+        document.querySelectorAll('input[name="pricingValues"]').forEach(function (input) {
+            const errId = 'errPrice_' + input.id.replace('price_', '');
+            const errEl = document.getElementById(errId);
+            input.style.borderColor = '#e0e0e0';
+            if (errEl) errEl.textContent = '';
+
+            if (input.value !== '') {
+                const val = parseFloat(input.value);
+                if (isNaN(val) || val < 0) {
+                    input.style.borderColor = '#dc3545';
+                    if (errEl) errEl.textContent = 'Cijena ne može biti negativna.';
+                    valid = false;
+                }
+            }
+        });
+
+        if (!valid) e.preventDefault();
+    });
+</script>

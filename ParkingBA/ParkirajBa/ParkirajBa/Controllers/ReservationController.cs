@@ -46,7 +46,7 @@ namespace ParkirajBa.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(int parkingObjectId, DateTime? startsAt, DateTime? expiresAt)
+        public async Task<IActionResult> Create(int parkingObjectId, DateTime? startsAt, DateTime? expiresAt, string? pricingType)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
@@ -85,13 +85,35 @@ namespace ParkirajBa.Controllers
                 return View();
             }
 
-            var hourlyPricing = await _parkingRepository.GetActivePricingAsync(parkingObjectId, PricingType.Hourly);
+            // resolve pricing type — default to Hourly
+            PricingType selectedType = pricingType switch
+            {
+                "Daily" => PricingType.Daily,
+                "Monthly" => PricingType.Monthly,
+                "Yearly" => PricingType.Yearly,
+                _ => PricingType.Hourly
+            };
+
+            var pricing = await _parkingRepository.GetActivePricingAsync(parkingObjectId, selectedType);
+
+            // fallback to Hourly if selected type has no pricing defined
+            if (pricing == null && selectedType != PricingType.Hourly)
+                pricing = await _parkingRepository.GetActivePricingAsync(parkingObjectId, PricingType.Hourly);
 
             decimal cijena = 0;
-            if (hourlyPricing != null)
+            if (pricing != null)
             {
-                double sati = (expiresAt.Value - startsAt.Value).TotalHours;
-                cijena = hourlyPricing.price * (decimal)Math.Ceiling(sati);
+                var span = expiresAt.Value - startsAt.Value;
+                cijena = selectedType switch
+                {
+                    PricingType.Hourly => pricing.price * (decimal)Math.Ceiling(span.TotalHours),
+                    PricingType.Daily => pricing.price * (decimal)Math.Ceiling(span.TotalDays),
+                    PricingType.Monthly => pricing.price * (decimal)Math.Max(1,
+                        (expiresAt.Value.Year - startsAt.Value.Year) * 12 + expiresAt.Value.Month - startsAt.Value.Month),
+                    PricingType.Yearly => pricing.price * (decimal)Math.Max(1,
+                        expiresAt.Value.Year - startsAt.Value.Year),
+                    _ => pricing.price * (decimal)Math.Ceiling(span.TotalHours)
+                };
             }
 
             var ticket = new Ticket

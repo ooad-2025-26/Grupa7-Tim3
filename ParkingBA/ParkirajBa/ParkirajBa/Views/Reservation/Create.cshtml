@@ -4,9 +4,12 @@
     ViewData["Title"] = "Nova rezervacija";
     var parking = ViewBag.Parking as ParkirajBa.Models.ParkingObject;
     var pricings = ViewBag.Pricings as List<ParkirajBa.Models.Pricing> ?? new();
-    var hourly = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Hourly);
 
-    // Inicijalne vrijednosti za datume na serveru
+    var hourly = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Hourly);
+    var daily = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Daily);
+    var monthly = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Monthly);
+    var yearly = pricings.FirstOrDefault(p => p.pricingType == ParkirajBa.Models.PricingType.Yearly);
+
     var trenutnoVrijeme = DateTime.Now;
     var inicijalniIstek = trenutnoVrijeme.AddHours(1);
 }
@@ -37,21 +40,46 @@
 
         @if (parking != null)
         {
-            <div style="background:white;border-radius:16px;padding:22px 28px;box-shadow:0 3px 14px rgba(0,0,0,0.07);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-                <div>
-                    <h2 style="margin:0 0 4px;font-size:20px;color:#222;">@parking.name</h2>
-                    <p style="margin:0;color:#888;font-size:13px;">@parking.address</p>
-                    <p style="margin:6px 0 0;font-size:13px;color:#6287f9;font-weight:600;">
-                        @parking.availableSpots slobodnih mjesta od @parking.totalSpots
-                    </p>
-                </div>
-                @if (hourly != null)
-                {
-                    <div style="text-align:right;">
-                        <div style="font-size:24px;font-weight:700;color:#6287f9;">@hourly.price.ToString("0.00") KM</div>
-                        <div style="font-size:12px;color:#aaa;">po satu</div>
+            <div style="background:white;border-radius:16px;padding:22px 28px;box-shadow:0 3px 14px rgba(0,0,0,0.07);margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <h2 style="margin:0 0 4px;font-size:20px;color:#222;">@parking.name</h2>
+                        <p style="margin:0;color:#888;font-size:13px;">@parking.address</p>
+                        <p style="margin:6px 0 0;font-size:13px;color:#6287f9;font-weight:600;">
+                            @parking.availableSpots slobodnih mjesta od @parking.totalSpots
+                        </p>
                     </div>
-                }
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                        @if (hourly != null)
+                        {
+                            <div style="text-align:center;background:#f4f7ff;border-radius:10px;padding:10px 14px;">
+                                <div style="font-size:16px;font-weight:700;color:#6287f9;">@hourly.price.ToString("0.00") KM</div>
+                                <div style="font-size:11px;color:#aaa;">/ sat</div>
+                            </div>
+                        }
+                        @if (daily != null)
+                        {
+                            <div style="text-align:center;background:#f4f7ff;border-radius:10px;padding:10px 14px;">
+                                <div style="font-size:16px;font-weight:700;color:#6287f9;">@daily.price.ToString("0.00") KM</div>
+                                <div style="font-size:11px;color:#aaa;">/ dan</div>
+                            </div>
+                        }
+                        @if (monthly != null)
+                        {
+                            <div style="text-align:center;background:#f4f7ff;border-radius:10px;padding:10px 14px;">
+                                <div style="font-size:16px;font-weight:700;color:#6287f9;">@monthly.price.ToString("0.00") KM</div>
+                                <div style="font-size:11px;color:#aaa;">/ mj.</div>
+                            </div>
+                        }
+                        @if (yearly != null)
+                        {
+                            <div style="text-align:center;background:#f4f7ff;border-radius:10px;padding:10px 14px;">
+                                <div style="font-size:16px;font-weight:700;color:#6287f9;">@yearly.price.ToString("0.00") KM</div>
+                                <div style="font-size:11px;color:#aaa;">/ god.</div>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         }
 
@@ -60,6 +88,38 @@
 
             <form method="post" asp-action="Create" id="reservationForm">
                 <input type="hidden" name="parkingObjectId" value="@parking?.ID" />
+                <input type="hidden" name="pricingType" id="hiddenPricingType" value="Hourly" />
+
+                
+                <div style="margin-bottom:20px;">
+                    <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:8px;font-weight:600;">Tip rezervacije</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="pricingTypePills">
+                        @if (hourly != null)
+                        {
+                            <button type="button" class="type-pill active" data-type="Hourly" data-rate="@hourly.price.ToString("0.00", CultureInfo.InvariantCulture)" data-unit="sat">
+                                Po satu
+                            </button>
+                        }
+                        @if (daily != null)
+                        {
+                            <button type="button" class="type-pill" data-type="Daily" data-rate="@daily.price.ToString("0.00", CultureInfo.InvariantCulture)" data-unit="dan">
+                                Po danu
+                            </button>
+                        }
+                        @if (monthly != null)
+                        {
+                            <button type="button" class="type-pill" data-type="Monthly" data-rate="@monthly.price.ToString("0.00", CultureInfo.InvariantCulture)" data-unit="mjesec">
+                                Po mjesecu
+                            </button>
+                        }
+                        @if (yearly != null)
+                        {
+                            <button type="button" class="type-pill" data-type="Yearly" data-rate="@yearly.price.ToString("0.00", CultureInfo.InvariantCulture)" data-unit="godinu">
+                                Po godini
+                            </button>
+                        }
+                    </div>
+                </div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
                     <div>
@@ -78,18 +138,18 @@
                     </div>
                 </div>
 
-                <div id="pricePreview" style="background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:20px;border: 1px solid #e2e9ff;">
+                <div id="pricePreview" style="background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:20px;border:1px solid #e2e9ff;">
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <span style="font-size:14px;color:#4a5568;font-weight:500;">
-                            Predviđeno trajanje: <strong id="durationLabel" style="color: #2d3748;"></strong>
+                            Trajanje: <strong id="durationLabel" style="color:#2d3748;"></strong>
                         </span>
                         <span style="font-size:22px;font-weight:700;color:#6287f9;" id="priceLabel"></span>
                     </div>
                 </div>
 
                 <div style="display:flex;gap:12px;justify-content:flex-end;">
-                    <a href="/Parking/Details/@parking?.ID" class="btn-gray" style="padding:12px 24px; text-decoration:none; text-align:center; border-radius:10px; background:#edf2f7; color:#4a5568; font-weight:600;">Odustani</a>
-                    <button type="submit" class="btn-blue" style="padding:12px 28px; border-radius:10px; background:#6287f9; color:white; border:none; font-weight:600; cursor:pointer; transition:0.2s;">Rezerviši i plati →</button>
+                    <a href="/Parking/Details/@parking?.ID" class="btn-gray" style="padding:12px 24px;text-decoration:none;text-align:center;border-radius:10px;background:#edf2f7;color:#4a5568;font-weight:600;">Odustani</a>
+                    <button type="submit" class="btn-blue" style="padding:12px 28px;border-radius:10px;background:#6287f9;color:white;border:none;font-weight:600;cursor:pointer;transition:0.2s;">Rezerviši i plati →</button>
                 </div>
             </form>
         </div>
@@ -97,101 +157,150 @@
     </div>
 </div>
 
+<style>
+    .type-pill {
+        padding: 8px 18px;
+        border-radius: 20px;
+        border: 1px solid #e0e0e0;
+        background: #f8f9fa;
+        color: #555;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.18s;
+        font-family: inherit;
+    }
+
+        .type-pill:hover {
+            border-color: #6287f9;
+            color: #6287f9;
+        }
+
+        .type-pill.active {
+            background: #6287f9;
+            border-color: #6287f9;
+            color: white;
+            box-shadow: 0 3px 8px rgba(98,135,249,0.3);
+        }
+</style>
+
 @section Scripts {
     <script>
-        // Osiguravamo invariantnu kulturu za decimalni broj u JS
-        const hourlyRate = @(hourly?.price.ToString("0.00", CultureInfo.InvariantCulture) ?? "0");
-        const startsAtEl = document.getElementById('startsAt');
+        const startsAtEl  = document.getElementById('startsAt');
         const expiresAtEl = document.getElementById('expiresAt');
-        const formEl = document.getElementById('reservationForm');
-        startsAtEl.addEventListener('invalid', function () {
-            if (startsAtEl.validity.valueMissing) {
-                startsAtEl.setCustomValidity('Molimo unesite datum i vrijeme početka.');
-            }
-            else {
-                startsAtEl.setCustomValidity('Molimo unesite ispravan datum i vrijeme.');
-            }
+        const formEl      = document.getElementById('reservationForm');
+        const hiddenType  = document.getElementById('hiddenPricingType');
+
+        // active pill state
+        let activePill = document.querySelector('.type-pill.active');
+
+        document.querySelectorAll('.type-pill').forEach(function (pill) {
+            pill.addEventListener('click', function () {
+                document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                activePill = pill;
+                hiddenType.value = pill.dataset.type;
+                // adjust default expiry based on selected type
+                adjustDefaultExpiry();
+                updatePreview();
+            });
         });
 
-        startsAtEl.addEventListener('input', function () {
-            startsAtEl.setCustomValidity('');
-        });
+        function adjustDefaultExpiry() {
+            const start = new Date(startsAtEl.value);
+            if (isNaN(start.getTime())) return;
+            const type = activePill ? activePill.dataset.type : 'Hourly';
+            let end = new Date(start);
+            if (type === 'Hourly')       end.setHours(end.getHours() + 1);
+            else if (type === 'Daily')   end.setDate(end.getDate() + 1);
+            else if (type === 'Monthly') end.setMonth(end.getMonth() + 1);
+            else if (type === 'Yearly')  end.setFullYear(end.getFullYear() + 1);
+            expiresAtEl.value = fmt(end);
+        }
 
-        expiresAtEl.addEventListener('invalid', function () {
-            if (expiresAtEl.validity.valueMissing) {
-                expiresAtEl.setCustomValidity('Molimo unesite datum i vrijeme isteka.');
-            }
-            else {
-                expiresAtEl.setCustomValidity('Molimo unesite ispravan datum i vrijeme.');
-            }
-        });
-
-        expiresAtEl.addEventListener('input', function () {
-            expiresAtEl.setCustomValidity('');
-        });
+        function fmt(d) {
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
 
         function updatePreview() {
             const start = new Date(startsAtEl.value);
-            const end = new Date(expiresAtEl.value);
+            const end   = new Date(expiresAtEl.value);
+            const preview = document.getElementById('pricePreview');
 
             if (!startsAtEl.value || !expiresAtEl.value || end <= start) {
-                document.getElementById('pricePreview').style.display = 'none';
+                preview.style.display = 'none';
                 return;
             }
 
-            // Računanje razlike u milisekundama i pretvaranje u sate (zaokruživanje naviše)
-            const diffMs = end - start;
-            const hours = Math.ceil(diffMs / 3600000);
-            const price = (hours * hourlyRate).toFixed(2);
+            const pill = activePill;
+            if (!pill) { preview.style.display = 'none'; return; }
 
-            let SatTekst = ' sati';
-            if (hours % 10 === 1 && hours % 100 !== 11) {
-                SatTekst = ' sat';
-            } else if ((hours % 10 >= 2 && hours % 10 <= 4) && (hours % 100 < 12 || hours % 100 > 14)) {
-                SatTekst = ' sata';
+            const rate = parseFloat(pill.dataset.rate);
+            const type = pill.dataset.type;
+            const diffMs = end - start;
+
+            let units, unitLabel, price;
+
+            if (type === 'Hourly') {
+                units = Math.ceil(diffMs / 3600000);
+                unitLabel = units === 1 ? '1 sat' : (units % 10 >= 2 && units % 10 <= 4 && (units % 100 < 12 || units % 100 > 14)) ? units + ' sata' : units + ' sati';
+                price = (units * rate).toFixed(2);
+            } else if (type === 'Daily') {
+                units = Math.ceil(diffMs / 86400000);
+                unitLabel = units === 1 ? '1 dan' : (units % 10 >= 2 && units % 10 <= 4 && (units % 100 < 12 || units % 100 > 14)) ? units + ' dana' : units + ' dana';
+                price = (units * rate).toFixed(2);
+            } else if (type === 'Monthly') {
+                const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+                units = Math.max(1, months);
+                unitLabel = units === 1 ? '1 mjesec' : (units >= 2 && units <= 4) ? units + ' mjeseca' : units + ' mjeseci';
+                price = (units * rate).toFixed(2);
+            } else if (type === 'Yearly') {
+                units = Math.max(1, end.getFullYear() - start.getFullYear());
+                unitLabel = units === 1 ? '1 godina' : (units >= 2 && units <= 4) ? units + ' godine' : units + ' godina';
+                price = (units * rate).toFixed(2);
             }
 
-            document.getElementById('durationLabel').textContent = hours + SatTekst;
+            document.getElementById('durationLabel').textContent = unitLabel;
             document.getElementById('priceLabel').textContent = price + ' KM';
-            document.getElementById('pricePreview').style.display = 'block';
+            preview.style.display = 'block';
         }
 
-        // Event listener za promjenu vremena početka
+        startsAtEl.addEventListener('invalid', function () {
+            startsAtEl.setCustomValidity(startsAtEl.validity.valueMissing
+                ? 'Molimo unesite datum i vrijeme početka.'
+                : 'Molimo unesite ispravan datum i vrijeme.');
+        });
+        startsAtEl.addEventListener('input', function () { startsAtEl.setCustomValidity(''); });
+
+        expiresAtEl.addEventListener('invalid', function () {
+            expiresAtEl.setCustomValidity(expiresAtEl.validity.valueMissing
+                ? 'Molimo unesite datum i vrijeme isteka.'
+                : 'Molimo unesite ispravan datum i vrijeme.');
+        });
+        expiresAtEl.addEventListener('input', function () { expiresAtEl.setCustomValidity(''); });
+
         startsAtEl.addEventListener('change', function () {
             const start = new Date(this.value);
             if (isNaN(start.getTime())) return;
-
-            // Istek mora biti minimalno 30 minuta nakon početka
             const minEnd = new Date(start.getTime() + 30 * 60000);
-
-            const pad = n => String(n).padStart(2, '0');
-            const minVal = `${minEnd.getFullYear()}-${pad(minEnd.getMonth() + 1)}-${pad(minEnd.getDate())}T${pad(minEnd.getHours())}:${pad(minEnd.getMinutes())}`;
-
-            expiresAtEl.min = minVal;
-
-            // Ako je trenutni istek manji ili jednak novom početku, pomjeri ga automatski na +1 sat
+            expiresAtEl.min = fmt(minEnd);
             if (!expiresAtEl.value || new Date(expiresAtEl.value) <= start) {
-                const defaultEnd = new Date(start.getTime() + 60 * 60000);
-                expiresAtEl.value = `${defaultEnd.getFullYear()}-${pad(defaultEnd.getMonth() + 1)}-${pad(defaultEnd.getDate())}T${pad(defaultEnd.getHours())}:${pad(defaultEnd.getMinutes())}`;
+                adjustDefaultExpiry();
             }
             updatePreview();
         });
 
         expiresAtEl.addEventListener('change', updatePreview);
 
-        // Klijentska provjera prije submita kako bi se spriječili nevalidni podaci
         formEl.addEventListener('submit', function (e) {
-            const start = new Date(startsAtEl.value);
-            const end = new Date(expiresAtEl.value);
-
-            if (end <= start) {
+            if (new Date(expiresAtEl.value) <= new Date(startsAtEl.value)) {
                 e.preventDefault();
                 alert('Vrijeme isteka rezervacije mora biti nakon vremena početka.');
             }
         });
 
-        // POKRETANJE KALKULACIJE ODMAH PRI UČITAVANJU STRANICE
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener('DOMContentLoaded', function () {
             updatePreview();
         });
     </script>
