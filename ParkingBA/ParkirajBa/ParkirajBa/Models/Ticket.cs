@@ -18,6 +18,10 @@ namespace ParkirajBa.Models
 
         public bool IsPaid { get; set; } = false;
 
+        public string? ReservationCode { get; set; }
+
+        public DateTime? PaidAt { get; set; }
+
         public string ApplicationUserId { get; set; }
 
         [ForeignKey("ApplicationUserId")]

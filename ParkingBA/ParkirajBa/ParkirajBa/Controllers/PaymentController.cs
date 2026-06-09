@@ -77,11 +77,18 @@ namespace ParkirajBa.Controllers
             var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
             if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
 
-            // Mark ticket as paid
-            ticket.IsPaid = true;
-            await _database.SaveChangesAsync();
 
+            //Damir changes
             string reservationCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+
+            // Mark ticket as paid + save QR data
+            ticket.IsPaid = true;
+            ticket.PaidAt = DateTime.Now;
+            ticket.ReservationCode = reservationCode;
+
+            await _database.SaveChangesAsync();
+            //Damir changes
+            
             string parkingName = ticket.ParkingObject?.name ?? "ParkirajBa Parking";
             string userEmail = user.Email!;
             string fullName = user.FullName ?? cardName;
@@ -135,6 +142,30 @@ namespace ParkirajBa.Controllers
             ViewBag.ReservationCode = code;
             ViewBag.Ticket = ticket;
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GenerateQr(int ticketId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+
+            if (ticket == null || string.IsNullOrEmpty(ticket.ReservationCode))
+                return NotFound();
+
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(
+                ticket.ReservationCode,
+                QRCodeGenerator.ECCLevel.Q);
+
+            using var qrCode = new PngByteQRCode(qrData);
+
+            byte[] qrBytes = qrCode.GetGraphic(20);
+
+            return File(qrBytes, "image/png");
         }
     }
 }
