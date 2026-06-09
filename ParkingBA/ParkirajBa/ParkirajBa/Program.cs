@@ -88,6 +88,9 @@ namespace ParkirajBa
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
+            //Checks status of Ticket
+            builder.Services.AddHostedService<OverstayChargeService>();
+
             var app = builder.Build();
 
             await SeedRolesAsync(app);

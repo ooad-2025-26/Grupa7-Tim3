@@ -3,6 +3,7 @@
     Layout = "_Layout";
     ViewData["Title"] = "Detalji rezervacije";
 
+    decimal ukupno = Model.Price + Model.AdditionalCharge;
     var now = DateTime.Now;
     string statusClass, statusLabel;
 
@@ -60,7 +61,10 @@
                             @parkingName
                         </h2>
 
-                        @if (Model.IsPaid && !string.IsNullOrEmpty(Model.ReservationCode))
+                        @if (Model.IsPaid
+                              && !string.IsNullOrEmpty(Model.ReservationCode)
+                              && Model.QrCodeActive
+                              && Model.AdditionalChargePaid)
                         {
                             <button type="button"
                                     onclick="prikaziQrModal()"
@@ -84,7 +88,13 @@
                     </p>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 28px; font-weight: 700; color: #6287f9;">@Model.Price.ToString("0.00") KM</div>
+                    <div style="font-size: 28px; font-weight: 700; color: #6287f9;">@ukupno.ToString("0.00") KM</div>
+                    @if (!Model.QrCodeActive)
+                    {
+                        <div style="margin-top:10px;color:red;font-weight:bold;">
+                            QR kod je deaktiviran.
+                        </div>
+                    }
                     <div style="font-size: 12px; color: #aaa;">ukupna cijena</div>
                 </div>
             </div>
@@ -117,6 +127,118 @@
                 </div>
             </div>
         </div>
+
+        <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
+
+            <h3 style="margin-bottom:20px;">
+                Status parkinga
+            </h3>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+                <div>
+                    <strong>Ulazak:</strong><br />
+
+                    @if (Model.EnteredParking)
+                    {
+                        <span style="color:green;">
+                            ✓ Vozilo ušlo
+                        </span>
+
+                        <br />
+
+                        <small>
+                            @(Model.EnteredAt?.ToString("dd.MM.yyyy HH:mm"))
+                        </small>
+                    }
+                    else
+                    {
+                        <span style="color:orange;">
+                            Nije evidentiran ulazak
+                        </span>
+                    }
+                </div>
+
+                <div>
+                    <strong>Izlazak:</strong><br />
+
+                    @if (Model.ExitedParking)
+                    {
+                        <span style="color:green;">
+                            ✓ Vozilo izašlo
+                        </span>
+
+                        <br />
+
+                        <small>
+                            @(Model.ExitedAt?.ToString("dd.MM.yyyy HH:mm"))
+                        </small>
+                    }
+                    else
+                    {
+                        <span style="color:orange;">
+                            Nije evidentiran izlazak
+                        </span>
+                    }
+                </div>
+
+            </div>
+
+        </div>
+
+        @if (Model.AdditionalCharge > 0)
+        {
+            <form asp-controller="Payment"
+                  asp-action="PayAdditionalCharge"
+                  method="post">
+
+                <input type="hidden"
+                       name="ticketId"
+                       value="@Model.Id" />
+
+                <button type="submit"
+                        class="btn-blue">
+
+                    Plati doplatu
+                </button>
+
+            </form>
+
+            <div style="background:#fff3cd;
+                    border:1px solid #ffeeba;
+                    border-radius:12px;
+                    padding:20px;
+                    margin-bottom:20px;">
+
+                <h4 style="margin-top:0;">
+                    Dodatna naknada
+                </h4>
+
+                <p>
+                    Prekoračili ste trajanje rezervacije.
+                </p>
+
+                <p>
+                    <strong>
+                        Iznos za doplatu:
+                        @Model.AdditionalCharge.ToString("0.00") KM
+                    </strong>
+                </p>
+
+                @if (Model.AdditionalChargePaid)
+                {
+                    <span style="color:green;">
+                        ✓ Dodatna naknada plaćena
+                    </span>
+                }
+                else
+                {
+                    <span style="color:red;">
+                        Nije plaćena
+                    </span>
+                }
+            </div>
+        }
 
         @if (parking != null)
         {
@@ -236,7 +358,37 @@
     </div>
 </div>
 
-@if (Model.IsPaid && !string.IsNullOrEmpty(Model.ReservationCode))
+@* KORISTI SE ZA TESTIRANJE ULAZA/IZLAZA SA PARKINGA - IZBRISATI *@
+@if (!string.IsNullOrEmpty(Model.ReservationCode))
+{
+    <div style="margin-top:20px;">
+
+        <h4>Test QR sistema</h4>
+
+        <button type="button"
+                class="btn-blue"
+                onclick="testEntry()">
+            Test Ulaz
+        </button>
+
+        <button type="button"
+                class="btn-gray"
+                onclick="testExit()">
+            Test Izlaz
+        </button>
+
+        <div id="testResult"
+             style="margin-top:10px;font-weight:bold;">
+        </div>
+
+    </div>
+}
+@*------------------------------------------------------- *@
+
+@if (Model.IsPaid
+    && !string.IsNullOrEmpty(Model.ReservationCode)
+    && Model.QrCodeActive
+    && Model.AdditionalChargePaid)
 {
     <div id="qrModal" class="custom-modal-overlay" style="display:none;">
         <div class="qr-modal-box">
@@ -462,4 +614,53 @@
         sakrijQrModal();
     }
     }
+
+
+
+
+
+
+
+
+
+
+        //TESTIRANJE ULAZA/IZLAZA SA PARKINGA -IZIBRISATI
+
+        async function testEntry() {
+
+        const code = '@Model.ReservationCode';
+
+        const response =
+            await fetch(
+                '/api/qr/entry?code=' +
+                encodeURIComponent(code),
+                {
+                    method: 'POST'
+                });
+
+        const text = await response.text();
+
+        document.getElementById('testResult').innerHTML =
+            text;
+    }
+
+    async function testExit() {
+
+        const code = '@Model.ReservationCode';
+
+        const response =
+            await fetch(
+                '/api/qr/exit?code=' +
+                encodeURIComponent(code),
+                {
+                    method: 'POST'
+                });
+
+        const text = await response.text();
+
+        document.getElementById('testResult').innerHTML =
+            text;
+    }
+
+    //-------------------------------
 </script>
