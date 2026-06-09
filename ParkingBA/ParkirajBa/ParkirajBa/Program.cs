@@ -80,6 +80,7 @@ namespace ParkirajBa
 
             // 3. Email sender (Identity IEmailSender)
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+            builder.Services.AddHostedService<ReservationReminderService>();
 
             // 4. Repository
             builder.Services.AddScoped<ParkirajBa.Repositories.IParkingRepository, ParkirajBa.Repositories.ParkingRepository>();
