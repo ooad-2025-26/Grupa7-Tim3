@@ -29,6 +29,14 @@ namespace ParkirajBa.Data
                 .Property(t => t.Price)
                 .HasColumnType("decimal(18,2)");
 
+            modelBuilder.Entity<Ticket>()
+                .Property(t => t.AdditionalCharge)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Ticket>()
+               .Property(t => t.TotalAdditionalChargesPaid)
+               .HasColumnType("decimal(18,2)");
+
             modelBuilder.Entity<Pricing>()
                 .HasOne(p => p.ParkingObject)
                 .WithMany(o => o.Pricings)

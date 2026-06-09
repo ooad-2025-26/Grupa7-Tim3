@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ParkirajBa.Data;
 
@@ -11,9 +12,11 @@ using ParkirajBa.Data;
 namespace ParkirajBa.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609185736_TicketParkingTracking")]
+    partial class TicketParkingTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -434,9 +437,6 @@ namespace ParkirajBa.Migrations
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("OverstayEmailSent")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
 
@@ -451,9 +451,6 @@ namespace ParkirajBa.Migrations
 
                     b.Property<string>("ReservationCode")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalAdditionalChargesPaid")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

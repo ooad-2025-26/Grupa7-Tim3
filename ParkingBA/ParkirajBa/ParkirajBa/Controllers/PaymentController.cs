@@ -167,5 +167,49 @@ namespace ParkirajBa.Controllers
 
             return File(qrBytes, "image/png");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> PayAdditionalCharge(int ticketId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return Unauthorized();
+
+            var ticket = await _parkingRepository
+                .GetTicketByIdAsync(ticketId, user.Id);
+
+            if (ticket == null)
+                return NotFound();
+
+            if (ticket.AdditionalCharge <= 0)
+                return BadRequest("Nema dodatne naknade.");
+
+            string newReservationCode =
+                "PB-" +
+                Guid.NewGuid()
+                    .ToString()
+                    .Substring(0, 8)
+                    .ToUpper();
+
+            ticket.ReservationCode = newReservationCode;
+
+            ticket.QrCodeActive = true;
+            ticket.TotalAdditionalChargesPaid += ticket.AdditionalCharge;
+            ticket.AdditionalCharge = 0;
+            ticket.AdditionalChargePaid = true;
+
+
+            ticket.ExpiresAt = DateTime.Now.AddMinutes(15);
+            await _database.SaveChangesAsync();
+
+            return RedirectToAction(
+                "Success",
+                new
+                {
+                    code = newReservationCode,
+                    ticketId = ticket.Id
+                });
+        }
     }
 }
