@@ -56,7 +56,26 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <h2 style="margin: 0; font-size: 22px; color: #222;">@parkingName</h2>
+                        <h2 style="margin: 0; font-size: 22px; color: #222;">
+                            @parkingName
+                        </h2>
+
+                        @if (Model.IsPaid && !string.IsNullOrEmpty(Model.ReservationCode))
+                        {
+                            <button type="button"
+                                    onclick="prikaziQrModal()"
+                                    class="btn-qr">
+
+                                <svg viewBox="0 0 24 24"
+                                     width="16"
+                                     height="16"
+                                     fill="currentColor">
+                                    <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v4h-2v-4z" />
+                                </svg>
+
+                                <span>Prikaži QR kod</span>
+                            </button>
+                        }
                         <span class="rezervacija-badge @statusClass">@statusLabel</span>
                     </div>
                     <p style="margin: 0; color: #777; font-size: 14px;">
@@ -217,6 +236,31 @@
     </div>
 </div>
 
+@if (Model.IsPaid && !string.IsNullOrEmpty(Model.ReservationCode))
+{
+    <div id="qrModal" class="custom-modal-overlay" style="display:none;">
+        <div class="qr-modal-box">
+
+            <button type="button"
+                    class="qr-close-btn"
+                    onclick="sakrijQrModal()">
+                ✕
+            </button>
+
+            <h3>QR kod rezervacije</h3>
+
+            <img src="/Payment/GenerateQr?ticketId=@Model.Id"
+                 alt="QR Kod"
+                 style="width:250px; height:250px; margin:20px auto; display:block;" />
+
+            <p style="margin-top:10px;">
+                <strong>@Model.ReservationCode</strong>
+            </p>
+
+        </div>
+    </div>
+}
+
 <style>
     .parking-info-item {
         display: flex;
@@ -324,6 +368,58 @@
             background: #c53030;
         }
 
+    .qr-modal-box {
+        position: relative;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 360px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        animation: modalLaganiUlaz 0.2s ease-out;
+    }
+
+    .qr-close-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border: none;
+        background: transparent;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+    }
+
+        .qr-close-btn:hover {
+            color: #000;
+        }
+
+    .btn-qr {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #6287f9;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .btn-qr:hover {
+            background: #4f72df;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(98, 135, 249, 0.25);
+        }
+
+        .btn-qr svg {
+            flex-shrink: 0;
+        }
+
     @@keyframes modalLaganiUlaz {
         from {
             transform: scale(0.95);
@@ -346,10 +442,24 @@
         document.getElementById('customOtkaziModal').style.display = 'none';
     }
 
+        function prikaziQrModal() {
+        document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    function sakrijQrModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
+
     window.onclick = function (event) {
         const modal = document.getElementById('customOtkaziModal');
+        const qrModal = document.getElementById('qrModal');
+
         if (event.target === modal) {
             sakrijOtkaziModal();
         }
+
+         if (qrModal && event.target === qrModal) {
+        sakrijQrModal();
+    }
     }
 </script>
