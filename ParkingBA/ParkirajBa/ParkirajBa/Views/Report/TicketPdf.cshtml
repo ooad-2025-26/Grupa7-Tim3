@@ -231,7 +231,7 @@
 
         <div class="print-actions">
             <button class="btn-print" onclick="window.print()">🖨 Štampaj / Sačuvaj PDF</button>
-            <a class="btn-back" href="/Reservation/Details/@Model.Id">← Nazad</a>
+            <a class="btn-back" href="@(User.IsInRole("Admin") ? "/Admin/ReservationDetails/" + Model.Id : "/Reservation/Details/" + Model.Id)">← Nazad</a>
         </div>
 
         <div class="ticket">
