@@ -76,7 +76,8 @@ namespace ParkirajBa.Controllers
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int id, string name, string address,
             int totalSpots, bool hasCameras, bool isDisabledAccessible,
-            bool hasEVCharger, bool isUnderground, double? maxHeight)
+            bool hasEVCharger, bool isUnderground, double? maxHeight,
+            List<int>? pricingIds, List<decimal>? pricingValues)
         {
             var parking = await _parkingRepository.GetByIdAsync(id);
             if (parking == null) return NotFound();
@@ -101,7 +102,14 @@ namespace ParkirajBa.Controllers
                 return View(parking);
             }
 
-            
+            // validate prices server-side
+            if (pricingValues != null && pricingValues.Any(p => p < 0))
+            {
+                ViewBag.Error = "Cijena ne može biti negativna.";
+                ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(id);
+                return View("~/Views/Admin/ParkingDetails.cshtml", parking);
+            }
+
             int diff = totalSpots - (parking.totalSpots ?? 0);
             parking.name = name;
             parking.address = address;
@@ -114,13 +122,28 @@ namespace ParkirajBa.Controllers
             parking.maxHeight = maxHeight;
 
             _database.ParkingObject.Update(parking);
+
+            // update pricing rows
+            if (pricingIds != null && pricingValues != null)
+            {
+                for (int i = 0; i < pricingIds.Count && i < pricingValues.Count; i++)
+                {
+                    var pricing = await _database.Pricing.FindAsync(pricingIds[i]);
+                    if (pricing != null && pricing.ParkingObjectID == id)
+                    {
+                        pricing.price = pricingValues[i];
+                        _database.Pricing.Update(pricing);
+                    }
+                }
+            }
+
             await _database.SaveChangesAsync();
 
             TempData["Success"] = "Parking je uspješno ažuriran.";
 
-            // redirect 
+            // redirect
             if (User.IsInRole("Admin"))
-                return RedirectToAction("Parkings", "Admin");
+                return RedirectToAction("ParkingDetails", "Admin", new { id });
 
             return RedirectToAction("ParkingManagement");
         }
