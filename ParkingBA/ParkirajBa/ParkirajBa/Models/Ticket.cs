@@ -31,5 +31,7 @@ namespace ParkirajBa.Models
 
         [ForeignKey("ParkingObjectId")]
         public ParkingObject ParkingObject { get; set; }
+
+        public bool ExpirationReminderSent { get; set; } = false;
     }
 }
