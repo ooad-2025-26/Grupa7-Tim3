@@ -1,20 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
+using ParkirajBa.Services;
 
 namespace ParkirajBa.Repositories
 {
     public class ParkingRepository : IParkingRepository
     {
         private readonly ApplicationDbContext _Database;
+        private readonly ImageService _ImageService;
 
-        public ParkingRepository(ApplicationDbContext database)
+        public ParkingRepository(ApplicationDbContext database, ImageService imageService)
         {
             _Database = database;
+            _ImageService = imageService;
         }
 
-        // ── Filtering and searching
+        // -- Filtering and searching --
 
         public async Task<List<ParkingObject>> FilterParkings(
             string searchText, bool hasGarage, bool hasEVCharger,
@@ -55,14 +59,16 @@ namespace ParkirajBa.Repositories
             return await query.ToListAsync();
         }
 
+
+        //----
+
+        //-- Parking --
         public async Task<ParkingObject> AddParking(ParkingObject newParking)
         {
             _Database.ParkingObject.Add(newParking);
             await _Database.SaveChangesAsync();
             return newParking;
         }
-
-      
         public async Task<List<ParkingObject>> GetAllAsync()
         {
             return await _Database.ParkingObject
@@ -118,10 +124,32 @@ namespace ParkirajBa.Repositories
                 .FirstOrDefaultAsync(p => p.ID == id);
         }
 
-        // --Parking image getters
+        public async Task<ParkingObject?> ModifyParkingAsync(ParkingObject ChangedParking)
+        {
+            var DatabaseParking = await _Database.ParkingObject.FindAsync(ChangedParking.ID);
+            if (DatabaseParking == null) return null;
+
+            
+            DatabaseParking.name = ChangedParking.name;
+            DatabaseParking.address = ChangedParking.address;
+            DatabaseParking.latitude = ChangedParking.latitude;
+            DatabaseParking.longitude = ChangedParking.longitude;
+            DatabaseParking.totalSpots = ChangedParking.totalSpots;
+            DatabaseParking.maxHeight = ChangedParking.maxHeight;
+            DatabaseParking.hasCameras = ChangedParking.hasCameras;
+            DatabaseParking.hasEVCharger = ChangedParking.hasEVCharger;
+            DatabaseParking.isDisabledAccessible = ChangedParking.isDisabledAccessible;
+            DatabaseParking.isUnderground = ChangedParking.isUnderground;
+
+            _Database.SaveChanges();
+            return DatabaseParking;
+        }
+        //----
+
+        // -- Parking image --
         public async Task<List<string?>> GetImagePathsByParkingIDAsync(int parkingID)
         {
-            var images = await _Database.ParkingImages.Where(i => i.ParkingObjectID == parkingID).ToListAsync();
+            var images = await _Database.ParkingImages.Where(i => i.ParkingObjectID == parkingID).OrderBy(i=>i.Position).ToListAsync();
             List<string?> paths=new List<string?>();
             foreach (var image in images)
             {
@@ -132,7 +160,7 @@ namespace ParkirajBa.Repositories
 
         public async Task<List<ParkingImage?>?> GetImagesByParkingIDAsync(int parkingID)
         {
-            return await _Database.ParkingImages.Where(i=> i.ParkingObjectID== parkingID).ToListAsync();
+            return await _Database.ParkingImages.Where(i=> i.ParkingObjectID== parkingID).OrderBy(i=>i.Position).ToListAsync();
         }
 
         public async Task<string?> GetPrimaryImagePathByParkingIDAsync(int parkingID)
@@ -144,6 +172,31 @@ namespace ParkirajBa.Repositories
         public async Task<ParkingImage?> GetPrimaryImageByParkingIDAsync(int parkingID)
         {
             return await _Database.ParkingImages.Where(i => i.ParkingObjectID == parkingID).OrderBy(i => i.Position).FirstOrDefaultAsync();
+        }
+
+        public async Task<string> SaveParkingImageByIDAsync(IFormFile Image, int Position, int ParkingID)
+        {
+            string path = await _ImageService.SaveImageToServerAsync(Image,"images/Parkings",$"ForParkingID{ParkingID}");
+            ParkingImage img= new ParkingImage { ImagePath= path , ParkingObjectID=ParkingID, Position=Position};
+
+            _Database.ParkingImages.Add(img);
+            await _Database.SaveChangesAsync();
+
+            return img.ImagePath;
+        }
+        //can be optimized by not using the SaveParkingImageByIDAsync because it saves changes after every image
+        public async Task<List<string>> SaveAllParkingImagesByIDAsync(List<IFormFile> Images, List<int> Positions, int ParkingID)
+        {
+            if (Images.Count != Positions.Count)
+                throw new Exception("Dimensions of Images and their Positions dont align");
+
+            List<string> paths = new List<string>();
+            for(int i = 0; i < Images.Count; i++)
+            {
+                paths.Add(await SaveParkingImageByIDAsync(Images[i], Positions[i], ParkingID));
+            }
+
+            return paths;
         }
 
         // ── Prices
@@ -167,6 +220,24 @@ namespace ParkirajBa.Repositories
                     (p.validTo == null || p.validTo >= now))
                 .OrderByDescending(p => p.validFrom)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<Pricing?> AddPricingAsync(Pricing pricing)
+        {
+
+            _Database.Pricing.Add(pricing);
+            await _Database.SaveChangesAsync();
+            return pricing;
+        }
+
+        public async Task<List<Pricing?>?> AddAllPricingsAsync(List<Pricing> Pricings)
+        {
+            foreach (var pricing in Pricings)
+            {
+                await AddPricingAsync(pricing);
+            }
+
+            return Pricings;
         }
 
         // ── Tiket

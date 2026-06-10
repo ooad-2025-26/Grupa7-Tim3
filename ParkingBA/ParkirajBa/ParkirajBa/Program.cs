@@ -81,8 +81,13 @@ namespace ParkirajBa
             // 3. Email sender (Identity IEmailSender)
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+            // ImageService
+            builder.Services.AddTransient<ImageService>();
+
             // 4. Repository
             builder.Services.AddScoped<ParkirajBa.Repositories.IParkingRepository, ParkirajBa.Repositories.ParkingRepository>();
+
+           
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
@@ -111,6 +116,7 @@ namespace ParkirajBa
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
+           
             app.Run();
         }
     }

@@ -7,7 +7,6 @@
 
 <div class="app-container">
 
-    <!-- NAV -->
     <div class="tabs">
         <div class="tab">
             <a href="/Home/Index">🗺️ Mapa</a>
@@ -24,108 +23,39 @@
 
     <div class="management-container">
 
-        <!-- LEFT SIDE -->
         <div class="sidebar">
-
             @foreach (var parking in Model)
             {
-                <div class="parking-card">
-
+                <div class="parking-card" data-id="@parking.ID">
                     <img src="~/images/parking.jpg" />
-
                     <div class="parking-info">
                         <h4>@parking.name</h4>
-
                         <p>@parking.address</p>
-
-                        <small>
-                            Slobodna mjesta:
-                            @parking.availableSpots / @parking.totalSpots
-                        </small>
+                        <small>Slobodna mjesta: @parking.availableSpots / @parking.totalSpots</small>
                     </div>
-
                 </div>
             }
 
-            <button class="add-button">
+            <button class="add-button" id="btnOpenCreate">
                 + Dodaj parking
             </button>
-
         </div>
 
-        <!-- RIGHT SIDE -->
-        <div class="editor-panel">
-
-            <h2>Upravljanje objektima</h2>
-
-            <input type="text" placeholder="Naziv" class="custom-input" />
-
-            <input type="text" placeholder="Adresa" class="custom-input" />
-
-            <div class="input-row">
-
-                <input type="number"
-                       placeholder="Ukupno mjesta"
-                       class="custom-input" />
-
-                <input type="number"
-                       placeholder="Slobodna mjesta"
-                       class="custom-input" />
-
-            </div>
-
-            <div class="checkboxes">
-
-                <label>
-                    <input type="checkbox" />
-                    EV punjač
-                </label>
-
-                <label>
-                    <input type="checkbox" />
-                    Video nadzor
-                </label>
-
-                <label>
-                    <input type="checkbox" />
-                    Invalidski pristup
-                </label>
-
-                <label>
-                    <input type="checkbox" />
-                    Garaža
-                </label>
-
-            </div>
-
-            <textarea placeholder="Opis"
-                      class="description-box"></textarea>
-
-            <div class="buttons">
-
-                <button class="save-button">
-                    Sačuvaj izmjene
-                </button>
-
-                <button class="delete-button">
-                    Ukloni
-                </button>
-
-            </div>
-
+        <div class="editor-panel" id="editorContainer">
+            @await Html.PartialAsync("_ParkingCreate")
         </div>
 
     </div>
 </div>
 
 <style>
-
     body {
         margin: 0;
         background: #f5f5f5;
         font-family: 'Segoe UI';
     }
 
+    /* TABS NAV */
     .tabs {
         display: flex;
         gap: 10px;
@@ -152,6 +82,7 @@
             color: white;
         }
 
+    /* CONTAINER & SIDEBAR */
     .management-container {
         display: flex;
         gap: 20px;
@@ -165,6 +96,7 @@
         padding: 15px;
     }
 
+    /* PARKING CARDS */
     .parking-card {
         display: flex;
         gap: 15px;
@@ -196,62 +128,444 @@
         cursor: pointer;
     }
 
+    /* EDITOR PANEL & FORM (Ovdje su spojeni stari i inline stilovi) */
     .editor-panel {
         flex: 1;
         background: white;
-        border-radius: 12px;
-        padding: 25px;
-    }
-
-    .custom-input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-    }
-
-    .input-row {
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
         display: flex;
-        gap: 15px;
+        flex-direction: column;
     }
 
-    .checkboxes {
+        .editor-panel h3 {
+            margin: 0 0 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+    .editor-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 13px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    /* CHECKBOXES */
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin: 20px 0;
     }
 
-    .description-box {
-        width: 100%;
-        height: 120px;
-        border: 1px solid #ddd;
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px;
+        background: #f8f9fa;
         border-radius: 8px;
-        padding: 12px;
+        cursor: pointer;
     }
 
-    .buttons {
+        .checkbox-label input {
+            width: 15px;
+            height: 15px;
+        }
+
+        .checkbox-label span {
+            font-size: 13px;
+        }
+
+    /* FORM ACTIONS */
+    .form-actions {
         display: flex;
         justify-content: flex-end;
-        gap: 15px;
-        margin-top: 20px;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 10px;
     }
 
-    .save-button {
-        background: #1a73e8;
+    .submit-button {
+        padding: 10px 26px;
+        background: #6287f9;
         color: white;
         border: none;
-        padding: 12px 20px;
         border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
     }
 
-    .delete-button {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
+    /* VALIDATION */
+    .val-err {
+        color: #dc3545;
+        font-size: 12px;
+        display: block;
+        margin-top: 4px;
     }
-
 </style>
+<script>
+    let selectedFiles = [];
+    let draggedItem = null;
+    let pricingRows = [];
+
+    // LOAD PARTIAL FORMS
+    async function loadForm(url) {
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('editorContainer').innerHTML = html;
+
+                selectedFiles = [];
+                pricingRows = [];
+
+                initUploadLogic();
+                initPricingLogic();
+                attachValidation();
+            }
+        } catch (err) {
+            console.error("Greška pri učitavanju forme:", err);
+        }
+    }
+
+    // ========== UPLOAD LOGIKA ==========
+    function initUploadLogic() {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        if (!dropZone || !fileInput) return;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            fileInput.value = "";
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+    }
+
+    function handleFiles(files) {
+        for (let file of files) {
+            if (file.type.startsWith('image/')) {
+                file.tempId = Date.now() + Math.random().toString(36).substr(2, 9);
+                selectedFiles.push(file);
+            }
+        }
+        renderPreviews();
+    }
+
+    function renderPreviews() {
+        const container = document.getElementById('previewContainer');
+        if (!container) return;
+        container.innerHTML = "";
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const div = document.createElement('div');
+                div.classList.add('preview-item');
+                div.setAttribute('draggable', 'true');
+                div.setAttribute('data-id', file.tempId);
+
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="preview" />
+                    <button type="button" class="remove-btn" onclick="removeImage('${file.tempId}')">&times;</button>
+                    ${index === 0 ? '<span style="position:absolute; bottom:0; left:0; right:0; background:rgba(0,123,255,0.85); color:white; font-size:10px; text-align:center; padding: 2px 0;">NASLOVNA</span>' : ''}
+                `;
+
+                div.addEventListener('dragstart', function() {
+                    draggedItem = div;
+                    setTimeout(() => div.style.opacity = "0.5", 0);
+                });
+                div.addEventListener('dragend', function() {
+                    draggedItem = null;
+                    div.style.opacity = "1";
+                    recalcOrder();
+                });
+                div.addEventListener('dragover', (e) => e.preventDefault());
+                div.addEventListener('drop', function() {
+                    if (draggedItem !== div) {
+                        let children = Array.from(container.children);
+                        let draggedIdx = children.indexOf(draggedItem);
+                        let droppedIdx = children.indexOf(div);
+
+                        if (draggedIdx < droppedIdx) {
+                            container.insertBefore(draggedItem, div.nextSibling);
+                        } else {
+                            container.insertBefore(draggedItem, div);
+                        }
+                    }
+                });
+
+                container.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function removeImage(tempId) {
+        selectedFiles = selectedFiles.filter(f => f.tempId !== tempId);
+        renderPreviews();
+    }
+
+    function recalcOrder() {
+        const currentOrderIds = Array.from(document.querySelectorAll('.preview-item'))
+            .map(el => el.getAttribute('data-id'));
+        let newOrderedFiles = [];
+
+        currentOrderIds.forEach(id => {
+            const file = selectedFiles.find(f => f.tempId === id);
+            if (file) newOrderedFiles.push(file);
+        });
+
+        selectedFiles = newOrderedFiles;
+        renderPreviews();
+    }
+
+    // ========== PRICING LOGIKA ==========
+    function initPricingLogic() {
+        const btnAdd = document.getElementById('btnAddPricing');
+        if (btnAdd) {
+            btnAdd.addEventListener('click', addPricingRow);
+        }
+    }
+
+    function addPricingRow() {
+        const container = document.getElementById('pricingContainer');
+        if (!container) return;
+
+        const rowId = Date.now();
+        const row = document.createElement('div');
+        row.className = 'pricing-row';
+        row.setAttribute('data-id', rowId);
+
+        row.innerHTML = `
+            <select name="pricingType" required>
+                <option value="">-- Odaberi tip --</option>
+                <option value="0">Hourly (Po satu)</option>
+                <option value="1">Daily (Po danu)</option>
+                <option value="2">Weekly (Po sedmici)</option>
+                <option value="3">Monthly (Po mjesecu)</option>
+                <option value="4">Yearly (Po godini)</option>
+                <option value="5">InitialFreebie (Početna besplatnost)</option>
+            </select>
+            <input type="number" name="price" placeholder="Cijena" step="0.01" min="0" required />
+            <input type="text" name="validFrom" placeholder="Važeće od (opt.)" class="datepicker" />
+            <button type="button" class="remove-pricing-btn" onclick="removePricingRow(${rowId})">Obriši</button>
+        `;
+
+        container.appendChild(row);
+    }
+
+    function removePricingRow(rowId) {
+        const row = document.querySelector(`[data-id="${rowId}"]`);
+        if (row) row.remove();
+    }
+
+       // ========== VALIDACIJA I SUBMIT ==========
+        // ========== VALIDACIJA I SUBMIT ==========
+    function attachValidation() {
+        const form = document.getElementById('parkingCreateForm') || document.getElementById('parkingEditForm');
+        if (!form) return;
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            let valid = true;
+
+            const nameInput = document.getElementById('fieldName');
+            const spotsInput = document.getElementById('fieldSpots');
+            const heightInput = document.getElementById('fieldHeight');
+
+            const errName = document.getElementById('errName');
+            const errSpots = document.getElementById('errSpots');
+            const errHeight = document.getElementById('errHeight');
+
+            // Reset greške
+            if (errName) errName.innerText = "";
+            if (errSpots) errSpots.innerText = "";
+            if (errHeight) errHeight.innerText = "";
+
+            [nameInput, spotsInput, heightInput].forEach(input => {
+                if (input) input.style.borderColor = "";
+            });
+
+            // Validacija imena
+            if (nameInput && nameInput.value.trim() === "") {
+                valid = false;
+                nameInput.style.borderColor = "#dc3545";
+                if (errName) errName.innerText = "Naziv parkinga je obavezan.";
+            }
+
+            // Validacija mjesta
+            if (spotsInput) {
+                const spotsValue = parseInt(spotsInput.value);
+                if (spotsInput.value.trim() === "") {
+                    valid = false;
+                    spotsInput.style.borderColor = "#dc3545";
+                    if (errSpots) errSpots.innerText = "Unesite ukupan broj parking mjesta.";
+                } else if (isNaN(spotsValue) || spotsValue < 1) {
+                    valid = false;
+                    spotsInput.style.borderColor = "#dc3545";
+                    if (errSpots) errSpots.innerText = "Broj mjesta mora biti minimalno 1.";
+                }
+            }
+
+            // Validacija visine
+            if (heightInput && heightInput.value.trim() !== "") {
+                const heightValue = parseFloat(heightInput.value);
+                if (isNaN(heightValue) || heightValue <= 0) {
+                    valid = false;
+                    heightInput.style.borderColor = "#dc3545";
+                    if (errHeight) errHeight.innerText = "Maksimalna visina mora biti veća od 0 m.";
+                }
+            }
+
+            if (valid) {
+                // NOVI PRISTUP - Ručno skupi sve podatke
+                const latValue = document.getElementById('fieldLatitude').value;
+                const lonValue = document.getElementById('fieldLongitude').value;
+                const heightValue = document.getElementById('fieldHeight').value;
+
+                const parkingData = {
+                    name: document.getElementById('fieldName').value,
+                    address: document.getElementById('fieldAddress').value,
+                    latitude: latValue ? parseFloat(latValue) : 0,
+                    longitude: lonValue ? parseFloat(lonValue) : 0,
+                    totalSpots: parseInt(document.getElementById('fieldSpots').value),
+                    maxHeight: heightValue ? parseFloat(heightValue) : null,
+                    hasCameras: document.querySelector('[name="hasCameras"]') ? document.querySelector('[name="hasCameras"]').checked : false,
+                    isDisabledAccessible: document.querySelector('[name="isDisabledAccessible"]') ? document.querySelector('[name="isDisabledAccessible"]').checked : false,
+                    hasEVCharger: document.querySelector('[name="hasEVCharger"]') ? document.querySelector('[name="hasEVCharger"]').checked : false,
+                    isUnderground: document.querySelector('[name="isUnderground"]') ? document.querySelector('[name="isUnderground"]').checked : false
+                };
+
+                const formData = new FormData();
+
+                // Dodaj parking podatke
+                Object.keys(parkingData).forEach(key => {
+                    if (parkingData[key] !== null && parkingData[key] !== undefined) {
+                        formData.append(key, parkingData[key]);
+                    }
+                });
+
+                // Dodaj slike sa pozicijama
+                selectedFiles.forEach((file, index) => {
+                    formData.append('Images', file);
+                    formData.append(`ImagePositions[${index}]`, index + 1);
+                });
+
+                // Dodaj pricing podatke
+                const pricingRows = document.querySelectorAll('.pricing-row');
+                let pricingIndex = 0;
+                pricingRows.forEach((row) => {
+                    const type = row.querySelector('[name="pricingType"]').value;
+                    const price = row.querySelector('[name="price"]').value;
+                    const validFrom = row.querySelector('[name="validFrom"]').value;
+
+                    if (type && price) {
+                        formData.append(`Pricings[${pricingIndex}].pricingType`, parseInt(type));
+                        formData.append(`Pricings[${pricingIndex}].price`, parseFloat(price));
+
+                        // Samo dodaj validFrom ako je popunjeno
+                        if (validFrom && validFrom.trim() !== "") {
+                            formData.append(`Pricings[${pricingIndex}].validFrom`, validFrom);
+                        }
+
+                        pricingIndex++;
+                    }
+                });
+
+                const url = form.getAttribute('action');
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                        }
+                    } else {
+                        const errorText = await response.text();
+                    }
+                } catch (err) {
+                    console.error("Greška:", err);
+                }
+            }
+        });
+    }
+
+    // EVENT LISTENERI
+    document.querySelectorAll('.parking-card').forEach(card => {
+        card.addEventListener('click', function() {
+            loadForm(`/Parking/GetEditForm?id=${this.getAttribute('data-id')}`);
+        });
+    });
+
+    const btnOpenCreate = document.getElementById('btnOpenCreate');
+    if (btnOpenCreate) {
+        btnOpenCreate.addEventListener('click', () => loadForm('/Parking/GetCreateForm'));
+    }
+
+    // INICIJALIZACIJA
+    document.addEventListener("DOMContentLoaded", function() {
+        initUploadLogic();
+        initPricingLogic();
+        attachValidation();
+    });
+</script>
+
+
