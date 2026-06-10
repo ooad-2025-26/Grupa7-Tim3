@@ -18,15 +18,23 @@ namespace ParkirajBa.Repositories
         Task<ParkingObject?> GetByIdWithPricingsAsync(int id);
         Task<ParkingObject?> GetByIdWithOwnerAsync(int id);
 
+        Task<ParkingObject?> ModifyParkingAsync(ParkingObject ChangedParking);
+
         //--Parking Images
         Task<List<string?>> GetImagePathsByParkingIDAsync(int parkingID);
-        Task<List<ParkingImage>?> GetImagesByParkingIDAsync(int parkingID);
+        Task<List<ParkingImage?>?> GetImagesByParkingIDAsync(int parkingID);
         Task<string?> GetPrimaryImagePathByParkingIDAsync(int parkingID);
         Task<ParkingImage?> GetPrimaryImageByParkingIDAsync(int parkingID);
+
+        Task<string> SaveParkingImageByIDAsync(IFormFile Image, int Position, int ParkingID);
+
+        Task<List<string>> SaveAllParkingImagesByIDAsync(List<IFormFile> Images, List<int> Positions, int ParkingID);
 
         // ── Prices
         Task<List<Pricing>> GetPricingsByParkingIdAsync(int parkingObjectId);
         Task<Pricing?> GetActivePricingAsync(int parkingObjectId, PricingType type);
+        Task<Pricing?> AddPricingAsync(Pricing pricing);
+        Task<List<Pricing?>?> AddAllPricingsAsync(List<Pricing> Pricings);
 
         // ── Ticket
         Task<List<Ticket>> GetTicketsByUserIdAsync(string userId);

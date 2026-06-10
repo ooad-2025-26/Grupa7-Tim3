@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +54,7 @@ namespace ParkirajBa.Controllers
 
             return View(parkingObjects);
         }
-
+        /*
         // GET: /Parking/Edit/5 — Owner or Admin
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int id)
@@ -72,6 +73,7 @@ namespace ParkirajBa.Controllers
         }
 
         // POST: /Parking/Edit/5
+        
         [HttpPost]
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(int id, string name, string address,
@@ -156,5 +158,133 @@ namespace ParkirajBa.Controllers
 
             return RedirectToAction("ParkingManagement");
         }
+        */
+
+        //-- My Objects - Create /Edit
+        [HttpGet]
+        [Authorize(Roles="Owner,Admin")]
+        public IActionResult GetCreateForm()
+        {
+            // Vraća čistu kreiraj formu
+            return PartialView("_ParkingCreate");
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Owner,Admin")]
+        public async Task<IActionResult> GetEditForm(int id)
+        {
+            var parking = await _parkingRepository.GetByIdAsync(id);
+            if (parking == null) return NotFound();
+
+            // Vraća edit formu sa modelom
+            return PartialView("_ParkingEdit", parking);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            ParkingObject parkingObject,
+            List<IFormFile> Images,
+            List<int> ImagePositions,
+            List<PricingCreateDto> Pricings)
+        {
+            try
+            {
+                // 1. Postavi OwnerId
+                var owner = await _userManager.GetUserAsync(User);
+                if (owner == null)
+                    return Json(new { success = false, message = "Korisnik nije pronađen" });
+
+                parkingObject.OwnerId = owner.Id;
+
+                // 2. Validacija
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Greške: {string.Join(", ", errors)}"
+                    });
+                }
+
+                // 3. Postavi availableSpots
+                parkingObject.availableSpots = parkingObject.totalSpots ?? 0;
+
+                // 4. Spremi parking - AWAIT AKO JE ASYNC
+                await _parkingRepository.AddParking(parkingObject);  // ← AWAIT!
+
+                // 5. Spremi slike - NAKON parking operacije
+                if (Images != null && Images.Count > 0)
+                {
+                    try
+                    {
+                        await _parkingRepository.SaveAllParkingImagesByIDAsync(Images, ImagePositions, parkingObject.ID);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Image save error: {ex.Message}");
+                    }
+                }
+
+                // 6. Spremi cijene - NAKON slike
+                if (Pricings != null && Pricings.Count > 0)
+                {
+                    foreach (var pricingDto in Pricings)
+                    {
+                        var pricing = new Pricing
+                        {
+                            pricingType = (PricingType)pricingDto.pricingType,
+                            price = pricingDto.price,
+                            ParkingObjectID = parkingObject.ID,
+                            validFrom = string.IsNullOrEmpty(pricingDto.validFrom)
+                                ? null
+                                : (DateTime.TryParse(pricingDto.validFrom, out var date) ? (DateTime?)date : null)
+                        };
+
+                        await _parkingRepository.AddPricingAsync(pricing);
+                    }
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Parking uspješno kreiran!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Greška: {ex.Message}"
+                });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ParkingObject ChangedParking)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Podaci nisu validni.");
+            }
+
+            ParkingObject parking= await _parkingRepository.ModifyParkingAsync(ChangedParking);
+
+            if (parking == null) return NotFound();
+
+            return Json(new { success = true, message = "Izmjene su uspješno spašene!" });
+        }
+
+        //----
+
+
+
     }
+
 }

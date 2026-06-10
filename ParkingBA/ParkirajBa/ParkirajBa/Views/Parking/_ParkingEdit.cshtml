@@ -1,0 +1,223 @@
+﻿@model ParkirajBa.Models.ParkingObject
+
+<h3>Uredi parking: @Model.name</h3>
+
+<form method="post" action="/Parking/Edit" class="editor-form" id="parkingEditForm" novalidate>
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="id" value="@Model.ID" />
+
+    <!-- OSNOVNI PODACI -->
+    <div class="form-group">
+        <label class="form-label" for="fieldName">Naziv parkinga *</label>
+        <input type="text" name="name" id="fieldName" required placeholder="Unesite naziv..." class="form-input" value="@Model.name" autocomplete="off" />
+        <span class="val-err" id="errName"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label" for="fieldAddress">Adresa</label>
+        <input type="text" name="address" id="fieldAddress" placeholder="Unesite adresu..." class="form-input" value="@Model.address" autocomplete="street-address" />
+    </div>
+
+    <div class="form-grid">
+        <div>
+            <label class="form-label" for="fieldLatitude">Latitude (Širina)</label>
+            <input type="number" name="latitude" id="fieldLatitude" step="0.000001" placeholder="npr. 43.8563" class="form-input" value="@Model.latitude" />
+        </div>
+        <div>
+            <label class="form-label" for="fieldLongitude">Longitude (Dužina)</label>
+            <input type="number" name="longitude" id="fieldLongitude" step="0.000001" placeholder="npr. 18.4075" class="form-input" value="@Model.longitude" />
+        </div>
+    </div>
+
+    <div class="form-grid">
+        <div>
+            <label class="form-label" for="fieldSpots">Ukupno mjesta *</label>
+            <input type="number" name="totalSpots" id="fieldSpots" min="1" required placeholder="Broj mjesta" class="form-input" value="@Model.totalSpots" />
+            <span class="val-err" id="errSpots"></span>
+        </div>
+        <div>
+            <label class="form-label" for="fieldHeight">Maks. visina (m)</label>
+            <input type="number" name="maxHeight" id="fieldHeight" step="0.1" min="0" placeholder="Ostavite prazno ako nema" class="form-input" value="@Model.maxHeight" />
+            <span class="val-err" id="errHeight"></span>
+        </div>
+    </div>
+
+    <!-- SLIKE -->
+    <div class="form-group">
+        <label class="form-label">Slike parkinga (Prva slika će biti naslovna)</label>
+        <div class="upload-row-wrapper">
+            <div id="dropZone" class="drop-zone-square">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" />
+            </div>
+            <div id="previewContainer" class="preview-grid"></div>
+        </div>
+    </div>
+
+    <!-- CHECKBOXES -->
+    <div class="checkbox-grid">
+        <label class="checkbox-label">
+            <input type="checkbox" name="hasCameras" value="true" @(Model.hasCameras == true ? "checked" : "") />
+            <span>📷 Video nadzor</span>
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" name="hasEVCharger" value="true" @(Model.hasEVCharger == true ? "checked" : "") />
+            <span>⚡ EV punjač</span>
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" name="isDisabledAccessible" value="true" @(Model.isDisabledAccessible == true ? "checked" : "") />
+            <span>♿ Invalidski pristup</span>
+        </label>
+        <label class="checkbox-label">
+            <input type="checkbox" name="isUnderground" value="true" @(Model.isUnderground == true ? "checked" : "") />
+            <span>🏢 Garaža</span>
+        </label>
+    </div>
+
+    <!-- PRICING SEKCIJA -->
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e0e0e0;">
+
+    <h4 style="margin-top: 20px; margin-bottom: 15px; font-size: 14px; font-weight: 600;">💰 Cijene Parkinga</h4>
+
+    <div id="pricingContainer"></div>
+
+    <button type="button" id="btnAddPricing" class="add-pricing-btn">
+        + Dodaj cijenu
+    </button>
+
+    <!-- SUBMIT -->
+    <div class="form-actions">
+        <button type="submit" class="submit-button">
+            Spasi izmjene
+        </button>
+    </div>
+</form>
+
+<style>
+    .upload-row-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .drop-zone-square {
+        width: 100px;
+        height: 100px;
+        min-width: 100px;
+        min-height: 100px;
+        border: 2px dashed #ced4da;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+        .drop-zone-square:hover,
+        .drop-zone-square.drag-over {
+            border-color: #0d6efd;
+            background-color: #e9ecef;
+        }
+
+    .preview-grid {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .preview-item {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff;
+        cursor: grab;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+        .preview-item:active {
+            cursor: grabbing;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(220, 53, 69, 0.85);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+    /* PRICING STIL */
+    .pricing-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 10px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+
+        .pricing-row select,
+        .pricing-row input {
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .pricing-row .remove-pricing-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+    .add-pricing-btn {
+        width: 100%;
+        padding: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+        .add-pricing-btn:hover {
+            background: #218838;
+        }
+</style>

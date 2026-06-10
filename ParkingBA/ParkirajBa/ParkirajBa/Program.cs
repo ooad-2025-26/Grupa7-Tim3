@@ -82,8 +82,13 @@ namespace ParkirajBa
             builder.Services.AddTransient<IEmailSender, EmailSender>();
             builder.Services.AddHostedService<ReservationReminderService>();
 
+            // ImageService
+            builder.Services.AddTransient<ImageService>();
+
             // 4. Repository
             builder.Services.AddScoped<ParkirajBa.Repositories.IParkingRepository, ParkirajBa.Repositories.ParkingRepository>();
+
+           
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
