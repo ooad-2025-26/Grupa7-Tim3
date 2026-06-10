@@ -371,7 +371,9 @@
     function initPricingLogic() {
         const btnAdd = document.getElementById('btnAddPricing');
         if (btnAdd) {
-            btnAdd.addEventListener('click', addPricingRow);
+            const newBtn = btnAdd.cloneNode(true);
+            btnAdd.replaceWith(newBtn);
+            document.getElementById('btnAddPricing').addEventListener('click', addPricingRow);
         }
     }
 
@@ -392,7 +394,6 @@
                 <option value="2">Weekly (Po sedmici)</option>
                 <option value="3">Monthly (Po mjesecu)</option>
                 <option value="4">Yearly (Po godini)</option>
-                <option value="5">InitialFreebie (Početna besplatnost)</option>
             </select>
             <input type="number" name="price" placeholder="Cijena" step="0.01" min="0" required />
             <input type="text" name="validFrom" placeholder="Važeće od (opt.)" class="datepicker" />
@@ -520,7 +521,34 @@
                 const errPricing = document.getElementById('errPricing');
                 if (errPricing) errPricing.innerText = "Molimo ispravite greške u cijenama.";
             }
+            // Validacija radnog vremena
+            const opensAt = document.getElementById('fieldOpensAt');
+            const closesAt = document.getElementById('fieldClosesAt');
 
+            if (opensAt && closesAt) {
+                const opensVal = opensAt.value.trim();
+                const closesVal = closesAt.value.trim();
+
+                if (opensVal && !closesVal) {
+                    valid = false;
+                    closesAt.style.borderColor = "#dc3545";
+                    const errTime = document.getElementById('errTime');
+                    if (errTime) errTime.innerText = "Morate unijeti i vrijeme zatvaranja.";
+                } else if (!opensVal && closesVal) {
+                    valid = false;
+                    opensAt.style.borderColor = "#dc3545";
+                    const errTime = document.getElementById('errTime');
+                    if (errTime) errTime.innerText = "Morate unijeti i vrijeme otvaranja.";
+                } else if (opensVal && closesVal && opensVal >= closesVal) {
+                    valid = false;
+                    closesAt.style.borderColor = "#dc3545";
+                    const errTime = document.getElementById('errTime');
+                    if (errTime) errTime.innerText = "Vrijeme zatvaranja mora biti nakon vremena otvaranja.";
+                } else {
+                    if (opensAt) opensAt.style.borderColor = "";
+                    if (closesAt) closesAt.style.borderColor = "";
+                }
+            }
             if (valid) {
                 // NOVI PRISTUP - Ručno skupi sve podatke
                 const latValue = document.getElementById('fieldLatitude').value;
@@ -537,7 +565,9 @@
                     hasCameras: document.querySelector('[name="hasCameras"]') ? document.querySelector('[name="hasCameras"]').checked : false,
                     isDisabledAccessible: document.querySelector('[name="isDisabledAccessible"]') ? document.querySelector('[name="isDisabledAccessible"]').checked : false,
                     hasEVCharger: document.querySelector('[name="hasEVCharger"]') ? document.querySelector('[name="hasEVCharger"]').checked : false,
-                    isUnderground: document.querySelector('[name="isUnderground"]') ? document.querySelector('[name="isUnderground"]').checked : false
+                    isUnderground: document.querySelector('[name="isUnderground"]') ? document.querySelector('[name="isUnderground"]').checked : false,
+                    opensAt: document.getElementById('fieldOpensAt')?.value || null,
+                    closesAt: document.getElementById('fieldClosesAt')?.value || null,
                 };
 
                 const formData = new FormData();
