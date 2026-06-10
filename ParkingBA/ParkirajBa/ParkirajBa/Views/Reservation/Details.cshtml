@@ -134,6 +134,7 @@
 
             <h3 style="margin-bottom:20px;">
                 Status parkinga
+                <div id="statusBox" style="margin-top:10px;font-weight:bold;"></div>
             </h3>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -141,47 +142,31 @@
                 <div>
                     <strong>Ulazak:</strong><br />
 
-                    @if (Model.EnteredParking)
-                    {
-                        <span style="color:green;">
-                            ✓ Vozilo ušlo
-                        </span>
-
-                        <br />
-
-                        <small>
-                            @(Model.EnteredAt?.ToString("dd.MM.yyyy HH:mm"))
-                        </small>
-                    }
-                    else
-                    {
-                        <span style="color:orange;">
-                            Nije evidentiran ulazak
-                        </span>
-                    }
+                    <span id="entryStatus">
+                        @if (Model.EnteredParking)
+                        {
+                            <span style="color:green;">✓ Vozilo ušlo</span>
+                        }
+                        else
+                        {
+                            <span style="color:orange;">Nije evidentiran ulazak</span>
+                        }
+                    </span>
                 </div>
 
                 <div>
                     <strong>Izlazak:</strong><br />
 
-                    @if (Model.ExitedParking)
-                    {
-                        <span style="color:green;">
-                            ✓ Vozilo izašlo
-                        </span>
-
-                        <br />
-
-                        <small>
-                            @(Model.ExitedAt?.ToString("dd.MM.yyyy HH:mm"))
-                        </small>
-                    }
-                    else
-                    {
-                        <span style="color:orange;">
-                            Nije evidentiran izlazak
-                        </span>
-                    }
+                    <span id="exitStatus">
+                        @if (Model.ExitedParking)
+                        {
+                            <span style="color:green;">✓ Vozilo izašlo</span>
+                        }
+                        else
+                        {
+                            <span style="color:orange;">Nije evidentiran izlazak</span>
+                        }
+                    </span>
                 </div>
 
             </div>
@@ -583,7 +568,7 @@
         document.getElementById('customOtkaziModal').style.display = 'none';
     }
 
-        function prikaziQrModal() {
+    function prikaziQrModal() {
         document.getElementById('qrModal').style.display = 'flex';
     }
 
@@ -599,21 +584,59 @@
             sakrijOtkaziModal();
         }
 
-         if (qrModal && event.target === qrModal) {
-        sakrijQrModal();
+        if (qrModal && event.target === qrModal) {
+            sakrijQrModal();
+        }
+    };
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/parkingHub")
+        .build();
+
+    connection.start().then(() => {
+        updateStatus();
+    });
+
+    connection.on("StatusChanged", function (code) {
+        const currentCode = '@Model.ReservationCode';
+
+        if (code === currentCode) {
+            updateStatus();
+        }
+    });
+
+       async function updateStatus() {
+
+        const code = '@Model.ReservationCode';
+
+        const res = await fetch('/api/qr/status/' + code);
+        const data = await res.json();
+
+        const entry = document.getElementById("entryStatus");
+        const exit = document.getElementById("exitStatus");
+
+        if (entry) {
+            entry.innerHTML = data.entered
+                ? '<span style="color:green;">✓ Vozilo ušlo</span>'
+                : '<span style="color:orange;">Nije evidentiran ulazak</span>';
+        }
+
+        if (exit) {
+            exit.innerHTML = data.exited
+                ? '<span style="color:green;">✓ Vozilo izašlo</span>'
+                : '<span style="color:orange;">Nije evidentiran izlazak</span>';
+        }
     }
-    }
+</script>
 
 
 
-
-
-
-
-
-
-
-        //TESTIRANJE ULAZA/IZLAZA SA PARKINGA -IZIBRISATI
+<script>
+    //TESTIRANJE ULAZA/IZLAZA SA PARKINGA -IZIBRISATI
 
     async function scanQr() {
 
@@ -650,11 +673,4 @@
     }
 
     //-------------------------------
-
-    //Refreshanje stranice kako bi se vidjelo da treba doplata
-        setTimeout(() => {
-
-        location.reload();
-
-    }, 60000);
 </script>

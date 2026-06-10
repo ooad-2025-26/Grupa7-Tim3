@@ -2,6 +2,7 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = Model.name;
+
     var pricings = ViewBag.Pricings as List<ParkirajBa.Models.Pricing> ?? new();
     bool isOpen = false;
     if (Model.opensAt.HasValue && Model.closesAt.HasValue)
@@ -9,316 +10,192 @@
         var now = DateTime.Now.TimeOfDay;
         isOpen = now >= Model.opensAt.Value.TimeOfDay && now <= Model.closesAt.Value.TimeOfDay;
     }
-    double occ = (Model.totalSpots.HasValue && Model.totalSpots.Value > 0)
-        ? Math.Min((double)(Model.totalSpots.Value - Model.availableSpots) / Model.totalSpots.Value * 100, 100) : 0;
-    string occColor = occ >= 80 ? "#dc3545" : occ >= 50 ? "#fd7e14" : "#28a745";
 }
 
-<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
+<div class="app-container">
 
-    <div style="margin-bottom:24px;">
-        <a href="/Admin/Parkings" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na parkinge</a>
-        <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">@Model.name</h1>
-        <p style="margin:4px 0 0;font-size:13px;color:var(--text3);">@Model.address</p>
+    <div class="tabs">
+        <div class="tab"><a href="/Home/Index">Mapa</a></div>
+        <div class="tab active"><a href="/Home/Objekti">Objekti</a></div>
+        <div class="tab"><a href="/Home/Rezervacije">Rezervacije</a></div>
     </div>
 
-    @if (ViewBag.Error != null)
-    {
-        <div style="background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:10px;padding:12px 16px;margin-bottom:20px;">
-            ⚠ @ViewBag.Error
+    <div class="rezervacije-container">
+
+        <div style="margin-bottom: 24px;">
+            <a href="/Home/Objekti" style="color: #6287f9; font-size: 14px; display: inline-flex; align-items: center; gap: 4px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#6287f9"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>
+                Nazad na objekte
+            </a>
         </div>
-    }
-    @if (TempData["Success"] != null)
-    {
-        <div style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:20px;">
-            ✓ @TempData["Success"]
-        </div>
-    }
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 3px 14px rgba(0,0,0,0.08); margin-bottom: 20px;">
+            <img src="/images/parking.png" alt="Slika objekta - @Model.name"
+                 style="width: 100%; height: 220px; object-fit: cover;" />
 
-        <div style="display:flex;flex-direction:column;gap:20px;">
+            <div style="padding: 28px 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                    <div>
+                        <h2 style="margin: 0 0 6px; font-size: 24px; color: #222;">@Model.name</h2>
+                        <p style="margin: 0; color: #888; font-size: 14px; display: flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="#aaa"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
+                            @Model.address
+                        </p>
+                    </div>
+                    @if (Model.opensAt.HasValue && Model.closesAt.HasValue)
+                    {
+                        <span style="background: @(isOpen ? "#d4edda" : "#f8d7da"); color: @(isOpen ? "#155724" : "#721c24"); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                            @(isOpen ? "● Otvoreno" : "● Zatvoreno")
+                        </span>
+                    }
+                </div>
 
-          
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
-                <img src="/images/parking.png" alt="@Model.name" style="width:100%;height:200px;object-fit:cover;" />
-                <div style="padding:20px 24px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <div class="object-badges" style="margin-bottom: 20px;">
+                    @if (Model.hasCameras == true)
+                    {
+                        <span class="badge-feature">📷 Video nadzor</span>
+                    }
+                    @if (Model.hasEVCharger == true)
+                    {
+                        <span class="badge-feature">⚡ EV punjač</span>
+                    }
+                    @if (Model.isDisabledAccessible == true)
+                    {
+                        <span class="badge-feature">♿ Pristupačno</span>
+                    }
+                    @if (Model.isUnderground == true)
+                    {
+                        <span class="badge-feature">🏢 Podzemni parking</span>
+                    }
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px;">
+
+                    <div class="parking-info-item">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9">
+                            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+                        </svg>
                         <div>
-                            <div style="font-size:22px;font-weight:700;color:var(--text);">@Model.name</div>
-                            <div style="font-size:13px;color:var(--text3);margin-top:2px;">@Model.address</div>
-                        </div>
-                        @if (Model.opensAt.HasValue && Model.closesAt.HasValue)
-                        {
-                            <span style="background:@(isOpen ? "#d4edda" : "#f8d7da");color:@(isOpen ? "#155724" : "#721c24");padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;">
-                                @(isOpen ? "● Otvoreno" : "● Zatvoreno")
-                            </span>
-                        }
-                    </div>
-
-                    <div style="margin-bottom:16px;">
-                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px;">
-                            <span>Zauzetost parkinga</span>
-                            <span style="color:@occColor;font-weight:600;">@occ.ToString("0")% — @Model.availableSpots/@Model.totalSpots slobodnih</span>
-                        </div>
-                        <div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;">
-                            <div style="height:100%;width:@occ.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%;background:@occColor;border-radius:4px;"></div>
+                            <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.4px;">Slobodna mjesta</div>
+                            <div style="font-weight: 600; color: #333; font-size: 15px;">@Model.availableSpots / @Model.totalSpots</div>
                         </div>
                     </div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                        @if (Model.opensAt.HasValue && Model.closesAt.HasValue)
-                        {
-                            <div style="background:#f8f9fa;border-radius:10px;padding:12px;">
-                                <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.4px;">Radno vrijeme</div>
-                                <div style="font-weight:600;color:var(--text);margin-top:2px;">@Model.opensAt.Value.ToString("HH:mm") – @Model.closesAt.Value.ToString("HH:mm")</div>
+                    @if (Model.opensAt.HasValue && Model.closesAt.HasValue)
+                    {
+                        <div class="parking-info-item">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9">
+                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                            </svg>
+                            <div>
+                                <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.4px;">Radno vrijeme</div>
+                                <div style="font-weight: 600; color: #333; font-size: 15px;">@Model.opensAt.Value.ToString("HH:mm") – @Model.closesAt.Value.ToString("HH:mm")</div>
                             </div>
-                        }
-                        @if (Model.maxHeight.HasValue)
-                        {
-                            <div style="background:#f8f9fa;border-radius:10px;padding:12px;">
-                                <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.4px;">Maks. visina</div>
-                                <div style="font-weight:600;color:var(--text);margin-top:2px;">@Model.maxHeight.Value.ToString("0.0") m</div>
-                            </div>
-                        }
-                    </div>
+                        </div>
+                    }
 
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
-                        @if (Model.hasCameras == true)
-                        {
-                            <span style="background:#eef1ff;color:#4a67d6;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;">📷 Video nadzor</span>
-                        }
-                        @if (Model.hasEVCharger == true)
-                        {
-                            <span style="background:#eef1ff;color:#4a67d6;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;">⚡ EV punjač</span>
-                        }
-                        @if (Model.isDisabledAccessible == true)
-                        {
-                            <span style="background:#eef1ff;color:#4a67d6;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;">♿ Pristupačno</span>
-                        }
-                        @if (Model.isUnderground == true)
-                        {
-                            <span style="background:#eef1ff;color:#4a67d6;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;">🏢 Garaža</span>
-                        }
+                    @if (Model.maxHeight.HasValue)
+                    {
+                        <div class="parking-info-item">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="#6287f9">
+                                <path d="M16 4H8v2h8V4zm2 4H6v2h12V8zm-2 4H8v2h8v-2zm2 4H6v2h12v-2z" />
+                            </svg>
+                            <div>
+                                <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.4px;">Maks. visina</div>
+                                <div style="font-weight: 600; color: #333; font-size: 15px;">@Model.maxHeight.Value.ToString("0.0") m</div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+                @{
+                    double occ = (Model.totalSpots.HasValue && Model.totalSpots.Value > 0)
+                    ? Math.Min((double)(Model.totalSpots.Value - Model.availableSpots) / Model.totalSpots.Value * 100, 100) : 0;
+
+                    string occColor = occ >= 80 ? "#dc3545" : occ >= 50 ? "#fd7e14" : "#28a745";
+                }
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #aaa; margin-bottom: 6px;">
+                        <span>Zauzetost</span>
+                        <span style="color: @occColor; font-weight: 600;">@occ.ToString("0")%</span>
                     </div>
+                    <div style="height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                        <div style="height: 100%; width: @occ.ToString("0.0")%; background: @occColor; border-radius: 4px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        @if (pricings.Any())
+        {
+            <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
+                <h3 style="margin: 0 0 18px; font-size: 16px; color: #333; font-weight: 600;">Cjenovnik</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+                    @foreach (var p in pricings)
+                    {
+                        string tipString = p.pricingType.ToString().ToLower();
+
+                        string prevedeniTip = tipString switch
+                        {
+                            "hourly" or "posatu" or "po satu" => "Po satu",
+                            "daily" or "podanu" or "po danu" => "Po danu",
+                            "weekly" or "posedmici" or "po sedmici" => "Po sedmici",
+                            "monthly" or "mjesecno" or "mjesečno" => "Mjesečno",
+                            _ => "Standardno"
+                        };
+
+                        <div style="background: #f4f7ff; border-radius: 12px; padding: 16px; text-align: center;">
+                            <div style="font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+                                @prevedeniTip
+                            </div>
+                            <div style="font-size: 18px; font-weight: 700; color: #333;">
+                                @p.price.ToString("0.00") KM
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
+        }
 
-            @if (pricings.Any())
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            @if (Model.availableSpots > 0)
             {
-                <div style="background:white;border-radius:16px;padding:22px 24px;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
-                    <h3 style="margin:0 0 14px;font-size:15px;font-weight:600;color:var(--text);">Cjenovnik</h3>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
-                        @foreach (var p in pricings)
-                        {
-                            string prevedeniTip = p.pricingType.ToString().ToLower() switch
-                            {
-                                "hourly" => "Po satu",
-                                "daily" => "Po danu",
-                                "weekly" => "Po sedmici",
-                                "monthly" => "Mjesečno",
-                                _ => "Standardno"
-                            };
-                            <div style="background:#f4f7ff;border-radius:10px;padding:14px;text-align:center;">
-                                <div style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">@prevedeniTip</div>
-                                <div style="font-size:18px;font-weight:700;color:var(--text);">@p.price.ToString("0.00") KM</div>
-                            </div>
-                        }
-                    </div>
-                </div>
+                <a href="/Reservation/Create?parkingObjectId=@Model.ID" class="btn-blue" style="padding: 12px 28px;">
+                    Rezerviši parking
+                </a>
             }
-        </div>
-
-        <div style="background:white;border-radius:16px;padding:28px 32px;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;flex-direction:column;position:sticky;top:28px;">
-            <h3 style="margin:0 0 20px;font-size:16px;font-weight:600;color:var(--text);">Uredi podatke</h3>
-
-            <form method="post" action="/Parking/Edit/@Model.ID" style="display:flex;flex-direction:column;flex:1;" id="parkingEditForm" novalidate>
-                @Html.AntiForgeryToken()
-
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Naziv parkinga *</label>
-                    <input type="text" name="name" id="fieldName" value="@Model.name" required
-                           style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                    <span class="val-err" id="errName"></span>
-                </div>
-
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Adresa</label>
-                    <input type="text" name="address" value="@Model.address"
-                           style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-                    <div>
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Ukupno mjesta *</label>
-                        <input type="number" name="totalSpots" id="fieldSpots" value="@Model.totalSpots" min="1" required
-                               style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                        <span class="val-err" id="errSpots"></span>
-                    </div>
-                    <div>
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Maks. visina (m)</label>
-                        <input type="number" name="maxHeight" id="fieldHeight" value="@Model.maxHeight" step="0.1" min="0"
-                               style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                        <span class="val-err" id="errHeight"></span>
-                    </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-                    <div>
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Otvara se</label>
-                        <input type="time" name="opensAt" id="fieldOpens"
-                               value="@(Model.opensAt.HasValue ? Model.opensAt.Value.ToString("HH:mm") : "")"
-                               style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                    </div>
-                    <div>
-                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Zatvara se</label>
-                        <input type="time" name="closesAt" id="fieldCloses"
-                               value="@(Model.closesAt.HasValue ? Model.closesAt.Value.ToString("HH:mm") : "")"
-                               style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                        <span class="val-err" id="errWorkingHours"></span>
-                    </div>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
-                    <label style="display:flex;align-items:center;gap:10px;padding:11px;background:#f8f9fa;border-radius:8px;cursor:pointer;">
-                        <input type="checkbox" name="hasCameras" value="true" @(Model.hasCameras == true ? "checked" : "") style="width:15px;height:15px;" />
-                        <span style="font-size:13px;">📷 Video nadzor</span>
-                    </label>
-                    <label style="display:flex;align-items:center;gap:10px;padding:11px;background:#f8f9fa;border-radius:8px;cursor:pointer;">
-                        <input type="checkbox" name="hasEVCharger" value="true" @(Model.hasEVCharger == true ? "checked" : "") style="width:15px;height:15px;" />
-                        <span style="font-size:13px;">⚡ EV punjač</span>
-                    </label>
-                    <label style="display:flex;align-items:center;gap:10px;padding:11px;background:#f8f9fa;border-radius:8px;cursor:pointer;">
-                        <input type="checkbox" name="isDisabledAccessible" value="true" @(Model.isDisabledAccessible == true ? "checked" : "") style="width:15px;height:15px;" />
-                        <span style="font-size:13px;">♿ Invalidski pristup</span>
-                    </label>
-                    <label style="display:flex;align-items:center;gap:10px;padding:11px;background:#f8f9fa;border-radius:8px;cursor:pointer;">
-                        <input type="checkbox" name="isUnderground" value="true" @(Model.isUnderground == true ? "checked" : "") style="width:15px;height:15px;" />
-                        <span style="font-size:13px;">🏢 Garaža</span>
-                    </label>
-                </div>
-
-                @if (pricings.Any())
-                {
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:10px;">Cjenovnik</div>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            @foreach (var p in pricings)
-                            {
-                                string prevedeniTip = p.pricingType.ToString().ToLower() switch
-                                {
-                                    "hourly" => "Po satu",
-                                    "daily" => "Po danu",
-                                    "weekly" => "Po sedmici",
-                                    "monthly" => "Mjesečno",
-                                    "yearly" => "Godišnje",
-                                    _ => "Standardno"
-                                };
-                                <div style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border-radius:8px;padding:10px 13px;">
-                                    <span style="font-size:13px;color:#555;min-width:90px;font-weight:500;">@prevedeniTip</span>
-                                    <input type="hidden" name="pricingIds" value="@p.ID" />
-                                    <div style="position:relative;flex:1;">
-                                        <input type="number" name="pricingValues" id="price_@p.ID"
-                                               value="@p.price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
-                                               step="0.01" min="0"
-                                               style="width:100%;padding:8px 36px 8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                                        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#aaa;pointer-events:none;">KM</span>
-                                    </div>
-                                    <span class="val-err" id="errPrice_@p.ID" style="min-height:0;"></span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-
-                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:auto;padding-top:10px;">
-                    <a href="/Admin/Parkings" style="padding:10px 22px;background:#f1f3f5;color:#555;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
-                        Odustani
-                    </a>
-                    <button type="submit" style="padding:10px 26px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
-                        Sačuvaj izmjene
-                    </button>
-                </div>
-            </form>
+            else
+            {
+                <span class="btn-gray" style="padding: 12px 28px; opacity: 0.6; cursor: not-allowed;">
+                    Nema dostupnih mjesta
+                </span>
+            }
         </div>
 
     </div>
 </div>
 
 <style>
-    .val-err {
-        display: block;
+    .parking-info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .badge-feature {
+        background: #f0f4ff;
+        color: #4a67d6;
+        padding: 4px 10px;
+        border-radius: 8px;
         font-size: 12px;
-        color: #dc3545;
-        margin-top: 4px;
-        min-height: 16px;
+        font-weight: 500;
+        display: inline-block;
+        margin-right: 6px;
+        margin-bottom: 6px;
     }
 </style>
-
-<script>
-    document.getElementById('parkingEditForm').addEventListener('submit', function (e) {
-        let valid = true;
-
-        const name = document.getElementById('fieldName');
-        const spots = document.getElementById('fieldSpots');
-        const height = document.getElementById('fieldHeight');
-
-        // reset basic fields
-        ['errName', 'errSpots', 'errHeight'].forEach(id => document.getElementById(id).textContent = '');
-        [name, spots, height].forEach(el => el.style.borderColor = '#e0e0e0');
-
-        if (!name.value.trim()) {
-            document.getElementById('errName').textContent = 'Naziv parkinga je obavezan.';
-            name.style.borderColor = '#dc3545';
-            valid = false;
-        }
-
-        const spotsVal = parseInt(spots.value);
-        if (!spots.value || isNaN(spotsVal) || spotsVal < 1) {
-            document.getElementById('errSpots').textContent = 'Broj mjesta mora biti najmanje 1.';
-            spots.style.borderColor = '#dc3545';
-            valid = false;
-        }
-
-        if (height.value !== '') {
-            const heightVal = parseFloat(height.value);
-            if (isNaN(heightVal) || heightVal < 0) {
-                document.getElementById('errHeight').textContent = 'Visina ne može biti negativna.';
-                height.style.borderColor = '#dc3545';
-                valid = false;
-            }
-        }
-
-        // working hours validation
-        const opens = document.getElementById('fieldOpens');
-        const closes = document.getElementById('fieldCloses');
-        const errWH = document.getElementById('errWorkingHours');
-        errWH.textContent = '';
-        if (opens && closes && opens.value && closes.value && closes.value <= opens.value) {
-            errWH.textContent = 'Vrijeme zatvaranja mora biti nakon otvaranja.';
-            closes.style.borderColor = '#dc3545';
-            valid = false;
-        } else if (closes) {
-            closes.style.borderColor = '#e0e0e0';
-        }
-
-        // validate price fields
-        document.querySelectorAll('input[name="pricingValues"]').forEach(function (input) {
-            const errId = 'errPrice_' + input.id.replace('price_', '');
-            const errEl = document.getElementById(errId);
-            input.style.borderColor = '#e0e0e0';
-            if (errEl) errEl.textContent = '';
-
-            if (input.value !== '') {
-                const val = parseFloat(input.value);
-                if (isNaN(val) || val < 0) {
-                    input.style.borderColor = '#dc3545';
-                    if (errEl) errEl.textContent = 'Cijena ne može biti negativna.';
-                    valid = false;
-                }
-            }
-        });
-
-        if (!valid) e.preventDefault();
-    });
-</script>
