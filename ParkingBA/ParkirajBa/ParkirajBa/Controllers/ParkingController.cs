@@ -210,6 +210,7 @@ namespace ParkirajBa.Controllers
 
                 parkingObject.OwnerId = owner.Id;
                 parkingObject.availableSpots = parkingObject.totalSpots ?? 0;
+                parkingObject.Pricings.Clear(); // spriječi duplo snimanje 
 
                 await _parkingRepository.AddParking(parkingObject);
 
