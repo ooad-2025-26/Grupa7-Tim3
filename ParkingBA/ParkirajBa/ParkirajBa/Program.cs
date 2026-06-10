@@ -91,6 +91,10 @@ namespace ParkirajBa
             //Checks status of Ticket
             builder.Services.AddHostedService<OverstayChargeService>();
 
+            //Za testiranje ulaza na parking preko mobitela
+            //builder.WebHost.UseUrls("http://0.0.0.0:5100");
+            //------------------------
+
             var app = builder.Build();
 
             await SeedRolesAsync(app);
@@ -114,6 +118,8 @@ namespace ParkirajBa
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
+
+            app.MapControllers(); //Damir dodao, provjeriti da li treba
 
             app.Run();
         }

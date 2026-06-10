@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
+using ParkirajBa.Models;
 
 namespace ParkirajBa.Controllers
 {
@@ -14,65 +15,50 @@ namespace ParkirajBa.Controllers
         {
             _database = database;
         }
-
-        [HttpPost("entry")]
-        public async Task<IActionResult> Entry(string code)
+        [HttpPost("scan")]
+        public async Task<IActionResult> Scan([FromBody] QrRequest request)
         {
             var ticket = await _database.Tickets
                 .FirstOrDefaultAsync(t =>
-                    t.ReservationCode == code &&
+                    t.ReservationCode == request.Code &&
                     t.QrCodeActive);
 
             if (ticket == null)
-                return BadRequest("Nevažeći QR kod");
+                return BadRequest(new { message = "Nevažeći QR kod" });
 
-            if (!ticket.IsPaid)
-                return BadRequest("Rezervacija nije plaćena. Molimo platite prije ulaska.");
-
+            // ENTRY LOGIC
             if (!ticket.EnteredParking)
             {
+                if (!ticket.IsPaid)
+                    return BadRequest(new { message = "Nije plaćeno" });
+
                 ticket.EnteredParking = true;
                 ticket.EnteredAt = DateTime.Now;
 
                 await _database.SaveChangesAsync();
+
+                return Ok(new { message = "Ulaz dozvoljen" });
             }
 
-            return Ok("Ulaz dozvoljen");
-        }
-
-
-        [HttpPost("exit")]
-        public async Task<IActionResult> Exit(string code)
-        {
-            var ticket = await _database.Tickets
-                .Include(t => t.ParkingObject)
-                .FirstOrDefaultAsync(t =>
-                    t.ReservationCode == code &&
-                    t.QrCodeActive);
-
-            if (ticket == null)
-                return BadRequest("Nevažeći QR kod");
-
-            if (ticket.ExpiresAt < DateTime.Now)
+            // EXIT LOGIC
+            if (ticket.EnteredParking && !ticket.ExitedParking)
             {
-                return BadRequest(
-                    "Rezervacija je istekla. Potrebna je doplata.");
+                if (ticket.ExpiresAt < DateTime.Now)
+                    return BadRequest(new { message = "Rezervacija istekla" });
+
+                if (!ticket.AdditionalChargePaid)
+                    return BadRequest(new { message = "Dodatna naknada nije plaćena" });
+
+                ticket.ExitedParking = true;
+                ticket.ExitedAt = DateTime.Now;
+                ticket.QrCodeActive = false;
+
+                await _database.SaveChangesAsync();
+
+                return Ok(new { message = "Izlaz dozvoljen" });
             }
 
-            if (!ticket.AdditionalChargePaid)
-            {
-                return BadRequest("Dodatna naknada nije plaćena.");
-            }
-
-            ticket.ExitedParking = true;
-
-            ticket.ExitedAt = DateTime.Now;
-
-            ticket.QrCodeActive = false;
-
-            await _database.SaveChangesAsync();
-
-            return Ok("Izlaz dozvoljen");
+            return BadRequest(new { message = "Parking već završen" });
         }
     }
 }

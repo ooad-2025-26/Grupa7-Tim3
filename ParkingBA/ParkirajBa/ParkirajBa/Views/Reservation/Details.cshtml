@@ -358,18 +358,12 @@
 {
     <div style="margin-top:20px;">
 
-        <h4>Test QR sistema</h4>
+        <h4>QR Test sistem (Single Scan)</h4>
 
         <button type="button"
                 class="btn-blue"
-                onclick="testEntry()">
-            Test Ulaz
-        </button>
-
-        <button type="button"
-                class="btn-gray"
-                onclick="testExit()">
-            Test Izlaz
+                onclick="scanQr()">
+            Skeniraj QR (Ulaz / Izlaz)
         </button>
 
         <div id="testResult"
@@ -621,40 +615,38 @@
 
         //TESTIRANJE ULAZA/IZLAZA SA PARKINGA -IZIBRISATI
 
-        async function testEntry() {
+    async function scanQr() {
 
         const code = '@Model.ReservationCode';
 
-        const response =
-            await fetch(
-                '/api/qr/entry?code=' +
-                encodeURIComponent(code),
-                {
-                    method: 'POST'
-                });
+        const response = await fetch('/api/qr/scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code
+            })
+        });
 
-        const text = await response.text();
+        let data;
 
-        document.getElementById('testResult').innerHTML =
-            text;
-    }
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = { message: await response.text() };
+        }
 
-    async function testExit() {
+        const resultBox = document.getElementById('testResult');
 
-        const code = '@Model.ReservationCode';
+        resultBox.innerHTML = data.message;
 
-        const response =
-            await fetch(
-                '/api/qr/exit?code=' +
-                encodeURIComponent(code),
-                {
-                    method: 'POST'
-                });
-
-        const text = await response.text();
-
-        document.getElementById('testResult').innerHTML =
-            text;
+        // opcionalno boja
+        if (response.ok) {
+            resultBox.style.color = "green";
+        } else {
+            resultBox.style.color = "red";
+        }
     }
 
     //-------------------------------
