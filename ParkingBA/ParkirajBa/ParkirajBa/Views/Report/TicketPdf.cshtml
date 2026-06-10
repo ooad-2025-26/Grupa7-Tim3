@@ -1,7 +1,7 @@
 ﻿@model ParkirajBa.Models.Ticket
 @{
     Layout = null;
-    ViewData["Title"] = "Tiketa – ParkirajBa";
+    ViewData["Title"] = "Tiket – ParkirajBa";
 
     var now = DateTime.Now;
     string status = (Model.ExpiresAt.HasValue && Model.ExpiresAt < now) ? "expired"
@@ -16,7 +16,7 @@
 <html lang="bs">
 <head>
     <meta charset="utf-8" />
-    <title>Tiketa #@Model.Id – ParkirajBa</title>
+    <title>Tiket #@Model.Id – ParkirajBa</title>
     <style>
             * {
                 box-sizing: border-box;
@@ -230,14 +230,14 @@
     <div class="ticket-wrapper">
 
         <div class="print-actions">
-            <button class="btn-print" onclick="window.print()">🖨 Štampaj / Sačuvaj PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨 Sačuvaj PDF</button>
             <a class="btn-back" href="@(User.IsInRole("Admin") ? "/Admin/ReservationDetails/" + Model.Id : "/Reservation/Details/" + Model.Id)">← Nazad</a>
         </div>
 
         <div class="ticket">
             <div class="ticket-top">
                 <div class="brand">ParkirajBa</div>
-                <div class="subtitle">Potvrda parkinga · Tiketa #@Model.Id</div>
+                <div class="subtitle">Potvrda parkinga · Tiket #@Model.Id</div>
             </div>
 
             <div style="position: relative; height: 0; overflow: visible;">
@@ -298,7 +298,7 @@
                 </div>
 
                 <div class="ticket-id">
-                    Tiketa ID: @Model.Id &nbsp;·&nbsp; Generisano: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
+                    Tiket ID: @Model.Id &nbsp;·&nbsp; Generisano: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")
                 </div>
             </div>
         </div>
