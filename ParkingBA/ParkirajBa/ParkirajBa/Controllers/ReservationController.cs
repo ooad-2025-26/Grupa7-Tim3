@@ -126,10 +126,6 @@ namespace ParkirajBa.Controllers
             };
 
             _database.Tickets.Add(ticket);
-
-            if (parking.availableSpots > 0)
-                parking.availableSpots--;
-
             await _database.SaveChangesAsync();
 
             return RedirectToAction("Checkout", "Payment", new { ticketId = ticket.Id });
@@ -182,9 +178,8 @@ namespace ParkirajBa.Controllers
             string korisnikIme = user.FullName ?? user.Email ?? "Korisnik";
 
             _database.Tickets.Remove(ticket);
-
             var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
-            if (parking != null && parking.availableSpots < parking.totalSpots)
+            if (parking != null && ticket.IsPaid && parking.availableSpots < parking.totalSpots)
                 parking.availableSpots++;
 
             await _database.SaveChangesAsync();

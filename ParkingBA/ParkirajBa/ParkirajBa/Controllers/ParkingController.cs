@@ -182,6 +182,7 @@ namespace ParkirajBa.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Create(
             ParkingObject parkingObject,
             List<IFormFile> Images,
@@ -190,78 +191,58 @@ namespace ParkirajBa.Controllers
         {
             try
             {
-                // 1. Postavi OwnerId
                 var owner = await _userManager.GetUserAsync(User);
                 if (owner == null)
-                    return Json(new { success = false, message = "Korisnik nije pronađen" });
+                    return Json(new { success = false, message = "Korisnik nije pronađen." });
+
+                // Backend validacija obaveznih polja
+                if (string.IsNullOrWhiteSpace(parkingObject.name))
+                    return Json(new { success = false, message = "Naziv parkinga je obavezan." });
+
+                if (string.IsNullOrWhiteSpace(parkingObject.address))
+                    return Json(new { success = false, message = "Adresa je obavezna." });
+
+                if (!parkingObject.totalSpots.HasValue || parkingObject.totalSpots < 1)
+                    return Json(new { success = false, message = "Ukupan broj mjesta mora biti veći od 0." });
+
+                if (parkingObject.latitude == 0 || parkingObject.longitude == 0)
+                    return Json(new { success = false, message = "Koordinate su obavezne." });
 
                 parkingObject.OwnerId = owner.Id;
-
-                // 2. Validacija
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values.SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage)
-                        .ToList();
-
-                    return Json(new
-                    {
-                        success = false,
-                        message = $"Greške: {string.Join(", ", errors)}"
-                    });
-                }
-
-                // 3. Postavi availableSpots
                 parkingObject.availableSpots = parkingObject.totalSpots ?? 0;
 
-                // 4. Spremi parking - AWAIT AKO JE ASYNC
-                await _parkingRepository.AddParking(parkingObject);  // ← AWAIT!
+                await _parkingRepository.AddParking(parkingObject);
 
-                // 5. Spremi slike - NAKON parking operacije
                 if (Images != null && Images.Count > 0)
                 {
-                    try
-                    {
-                        await _parkingRepository.SaveAllParkingImagesByIDAsync(Images, ImagePositions, parkingObject.ID);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Image save error: {ex.Message}");
-                    }
+                    try { await _parkingRepository.SaveAllParkingImagesByIDAsync(Images, ImagePositions, parkingObject.ID); }
+                    catch (Exception ex) { Console.WriteLine($"Greška pri snimanju slike: {ex.Message}"); }
                 }
 
-                // 6. Spremi cijene - NAKON slike
                 if (Pricings != null && Pricings.Count > 0)
                 {
                     foreach (var pricingDto in Pricings)
                     {
+                        if (pricingDto.price < 0)
+                            return Json(new { success = false, message = "Cijena ne može biti negativna." });
+
                         var pricing = new Pricing
                         {
                             pricingType = (PricingType)pricingDto.pricingType,
                             price = pricingDto.price,
                             ParkingObjectID = parkingObject.ID,
-                            validFrom = string.IsNullOrEmpty(pricingDto.validFrom)
-                                ? null
+                            validFrom = string.IsNullOrEmpty(pricingDto.validFrom) ? null
                                 : (DateTime.TryParse(pricingDto.validFrom, out var date) ? (DateTime?)date : null)
                         };
-
                         await _parkingRepository.AddPricingAsync(pricing);
                     }
                 }
 
-                return Json(new
-                {
-                    success = true,
-                    message = "Parking uspješno kreiran!"
-                });
+                return Json(new { success = true, message = "Parking uspješno kreiran!" });
             }
             catch (Exception ex)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = $"Greška: {ex.Message}"
-                });
+                return Json(new { success = false, message = $"Greška pri kreiranju parkinga: {ex.Message}" });
             }
         }
 
