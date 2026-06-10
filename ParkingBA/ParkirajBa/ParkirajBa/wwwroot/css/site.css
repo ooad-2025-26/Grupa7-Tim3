@@ -42,6 +42,16 @@ body {
     flex-direction: column;
 }
 
+main[role="main"] {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-container {
+    flex: 1;
+}
+
 a {
     color: #6287f9;
     text-decoration: none;
@@ -235,13 +245,13 @@ input:focus {
 
 
 /* ============================================================
-   MAP BACKGROUND LAYER  (Placanje / Potvrda / Uspjeh)
+   MAP BACKGROUND LAYER  (Checkout / Confirm / Success)
    ============================================================ */
 
 .main-container {
+    flex: 1;
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
     overflow-x: hidden;
 }
 
@@ -273,9 +283,10 @@ input:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100%;
     box-sizing: border-box;
     padding-top: 130px;
+    padding-bottom: 40px;
 }
 
 .payment-card {
@@ -1017,7 +1028,7 @@ label {
 
 
 /* ============================================================
-   FILTERS BAR  (Index/Mapa)
+   FILTERS BAR  (Index/Map)
    ============================================================ */
 
 .filters {
@@ -1065,7 +1076,15 @@ input[type="range"] {
     text-align: center;
     color: #888;
     font-size: 13px;
-    margin-top: 80px; /* povećaj po želji */
+    margin-top: 0;
+}
+
+body:not(:has(.main-container)) .footer {
+    margin-top: 80px;
+}
+
+.main-container ~ footer.footer {
+    margin-top: 0;
 }
 
 main {

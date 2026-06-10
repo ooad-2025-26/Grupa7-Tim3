@@ -2,7 +2,6 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Plaćanje";
-    ViewBag.HideHeader = true;
     var ticket = ViewBag.Ticket as ParkirajBa.Models.Ticket;
     string fullName = ViewBag.UserFullName ?? "";
 }
@@ -10,7 +9,6 @@
 <div class="main-container">
     <div class="map-layer"><img src="/images/map.png" alt="Mapa" /></div>
     <div class="custom-overlay"></div>
-    @await Html.PartialAsync("_PaymentHeader")
 
     <div class="content-wrapper" style="margin-top: 80px;">
         <div class="payment-card">
