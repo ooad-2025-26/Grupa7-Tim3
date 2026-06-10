@@ -18,6 +18,10 @@ namespace ParkirajBa.Models
 
         public bool IsPaid { get; set; } = false;
 
+        public string? ReservationCode { get; set; }
+
+        public DateTime? PaidAt { get; set; }
+
         public string ApplicationUserId { get; set; }
 
         [ForeignKey("ApplicationUserId")]
@@ -27,5 +31,26 @@ namespace ParkirajBa.Models
 
         [ForeignKey("ParkingObjectId")]
         public ParkingObject ParkingObject { get; set; }
+
+        public bool ExpirationReminderSent { get; set; } = false;
+
+        //Nove varijable potrebne za pracenjem ulaska i izlaska sa parkinga
+        public bool EnteredParking { get; set; } = false;
+
+        public DateTime? EnteredAt { get; set; }
+
+        public bool ExitedParking { get; set; } = false;
+
+        public DateTime? ExitedAt { get; set; }
+
+        public bool QrCodeActive { get; set; } = true;
+
+        public decimal AdditionalCharge { get; set; } = 0;
+
+        public decimal TotalAdditionalChargesPaid { get; set; } = 0;
+
+        public bool AdditionalChargePaid { get; set; } = true;
+
+        public bool OverstayEmailSent { get; set; } = false;
     }
 }

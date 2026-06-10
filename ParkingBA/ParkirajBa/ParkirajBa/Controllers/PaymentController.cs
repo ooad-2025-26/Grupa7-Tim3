@@ -39,7 +39,7 @@ namespace ParkirajBa.Controllers
 
         // GET: /Payment/Checkout?ticketId=5
         [HttpGet]
-        public async Task<IActionResult> Checkout(int ticketId)
+        public async Task<IActionResult> Checkout(int ticketId, bool additionalCharge = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
@@ -49,12 +49,13 @@ namespace ParkirajBa.Controllers
 
             ViewBag.Ticket = ticket;
             ViewBag.UserFullName = user.FullName;
+            ViewBag.IsAdditionalCharge = additionalCharge;
             return View();
         }
 
         // GET: /Payment/Confirm?cardName=...&ticketId=5
         [HttpGet]
-        public async Task<IActionResult> Confirm(string cardName, int ticketId)
+        public async Task<IActionResult> Confirm(string cardName, int ticketId, bool additionalCharge = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
@@ -64,12 +65,13 @@ namespace ParkirajBa.Controllers
 
             ViewBag.CardName = cardName;
             ViewBag.Ticket = ticket;
+            ViewBag.IsAdditionalCharge = additionalCharge;
             return View();
         }
 
         // POST: /Payment/SendConfirmationEmail
         [HttpPost]
-        public async Task<IActionResult> SendConfirmationEmail(string cardName, int ticketId)
+        public async Task<IActionResult> SendConfirmationEmail(string cardName, int ticketId, bool additionalCharge = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
@@ -77,11 +79,45 @@ namespace ParkirajBa.Controllers
             var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
             if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
 
-            // Mark ticket as paid
-            ticket.IsPaid = true;
-            await _database.SaveChangesAsync();
 
+            //Damir changes
             string reservationCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+
+            // Mark ticket as paid + save QR data
+            bool isAdditionalCharge = ticket.AdditionalCharge > 0 && !ticket.AdditionalChargePaid;
+
+            decimal paidAmount = ticket.Price;
+
+            if (isAdditionalCharge)
+            {
+                paidAmount = ticket.AdditionalCharge;
+
+                ticket.TotalAdditionalChargesPaid += ticket.AdditionalCharge;
+
+                ticket.AdditionalCharge = 0;
+
+                ticket.AdditionalChargePaid = true;
+
+                ticket.QrCodeActive = true;
+
+                ticket.ExpiresAt = DateTime.Now.AddMinutes(15);
+
+                ticket.ReservationCode = reservationCode;
+
+                ticket.OverstayEmailSent = false;
+            }
+            else
+            {
+                ticket.IsPaid = true;
+
+                ticket.PaidAt = DateTime.Now;
+
+                ticket.ReservationCode = reservationCode;
+            }
+
+            await _database.SaveChangesAsync();
+            //Damir changes
+            
             string parkingName = ticket.ParkingObject?.name ?? "ParkirajBa Parking";
             string userEmail = user.Email!;
             string fullName = user.FullName ?? cardName;
@@ -96,7 +132,7 @@ namespace ParkirajBa.Controllers
                             $"Vaše plaćanje je uspješno obrađeno.\n\n" +
                             $"Kod rezervacije: {reservationCode}\n" +
                             $"Parking: {parkingName}\n" +
-                            $"Plaćeni iznos: {ticket.Price:0.00} KM\n" +
+                            $"Plaćeni iznos: {paidAmount:0.00} KM\n" +
                             $"Vrijedi do: {(ticket.ExpiresAt.HasValue ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—")}\n\n" +
                             $"Molimo pokažite priloženi QR kod na ulazu u parking.\n\n" +
                             $"Hvala što koristite ParkirajBa!";
@@ -136,5 +172,31 @@ namespace ParkirajBa.Controllers
             ViewBag.Ticket = ticket;
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GenerateQr(int ticketId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+
+            if (ticket == null || string.IsNullOrEmpty(ticket.ReservationCode))
+                return NotFound();
+
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(
+                ticket.ReservationCode,
+                QRCodeGenerator.ECCLevel.Q);
+
+            using var qrCode = new PngByteQRCode(qrData);
+
+            byte[] qrBytes = qrCode.GetGraphic(20);
+
+            return File(qrBytes, "image/png");
+        }
+
+     
     }
 }

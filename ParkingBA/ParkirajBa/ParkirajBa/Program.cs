@@ -80,6 +80,7 @@ namespace ParkirajBa
 
             // 3. Email sender (Identity IEmailSender)
             builder.Services.AddTransient<IEmailSender, EmailSender>();
+            builder.Services.AddHostedService<ReservationReminderService>();
 
             // ImageService
             builder.Services.AddTransient<ImageService>();
@@ -91,6 +92,13 @@ namespace ParkirajBa
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
+
+            //Checks status of Ticket
+            builder.Services.AddHostedService<OverstayChargeService>();
+
+            //Za testiranje ulaza na parking preko mobitela
+            //builder.WebHost.UseUrls("http://0.0.0.0:5100");
+            //------------------------
 
             var app = builder.Build();
 
@@ -116,7 +124,8 @@ namespace ParkirajBa
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
-           
+            app.MapControllers(); //Damir dodao, provjeriti da li treba
+
             app.Run();
         }
     }

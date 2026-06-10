@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ParkirajBa.Data;
 
@@ -11,9 +12,11 @@ using ParkirajBa.Data;
 namespace ParkirajBa.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609135616_AddReservationCodeAndPaidAt")]
+    partial class AddReservationCodeAndPaidAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -400,30 +403,9 @@ namespace ParkirajBa.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("AdditionalCharge")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("AdditionalChargePaid")
-                        .HasColumnType("bit");
-
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("EnteredAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("EnteredParking")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ExitedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("ExitedParking")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ExpirationReminderSent")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("datetime2");
@@ -434,9 +416,6 @@ namespace ParkirajBa.Migrations
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("OverstayEmailSent")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
 
@@ -446,14 +425,8 @@ namespace ParkirajBa.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<bool>("QrCodeActive")
-                        .HasColumnType("bit");
-
                     b.Property<string>("ReservationCode")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalAdditionalChargesPaid")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
