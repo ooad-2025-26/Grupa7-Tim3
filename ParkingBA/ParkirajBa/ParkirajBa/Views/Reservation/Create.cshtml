@@ -130,12 +130,30 @@
                                style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;font-family:inherit;" />
                     </div>
                     <div>
-                        <label style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:6px;font-weight:600;">Ističe *</label>
-                        <input type="datetime-local" name="expiresAt" id="expiresAt" required
-                               min="@trenutnoVrijeme.AddMinutes(30).ToString("yyyy-MM-ddTHH:mm")"
-                               value="@inicijalniIstek.ToString("yyyy-MM-ddTHH:mm")"
-                               style="width:100%;padding:12px 14px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;font-family:inherit;" />
+                        <label>Trajanje *</label>
+
+                        <div style="display:flex;gap:10px;">
+                            <input type="number"
+                                   id="durationValue"
+                                   min="1"
+                                   value="1"
+                                   style="width:120px;padding:12px;">
+
+                            <span id="durationUnit"
+                                  style="display:flex;align-items:center;">
+                                sat
+                            </span>
+                        </div>
                     </div>
+
+                    <div style="margin-top:10px;color:#666;font-size:14px;">
+                        Ističe:
+                        <strong id="calculatedExpiry"></strong>
+                    </div>
+
+                    <input type="hidden"
+                           name="expiresAt"
+                           id="expiresAt">
                 </div>
 
                 <div id="pricePreview" style="background:#f4f7ff;border-radius:12px;padding:14px 18px;margin-bottom:20px;border:1px solid #e2e9ff;">
@@ -200,12 +218,31 @@
                 pill.classList.add('active');
                 activePill = pill;
                 hiddenType.value = pill.dataset.type;
+
+               const unitSpan = document.getElementById("durationUnit");
+
+               switch (pill.dataset.type) {
+            case "Hourly":
+                unitSpan.innerText = "sat(i)";
+                break;
+            case "Daily":
+                unitSpan.innerText = "dan(a)";
+                break;
+            case "Monthly":
+                unitSpan.innerText = "mjesec(i)";
+                break;
+            case "Yearly":
+                unitSpan.innerText = "godina(e)";
+                break;
+        }
+
+        calculateExpiry();
                 // adjust default expiry based on selected type
-                adjustDefaultExpiry();
+               // adjustDefaultExpiry();
                 updatePreview();
             });
         });
-
+        /*
         function adjustDefaultExpiry() {
             const start = new Date(startsAtEl.value);
             if (isNaN(start.getTime())) return;
@@ -217,6 +254,7 @@
             else if (type === 'Yearly')  end.setFullYear(end.getFullYear() + 1);
             expiresAtEl.value = fmt(end);
         }
+        */
 
         function fmt(d) {
             const pad = n => String(n).padStart(2, '0');
@@ -224,6 +262,8 @@
         }
 
         function updatePreview() {
+            calculateExpiry();
+
             const start = new Date(startsAtEl.value);
             const end   = new Date(expiresAtEl.value);
             const preview = document.getElementById('pricePreview');
@@ -281,13 +321,14 @@
         expiresAtEl.addEventListener('input', function () { expiresAtEl.setCustomValidity(''); });
 
         startsAtEl.addEventListener('change', function () {
-            const start = new Date(this.value);
-            if (isNaN(start.getTime())) return;
-            const minEnd = new Date(start.getTime() + 30 * 60000);
-            expiresAtEl.min = fmt(minEnd);
-            if (!expiresAtEl.value || new Date(expiresAtEl.value) <= start) {
-                adjustDefaultExpiry();
-            }
+            calculateExpiry();
+            updatePreview();
+        });
+
+        document
+        .getElementById("durationValue")
+        .addEventListener("input", function () {
+            calculateExpiry();
             updatePreview();
         });
 
@@ -303,5 +344,47 @@
         document.addEventListener('DOMContentLoaded', function () {
             updatePreview();
         });
+
+                function calculateExpiry() {
+
+            const start = new Date(startsAtEl.value);
+
+            if (isNaN(start.getTime()))
+                return;
+
+            const amount =
+                parseInt(document.getElementById("durationValue").value) || 1;
+
+            const type =
+                activePill.dataset.type;
+
+            const end = new Date(start);
+
+            switch(type) {
+
+                case "Hourly":
+                    end.setHours(end.getHours() + amount);
+                    break;
+
+                case "Daily":
+                    end.setDate(end.getDate() + amount);
+                    break;
+
+                case "Monthly":
+                    end.setMonth(end.getMonth() + amount);
+                    break;
+
+                case "Yearly":
+                    end.setFullYear(end.getFullYear() + amount);
+                    break;
+            }
+
+            expiresAtEl.value = fmt(end);
+
+            document.getElementById("calculatedExpiry")
+                .innerText = end.toLocaleString("bs-BA");
+
+                    
+        }
     </script>
 }
