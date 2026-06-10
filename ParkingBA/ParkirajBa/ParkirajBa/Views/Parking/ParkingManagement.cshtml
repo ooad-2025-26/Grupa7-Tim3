@@ -466,6 +466,61 @@
                 }
             }
 
+            // Validacija adrese
+            const addressInput = document.getElementById('fieldAddress');
+            if (addressInput && addressInput.value.trim() === "") {
+                valid = false;
+                addressInput.style.borderColor = "#dc3545";
+                // dodaj span za grešku ispod adrese u _ParkingCreate i _ParkingEdit
+                const errAddress = document.getElementById('errAddress');
+                if (errAddress) errAddress.innerText = "Adresa je obavezna.";
+            }
+
+            // Validacija koordinata
+            const latInput = document.getElementById('fieldLatitude');
+            const lonInput = document.getElementById('fieldLongitude');
+            const errCoords = document.getElementById('errCoords');
+
+            if (!latInput.value.trim() || !lonInput.value.trim()) {
+                valid = false;
+                if (!latInput.value.trim()) latInput.style.borderColor = "#dc3545";
+                if (!lonInput.value.trim()) lonInput.style.borderColor = "#dc3545";
+                if (errCoords) errCoords.innerText = "Koordinate (širina i dužina) su obavezne.";
+            } else {
+                const lat = parseFloat(latInput.value);
+                const lon = parseFloat(lonInput.value);
+                if (isNaN(lat) || lat < -90 || lat > 90) {
+                    valid = false;
+                    latInput.style.borderColor = "#dc3545";
+                    if (errCoords) errCoords.innerText = "Geografska širina mora biti između -90 i 90.";
+                } else if (isNaN(lon) || lon < -180 || lon > 180) {
+                    valid = false;
+                    lonInput.style.borderColor = "#dc3545";
+                    if (errCoords) errCoords.innerText = "Geografska dužina mora biti između -180 i 180.";
+                }
+            }
+
+            // Validacija pricing redova
+            const pricingRowsList = document.querySelectorAll('.pricing-row');
+            let pricingValid = true;
+            pricingRowsList.forEach((row) => {
+                const type = row.querySelector('[name="pricingType"]').value;
+                const price = row.querySelector('[name="price"]').value;
+                if (!type) {
+                    pricingValid = false;
+                    row.querySelector('[name="pricingType"]').style.borderColor = "#dc3545";
+                }
+                if (!price || parseFloat(price) < 0) {
+                    pricingValid = false;
+                    row.querySelector('[name="price"]').style.borderColor = "#dc3545";
+                }
+            });
+            if (!pricingValid) {
+                valid = false;
+                const errPricing = document.getElementById('errPricing');
+                if (errPricing) errPricing.innerText = "Molimo ispravite greške u cijenama.";
+            }
+
             if (valid) {
                 // NOVI PRISTUP - Ručno skupi sve podatke
                 const latValue = document.getElementById('fieldLatitude').value;

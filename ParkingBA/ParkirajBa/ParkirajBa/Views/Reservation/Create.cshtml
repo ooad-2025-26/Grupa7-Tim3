@@ -204,12 +204,13 @@
 
 @section Scripts {
     <script>
-        const startsAtEl  = document.getElementById('startsAt');
+        const startsAtEl = document.getElementById('startsAt');
         const expiresAtEl = document.getElementById('expiresAt');
-        const formEl      = document.getElementById('reservationForm');
-        const hiddenType  = document.getElementById('hiddenPricingType');
+        const formEl = document.getElementById('reservationForm');
+        const hiddenType = document.getElementById('hiddenPricingType');
+        const durationInput = document.getElementById("durationValue");
 
-        // active pill state
+        // Aktivni pill state
         let activePill = document.querySelector('.type-pill.active');
 
         document.querySelectorAll('.type-pill').forEach(function (pill) {
@@ -219,56 +220,78 @@
                 activePill = pill;
                 hiddenType.value = pill.dataset.type;
 
-               const unitSpan = document.getElementById("durationUnit");
+                const unitSpan = document.getElementById("durationUnit");
 
-               switch (pill.dataset.type) {
-            case "Hourly":
-                unitSpan.innerText = "sat(i)";
-                break;
-            case "Daily":
-                unitSpan.innerText = "dan(a)";
-                break;
-            case "Monthly":
-                unitSpan.innerText = "mjesec(i)";
-                break;
-            case "Yearly":
-                unitSpan.innerText = "godina(e)";
-                break;
-        }
+                switch (pill.dataset.type) {
+                    case "Hourly":
+                        unitSpan.innerText = "sat(i)";
+                        break;
+                    case "Daily":
+                        unitSpan.innerText = "dan(a)";
+                        break;
+                    case "Monthly":
+                        unitSpan.innerText = "mjesec(i)";
+                        break;
+                    case "Yearly":
+                        unitSpan.innerText = "godina(e)";
+                        break;
+                }
 
-        calculateExpiry();
-                // adjust default expiry based on selected type
-               // adjustDefaultExpiry();
+                // Prvo izračunaj novi istek, pa onda osvježi prikaz cijene
+                calculateExpiry();
                 updatePreview();
             });
         });
-        /*
-        function adjustDefaultExpiry() {
-            const start = new Date(startsAtEl.value);
-            if (isNaN(start.getTime())) return;
-            const type = activePill ? activePill.dataset.type : 'Hourly';
-            let end = new Date(start);
-            if (type === 'Hourly')       end.setHours(end.getHours() + 1);
-            else if (type === 'Daily')   end.setDate(end.getDate() + 1);
-            else if (type === 'Monthly') end.setMonth(end.getMonth() + 1);
-            else if (type === 'Yearly')  end.setFullYear(end.getFullYear() + 1);
-            expiresAtEl.value = fmt(end);
-        }
-        */
 
+        // Pomoćna funkcija za ispravan ISO format (yyyy-MM-ddTHH:mm) koji <input> zahtijeva
         function fmt(d) {
             const pad = n => String(n).padStart(2, '0');
-            return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function calculateExpiry() {
+            const start = new Date(startsAtEl.value);
+            if (isNaN(start.getTime())) return;
+
+            const amount = parseInt(durationInput.value) || 1;
+            const type = activePill.dataset.type;
+            const end = new Date(start);
+
+            switch (type) {
+                case "Hourly":
+                    end.setHours(end.getHours() + amount);
+                    break;
+                case "Daily":
+                    end.setDate(end.getDate() + amount);
+                    break;
+                case "Monthly":
+                    end.setMonth(end.getMonth() + amount);
+                    break;
+                case "Yearly":
+                    end.setFullYear(end.getFullYear() + amount);
+                    break;
+            }
+
+            // Upisujemo u skriveni input za slanje na backend
+            expiresAtEl.value = fmt(end);
+
+            // Prikaz korisniku na ekranu u lokalnom formatu (npr. DD.MM.YYYY. HH:mm)
+            document.getElementById("calculatedExpiry").innerText = end.toLocaleString("bs-BA", {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false // Ovo rješava AM/PM zabunu
+            });
         }
 
         function updatePreview() {
-            calculateExpiry();
-
             const start = new Date(startsAtEl.value);
-            const end   = new Date(expiresAtEl.value);
+            const amount = parseInt(durationInput.value) || 1;
             const preview = document.getElementById('pricePreview');
 
-            if (!startsAtEl.value || !expiresAtEl.value || end <= start) {
+            if (isNaN(start.getTime()) || amount < 1) {
                 preview.style.display = 'none';
                 return;
             }
@@ -278,113 +301,78 @@
 
             const rate = parseFloat(pill.dataset.rate);
             const type = pill.dataset.type;
-            const diffMs = end - start;
 
-            let units, unitLabel, price;
+            let unitLabel, price;
 
+            // Računanje cijene direktno iz unesenog trajanja (umjesto iz milisekundi) sprječava NaN bugove
             if (type === 'Hourly') {
-                units = Math.ceil(diffMs / 3600000);
-                unitLabel = units === 1 ? '1 sat' : (units % 10 >= 2 && units % 10 <= 4 && (units % 100 < 12 || units % 100 > 14)) ? units + ' sata' : units + ' sati';
-                price = (units * rate).toFixed(2);
+                unitLabel = amount === 1 ? '1 sat' : (amount % 10 >= 2 && amount % 10 <= 4 && (amount % 100 < 12 || amount % 100 > 14)) ? amount + ' sata' : amount + ' sati';
+                price = (amount * rate).toFixed(2);
             } else if (type === 'Daily') {
-                units = Math.ceil(diffMs / 86400000);
-                unitLabel = units === 1 ? '1 dan' : (units % 10 >= 2 && units % 10 <= 4 && (units % 100 < 12 || units % 100 > 14)) ? units + ' dana' : units + ' dana';
-                price = (units * rate).toFixed(2);
+                unitLabel = amount === 1 ? '1 dan' : amount + ' dana';
+                price = (amount * rate).toFixed(2);
             } else if (type === 'Monthly') {
-                const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-                units = Math.max(1, months);
-                unitLabel = units === 1 ? '1 mjesec' : (units >= 2 && units <= 4) ? units + ' mjeseca' : units + ' mjeseci';
-                price = (units * rate).toFixed(2);
+                unitLabel = amount === 1 ? '1 mjesec' : (amount >= 2 && amount <= 4) ? amount + ' mjeseca' : amount + ' mjeseci';
+                price = (amount * rate).toFixed(2);
             } else if (type === 'Yearly') {
-                units = Math.max(1, end.getFullYear() - start.getFullYear());
-                unitLabel = units === 1 ? '1 godina' : (units >= 2 && units <= 4) ? units + ' godine' : units + ' godina';
-                price = (units * rate).toFixed(2);
+                unitLabel = amount === 1 ? '1 godina' : (amount >= 2 && amount <= 4) ? amount + ' godine' : amount + ' godina';
+                price = (amount * rate).toFixed(2);
             }
 
+            // Zamijeni tačku zarezom za ljepši lokalni prikaz cijene
             document.getElementById('durationLabel').textContent = unitLabel;
-            document.getElementById('priceLabel').textContent = price + ' KM';
+            document.getElementById('priceLabel').textContent = price.replace('.', ',') + ' KM';
             preview.style.display = 'block';
         }
 
-        startsAtEl.addEventListener('invalid', function () {
-            startsAtEl.setCustomValidity(startsAtEl.validity.valueMissing
-                ? 'Molimo unesite datum i vrijeme početka.'
-                : 'Molimo unesite ispravan datum i vrijeme.');
-        });
-        startsAtEl.addEventListener('input', function () { startsAtEl.setCustomValidity(''); });
-
-        expiresAtEl.addEventListener('invalid', function () {
-            expiresAtEl.setCustomValidity(expiresAtEl.validity.valueMissing
-                ? 'Molimo unesite datum i vrijeme isteka.'
-                : 'Molimo unesite ispravan datum i vrijeme.');
-        });
-        expiresAtEl.addEventListener('input', function () { expiresAtEl.setCustomValidity(''); });
-
+        // Event listeneri
         startsAtEl.addEventListener('change', function () {
             calculateExpiry();
             updatePreview();
         });
 
-        document
-        .getElementById("durationValue")
-        .addEventListener("input", function () {
+        durationInput.addEventListener("input", function () {
             calculateExpiry();
             updatePreview();
         });
 
-        expiresAtEl.addEventListener('change', updatePreview);
-
+        // Validacija forme prije slanja
         formEl.addEventListener('submit', function (e) {
-            if (new Date(expiresAtEl.value) <= new Date(startsAtEl.value)) {
+            const start = startsAtEl.value;
+            const duration = durationInput.value;
+            const expiry = expiresAtEl.value;
+
+            if (!start) {
                 e.preventDefault();
-                alert('Vrijeme isteka rezervacije mora biti nakon vremena početka.');
+                alert("Molimo odaberite datum i vrijeme početka.");
+                startsAtEl.focus();
+                return;
+            }
+
+            if (!duration || parseInt(duration) < 1) {
+                e.preventDefault();
+                alert("Molimo unesite ispravno trajanje rezervacije.");
+                durationInput.focus();
+                return;
+            }
+
+            if (!expiry) {
+                e.preventDefault();
+                alert("Molimo odaberite datum i vrijeme isteka rezervacije.");
+                return;
+            }
+
+            if (new Date(expiry) <= new Date(start)) {
+                e.preventDefault();
+                alert("Vrijeme završetka mora biti nakon vremena početka rezervacije.");
+                return;
             }
         });
 
+        // Inicijalno pokretanje kada se stranica učita
         document.addEventListener('DOMContentLoaded', function () {
+            calculateExpiry();
             updatePreview();
         });
-
-                function calculateExpiry() {
-
-            const start = new Date(startsAtEl.value);
-
-            if (isNaN(start.getTime()))
-                return;
-
-            const amount =
-                parseInt(document.getElementById("durationValue").value) || 1;
-
-            const type =
-                activePill.dataset.type;
-
-            const end = new Date(start);
-
-            switch(type) {
-
-                case "Hourly":
-                    end.setHours(end.getHours() + amount);
-                    break;
-
-                case "Daily":
-                    end.setDate(end.getDate() + amount);
-                    break;
-
-                case "Monthly":
-                    end.setMonth(end.getMonth() + amount);
-                    break;
-
-                case "Yearly":
-                    end.setFullYear(end.getFullYear() + amount);
-                    break;
-            }
-
-            expiresAtEl.value = fmt(end);
-
-            document.getElementById("calculatedExpiry")
-                .innerText = end.toLocaleString("bs-BA");
-
-                    
-        }
     </script>
 }
