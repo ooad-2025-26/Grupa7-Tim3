@@ -14,8 +14,10 @@
     }
     else if (Model.IssuedAt <= now && (!Model.ExpiresAt.HasValue || Model.ExpiresAt >= now))
     {
-        statusClass = "active";
-        statusLabel = "Aktivna";
+        if (Model.IsPaid)
+        { statusClass = "active"; statusLabel = "Aktivna"; }
+        else
+        { statusClass = "pending"; statusLabel = "U tijeku"; }
     }
     else
     {
@@ -304,7 +306,7 @@
         }
 
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            @if (statusLabel == "Aktivna" && Model.IsPaid == false)
+            @if (statusLabel == "U tijeku" && Model.IsPaid == false && ViewBag.IsAdminView != true)
             {
                 <a href="/Payment/Checkout?ticketId=@Model.Id" class="btn-blue" style="text-decoration: none;">
                     Plati rezervaciju
@@ -352,7 +354,7 @@
 </div>
 
 @* KORISTI SE ZA TESTIRANJE ULAZA/IZLAZA SA PARKINGA - IZBRISATI *@
-@if (!string.IsNullOrEmpty(Model.ReservationCode))
+@if (!string.IsNullOrEmpty(Model.ReservationCode) && ViewBag.IsAdminView != true)
 {
     <div style="margin-top:20px;">
 

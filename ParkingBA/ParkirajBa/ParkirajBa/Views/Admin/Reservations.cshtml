@@ -51,8 +51,14 @@
                             }
                             else if (isActive)
                             {
-
-                                <span class="adm-badge blue">Aktivno</span>
+                                if (t.IsPaid)
+                                {
+                                    <span class="adm-badge blue">Aktivno</span>
+                                }
+                                else
+                                {
+                                    <span class="adm-badge orange">U tijeku</span>
+                                }
                             }
                             else if (isExpired)
                             {

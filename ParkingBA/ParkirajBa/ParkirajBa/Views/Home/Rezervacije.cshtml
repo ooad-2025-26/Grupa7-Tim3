@@ -59,7 +59,12 @@
                 if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt < now)
                 { status = "expired"; statusLabel = "Istekla"; }
                 else if (ticket.IssuedAt <= now && (!ticket.ExpiresAt.HasValue || ticket.ExpiresAt >= now))
-                { status = "active"; statusLabel = "Aktivna"; }
+                {
+                    if (ticket.IsPaid)
+                    { status = "active"; statusLabel = "Aktivna"; }
+                    else
+                    { status = "pending"; statusLabel = "U tijeku"; }
+                }
                 else
                 { status = "pending"; statusLabel = "Na čekanju"; }
 
