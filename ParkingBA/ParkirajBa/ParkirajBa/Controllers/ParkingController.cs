@@ -77,6 +77,7 @@ namespace ParkirajBa.Controllers
         public async Task<IActionResult> Edit(int id, string name, string address,
             int totalSpots, bool hasCameras, bool isDisabledAccessible,
             bool hasEVCharger, bool isUnderground, double? maxHeight,
+            TimeOnly? opensAt, TimeOnly? closesAt,
             List<int>? pricingIds, List<decimal>? pricingValues)
         {
             var parking = await _parkingRepository.GetByIdAsync(id);
@@ -120,6 +121,14 @@ namespace ParkirajBa.Controllers
             parking.hasEVCharger = hasEVCharger;
             parking.isUnderground = isUnderground;
             parking.maxHeight = maxHeight;
+
+            // radno vrijeme — čuvamo kao DateTime s today datumom, samo je vrijeme bitno
+            parking.opensAt = opensAt.HasValue
+                ? (DateTime?)DateTime.Today.Add(opensAt.Value.ToTimeSpan())
+                : null;
+            parking.closesAt = closesAt.HasValue
+                ? (DateTime?)DateTime.Today.Add(closesAt.Value.ToTimeSpan())
+                : null;
 
             _database.ParkingObject.Update(parking);
 

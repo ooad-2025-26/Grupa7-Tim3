@@ -75,9 +75,7 @@
         <div class="sidebar" id="ParkingSidebar">
         </div>
 
-        <div class="container mt-4" style="flex: 1; padding: 20px;">
-            <div id="map" style="height: calc(100% - 60px); width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
-        </div>
+        <div id="map"></div>
 
     </div>
 </div>
@@ -88,6 +86,7 @@
         display: flex;
         flex-direction: column;
         height: calc(100vh - 64px);
+        overflow: hidden;
     }
 
     .content {
@@ -97,6 +96,7 @@
     }
 
     #map {
+        flex: 1;
         height: 100%;
         width: 100%;
         border-radius: 0;
@@ -315,17 +315,17 @@
             color: white;
         }
 
-    .content {
-        display: flex;
-        height: calc(100vh - 160px);
-    }
-
     .sidebar {
-        width: 350px;
+        width: 300px;
+        min-width: 300px;
         background: white;
-        padding: 10px;
+        padding: 8px;
         overflow-y: auto;
+        overflow-x: hidden;
         z-index: 5;
+        border-right: 1px solid #eee;
+        height: 100%;
+        box-sizing: border-box;
     }
 
     .card {

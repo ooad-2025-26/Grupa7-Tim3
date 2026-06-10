@@ -78,11 +78,14 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            &copy; 2026 ParkirajBa &mdash; Sva prava zadržana
-        </div>
-    </footer>
+    @if (ViewBag.HideHeader != true)
+    {
+        <footer class="footer">
+            <div class="container">
+                &copy; 2026 ParkirajBa &mdash; Sva prava zadržana
+            </div>
+        </footer>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
