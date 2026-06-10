@@ -286,6 +286,7 @@ input:focus {
     max-width: 500px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
     text-align: center;
+    margin-top: -180px;
 }
 
     .payment-card.confirmation-style {
