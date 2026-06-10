@@ -1,13 +1,13 @@
 @model IEnumerable<ParkirajBa.Models.ParkingObject>
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Upravljanje parkingima";
+    ViewData["Title"] = "Upravljanje parkinzima";
 }
 <div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
         <div>
             <a href="/Admin/Dashboard" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na panel</a>
-            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Upravljanje parkingima</h1>
+            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Upravljanje parkinzima</h1>
         </div>
         <span style="background:var(--accent);color:white;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">@Model.Count() lokacija</span>
     </div>

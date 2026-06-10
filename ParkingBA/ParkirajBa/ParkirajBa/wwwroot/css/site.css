@@ -185,7 +185,7 @@ input:focus {
         display: block;
         padding: 10px 14px;
         text-decoration: none;
-        color: #333;
+        color: #333 !important;
         font-size: 14px;
     }
 

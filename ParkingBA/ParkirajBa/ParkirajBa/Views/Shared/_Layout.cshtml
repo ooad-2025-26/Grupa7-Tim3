@@ -57,16 +57,16 @@
                 <span>@fullName</span>
                 <div class="profile-icon">👤</div>
 
-                <div id="dropdown" class="dropdown">
+                <div id="dropdown" class="dropdown" style="min-width:180px;white-space:nowrap;">
                     @if (User.Identity.IsAuthenticated)
                     {
                         <a href="/User/Profile">Upravljaj profilom</a>
-                        <a href="/User/Logout">Logout</a>
+                        <a href="/User/Logout">Odjavi se</a>
                     }
                     else
                     {
-                        <a href="/User/Register">Register</a>
-                        <a href="/User/Login">Login</a>
+                        <a href="/User/Register">Registruj se</a>
+                        <a href="/User/Login">Prijavi se</a>
                     }
                 </div>
             </div>

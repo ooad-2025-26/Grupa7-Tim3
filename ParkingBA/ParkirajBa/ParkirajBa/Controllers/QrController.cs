@@ -26,6 +26,9 @@ namespace ParkirajBa.Controllers
             if (ticket == null)
                 return BadRequest("Nevažeći QR kod");
 
+            if (!ticket.IsPaid)
+                return BadRequest("Rezervacija nije plaćena. Molimo platite prije ulaska.");
+
             if (!ticket.EnteredParking)
             {
                 ticket.EnteredParking = true;

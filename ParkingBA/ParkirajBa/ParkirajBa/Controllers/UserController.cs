@@ -230,6 +230,18 @@ namespace ParkirajBa.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login");
+            if (string.IsNullOrWhiteSpace(firstName))
+            {
+                ViewBag.Error = "Ime je obavezno.";
+                return View(user);
+            }
+
+            if (string.IsNullOrWhiteSpace(lastName))
+            {
+                ViewBag.Error = "Prezime je obavezno.";
+                return View(user);
+            }
+
 
             var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$");
 
@@ -255,11 +267,32 @@ namespace ParkirajBa.Controllers
                 return View(user);
             }
 
-            if (!string.IsNullOrWhiteSpace(newPassword))
+  
+            if (!string.IsNullOrWhiteSpace(newPassword) || !string.IsNullOrWhiteSpace(currentPassword) || !string.IsNullOrWhiteSpace(confirmPassword))
             {
+                if (string.IsNullOrWhiteSpace(currentPassword))
+                {
+                    ViewBag.Error = "Molimo unesite trenutnu lozinku.";
+                    return View(user);
+                }
+                if (string.IsNullOrWhiteSpace(newPassword))
+                {
+                    ViewBag.Error = "Molimo unesite novu lozinku.";
+                    return View(user);
+                }
+                if (string.IsNullOrWhiteSpace(confirmPassword))
+                {
+                    ViewBag.Error = "Molimo potvrdite novu lozinku.";
+                    return View(user);
+                }
+                if (newPassword.Length < 8)
+                {
+                    ViewBag.Error = "Nova lozinka mora imati najmanje 8 znakova.";
+                    return View(user);
+                }
                 if (newPassword != confirmPassword)
                 {
-                    ViewBag.Error = "Novi passwordi se ne poklapaju.";
+                    ViewBag.Error = "Nove lozinke se ne poklapaju.";
                     return View(user);
                 }
 
@@ -267,7 +300,6 @@ namespace ParkirajBa.Controllers
                 if (!passwordResult.Succeeded)
                 {
                     var prvaGreska = passwordResult.Errors.First();
-
                     if (prvaGreska.Code == "PasswordMismatch")
                     {
                         ViewBag.Error = "Trenutna lozinka nije ispravna.";
@@ -276,14 +308,15 @@ namespace ParkirajBa.Controllers
                     {
                         ViewBag.Error = "Lozinka ne ispunjava sigurnosne uslove (mora imati velika, mala slova i brojeve).";
                     }
-
                     return View(user);
                 }
             }
 
-            ViewBag.Success = "Profil uspješno ažuriran.";
-            return View(user);
+            TempData["Success"] = "Profil uspješno ažuriran.";
+            return RedirectToAction("Profile");
         }
+
+         
 
         // Dev helper
         public async Task<IActionResult> TestUsers()
