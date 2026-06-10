@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
 using ParkirajBa.Services;
+using ParkirajBa.Hubs;
 
 namespace ParkirajBa
 {
@@ -95,6 +96,8 @@ namespace ParkirajBa
 
             //Checks status of Ticket
             builder.Services.AddHostedService<OverstayChargeService>();
+            builder.Services.AddSignalR(); // za slanje signala pri promjeni baze podataka
+
 
             //Za testiranje ulaza na parking preko mobitela
             //builder.WebHost.UseUrls("http://0.0.0.0:5100");
@@ -125,7 +128,7 @@ namespace ParkirajBa
             app.MapRazorPages();
 
             app.MapControllers(); //Damir dodao, provjeriti da li treba
-
+            app.MapHub<ParkingHub>("/parkingHub");
             app.Run();
         }
     }
