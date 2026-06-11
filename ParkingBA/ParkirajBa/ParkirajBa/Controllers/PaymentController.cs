@@ -113,8 +113,11 @@ namespace ParkirajBa.Controllers
                 ticket.ReservationCode = reservationCode;
 
                 var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
-                if (parking != null && parking.availableSpots > 0)
+                if (parking != null && parking.availableSpots > 0 && ticket.IssuedAt <= DateTime.Now && !ticket.SpotCountApplied)
+                {
                     parking.availableSpots--;
+                    ticket.SpotCountApplied = true;
+                }
             }
 
             await _database.SaveChangesAsync();

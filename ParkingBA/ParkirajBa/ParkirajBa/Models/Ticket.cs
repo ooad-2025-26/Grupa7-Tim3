@@ -53,5 +53,7 @@ namespace ParkirajBa.Models
         public bool AdditionalChargePaid { get; set; } = true;
 
         public bool OverstayEmailSent { get; set; } = false;
+
+        public bool SpotCountApplied { get; set; } = false;
     }
 }
