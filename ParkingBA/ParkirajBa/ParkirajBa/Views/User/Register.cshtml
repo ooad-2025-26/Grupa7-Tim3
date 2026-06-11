@@ -3,76 +3,74 @@
     Layout = "_Layout";
     ViewData["Title"] = "Register";
 }
-
 <div class="auth-page">
-
     <div class="auth-overlay"></div>
-
     <div class="auth-content">
-
         <img class="auth-logo" src="/images/logo.png" />
-
         <div class="auth-card">
-
             <h2>Registracija</h2>
-
             @if (ViewBag.Error != null)
             {
                 <div class="error-message">
                     @ViewBag.Error
                 </div>
             }
-
-            @* Dodajemo 'novalidate' da ugasimo fabričke poruke pretraživača na engleskom,
-            te koristimo asp-action i asp-controller za čistiji MVC pristup.
-            *@
             <form asp-controller="User" asp-action="Register" method="post" novalidate>
-
-                <input type="text"
-                       asp-for="Ime"
-                       placeholder="Ime" />
+                <input type="text" asp-for="Ime" placeholder="Ime" />
                 <span asp-validation-for="Ime" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
-
-                <input type="text"
-                       asp-for="Prezime"
-                       placeholder="Prezime" />
+                <input type="text" asp-for="Prezime" placeholder="Prezime" />
                 <span asp-validation-for="Prezime" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
-
-                <input type="email"
-                       asp-for="Email"
-                       placeholder="Email" />
+                <input type="email" asp-for="Email" placeholder="Email" />
                 <span asp-validation-for="Email" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
-
-                <input type="password"
-                       asp-for="Password"
-                       placeholder="Lozinka" />
+                <input type="password" asp-for="Password" placeholder="Lozinka" />
                 <span asp-validation-for="Password" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
-
-                <input type="password"
-                       asp-for="ConfirmPassword"
-                       placeholder="Potvrdi lozinku" />
+                <input type="password" asp-for="ConfirmPassword" placeholder="Potvrdi lozinku" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger" style="font-size: 12px; display: block; margin-top: -10px; margin-bottom: 10px; text-align: left; color: #ff6b6b;"></span>
-
                 <button type="submit">
                     Registracija putem Email-a
                 </button>
-
             </form>
+
+            <script>
+                document.querySelector('form').addEventListener('submit', function (e) {
+                    const imeInput = document.getElementById('Ime');
+                    const prezimeInput = document.getElementById('Prezime');
+                    const imeErr = imeInput.nextElementSibling;
+                    const prezimeErr = prezimeInput.nextElementSibling;
+
+                    const pattern = /^[a-zA-ZčćžšđČĆŽŠĐ]+([ \-][a-zA-ZčćžšđČĆŽŠĐ]+)?$/;
+                    let valid = true;
+
+                    imeErr.textContent = '';
+                    prezimeErr.textContent = '';
+                    imeInput.style.borderColor = '';
+                    prezimeInput.style.borderColor = '';
+
+                    if (!pattern.test(imeInput.value.trim())) {
+                        imeErr.textContent = 'Ime može sadržavati samo slova i maksimalno jednu crticu ili razmak.';
+                        imeInput.style.borderColor = '#ff6b6b';
+                        valid = false;
+                    }
+
+                    if (!pattern.test(prezimeInput.value.trim())) {
+                        prezimeErr.textContent = 'Prezime može sadržavati samo slova i maksimalno jednu crticu ili razmak.';
+                        prezimeInput.style.borderColor = '#ff6b6b';
+                        valid = false;
+                    }
+
+                    if (!valid) e.preventDefault();
+                });
+            </script>
 
             <div class="auth-divider">
                 <span>ili</span>
             </div>
-
-            <a class="secondary-auth-btn"
-               href="/User/Login">
-
+            <a class="secondary-auth-btn" href="/User/Login">
                 Već imate račun?
-
+            </a>
         </div>
     </div>
 </div>
-
 @section Scripts {
-    @* Ovo aktivira jQuery klijentsku validaciju i automatski ispisuje poruke na bosanskom iz tvog modela *@
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
