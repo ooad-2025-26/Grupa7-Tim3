@@ -85,6 +85,16 @@ namespace ParkirajBa.Controllers
                 return View();
             }
 
+            // Provjera radnog vremena
+            var radnoVrijemeGreška = ProvjeriRadnoVrijeme(parking, startsAt.Value, expiresAt.Value);
+            if (radnoVrijemeGreška != null)
+            {
+                ViewBag.Error = radnoVrijemeGreška;
+                ViewBag.Parking = parking;
+                ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
+                return View();
+            }
+
             // resolve pricing type — default to Hourly
             PricingType selectedType = pricingType switch
             {
@@ -148,6 +158,133 @@ namespace ParkirajBa.Controllers
 
             return View(ticket);
         }
+        // GET: /Reservation/Extend/5
+        [HttpGet]
+        public async Task<IActionResult> Extend(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
+
+            if (ticket == null || !ticket.IsPaid || ticket.IsCancelled)
+            {
+                TempData["Error"] = "Rezervacija nije pronađena ili nije dostupna za produženje.";
+                return RedirectToAction("Rezervacije", "Home");
+            }
+
+            if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt.Value < DateTime.Now)
+            {
+                TempData["Error"] = "Nije moguće produžiti isteklu rezervaciju.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            ViewBag.Ticket = ticket;
+            ViewBag.Parking = ticket.ParkingObject;
+            ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(ticket.ParkingObjectId) ?? new List<Pricing>();
+            return View();
+        }
+
+        // POST: /Reservation/Extend
+        [HttpPost]
+        public async Task<IActionResult> Extend(int id, int extraHours)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
+
+            if (ticket == null || !ticket.IsPaid || ticket.IsCancelled)
+            {
+                TempData["Error"] = "Rezervacija nije pronađena.";
+                return RedirectToAction("Rezervacije", "Home");
+            }
+
+            if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt.Value < DateTime.Now)
+            {
+                TempData["Error"] = "Nije moguće produžiti isteklu rezervaciju.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            if (extraHours < 1 || extraHours > 24)
+            {
+                TempData["Error"] = "Broj sati mora biti između 1 i 24.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            // Provjera radnog vremena za produženje
+            var newExpiresAt = (ticket.ExpiresAt ?? DateTime.Now).AddHours(extraHours);
+            var parkingObj = ticket.ParkingObject ?? await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
+            var radnoVrijemeGreška = ProvjeriRadnoVrijeme(parkingObj, ticket.ExpiresAt ?? DateTime.Now, newExpiresAt);
+            if (radnoVrijemeGreška != null)
+            {
+                TempData["Error"] = radnoVrijemeGreška;
+                return RedirectToAction("Extend", new { id });
+            }
+
+            var pricing = await _parkingRepository.GetActivePricingAsync(ticket.ParkingObjectId, PricingType.Hourly);
+            decimal extraPrice = pricing != null ? pricing.price * extraHours : 0;
+
+            // Kreirati novi ticket koji predstavlja produženje
+            var extensionTicket = new Ticket
+            {
+                ApplicationUserId = user.Id,
+                ParkingObjectId = ticket.ParkingObjectId,
+                IssuedAt = ticket.ExpiresAt ?? DateTime.Now,
+                ExpiresAt = (ticket.ExpiresAt ?? DateTime.Now).AddHours(extraHours),
+                Price = extraPrice,
+                // Označiti kao produženje — čuva vezu ka originalnom ticketu kroz ReservationCode prefix
+                ReservationCode = null // generira se nakon plaćanja
+            };
+
+            // Privremeno sačuvati informaciju o produženju u session/TempData
+            // Koristimo poseban TempData key da PaymentController zna da produžuje ExpiresAt originalnog ticketa
+            TempData["ExtensionForTicketId"] = id;
+            TempData["ExtensionHours"] = extraHours;
+            TempData["ExtensionExpiresAt"] = extensionTicket.ExpiresAt?.ToString("o");
+
+            _database.Tickets.Add(extensionTicket);
+            await _database.SaveChangesAsync();
+
+            return RedirectToAction("Checkout", "Payment", new { ticketId = extensionTicket.Id, isExtension = true, originalTicketId = id });
+        }
+
+        /// <summary>
+        /// Vraća poruku greške ako traženi termin izlazi van radnog vremena parkinga,
+        /// ili null ako je termin ispravan (ili parking nema definisano radno vrijeme).
+        /// Podrška za noćne smjene (npr. opens 22:00 – closes 06:00).
+        /// </summary>
+        private static string? ProvjeriRadnoVrijeme(ParkingObject? parking, DateTime startsAt, DateTime expiresAt)
+        {
+            if (parking == null) return null;
+            if (!parking.opensAt.HasValue || !parking.closesAt.HasValue) return null;
+
+            var open = parking.opensAt.Value.TimeOfDay;
+            var close = parking.closesAt.Value.TimeOfDay;
+            var startTime = startsAt.TimeOfDay;
+            var endTime = expiresAt.TimeOfDay;
+
+            bool IsWithinShift(TimeSpan t)
+            {
+                // Normalna smjena: open <= t <= close
+                if (open <= close) return t >= open && t <= close;
+                // Noćna smjena (npr. 22:00 – 06:00): t >= open ILI t <= close
+                return t >= open || t <= close;
+            }
+
+            var radnoOd = parking.opensAt.Value.ToString("HH:mm");
+            var radnoDo = parking.closesAt.Value.ToString("HH:mm");
+            var poruka = $"Parking radi od {radnoOd} do {radnoDo}. ";
+
+            if (!IsWithinShift(startTime))
+                return poruka + "Odabrani početak rezervacije je izvan radnog vremena.";
+
+            if (!IsWithinShift(endTime))
+                return poruka + "Odabrani kraj rezervacije je izvan radnog vremena.";
+
+            return null;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
         {
