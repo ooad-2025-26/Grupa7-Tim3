@@ -42,12 +42,12 @@ namespace ParkirajBa.Controllers
             var regularCount = userCount - ownerCount - adminCount;
 
             var tickets = await _database.Tickets.Include(t => t.ParkingObject).ToListAsync();
-            var activeTickets = tickets.Count(t => t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
-            var expiredTickets = tickets.Count(t => t.ExpiresAt.HasValue && t.ExpiresAt < now);
-            var paidTickets = tickets.Count(t => t.IsPaid);
-            var totalRevenue = tickets.Where(t => t.IsPaid).Sum(t => t.Price);
-            var revenueThisMonth = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == now.Month && t.IssuedAt.Year == now.Year).Sum(t => t.Price);
-            var revenueLastMonth = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == now.AddMonths(-1).Month && t.IssuedAt.Year == now.AddMonths(-1).Year).Sum(t => t.Price);
+            var activeTickets = tickets.Count(t => !t.IsCancelled && t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
+            var expiredTickets = tickets.Count(t => !t.IsCancelled && t.ExpiresAt.HasValue && t.ExpiresAt < now);
+            var paidTickets = tickets.Count(t => t.IsPaid && !t.IsCancelled);
+            var totalRevenue = tickets.Where(t => t.IsPaid && !t.IsCancelled).Sum(t => t.Price + t.TotalAdditionalChargesPaid);
+            var revenueThisMonth = tickets.Where(t => t.IsPaid && !t.IsCancelled && t.IssuedAt.Month == now.Month && t.IssuedAt.Year == now.Year).Sum(t => t.Price + t.TotalAdditionalChargesPaid);
+            var revenueLastMonth = tickets.Where(t => t.IsPaid && !t.IsCancelled && t.IssuedAt.Month == now.AddMonths(-1).Month && t.IssuedAt.Year == now.AddMonths(-1).Year).Sum(t => t.Price + t.TotalAdditionalChargesPaid);
 
             var parkings = await _parkingRepository.GetAllAsync();
             var totalParkings = parkings.Count;
@@ -61,7 +61,7 @@ namespace ParkirajBa.Controllers
                 .Select(m => new
                 {
                     Label = m.ToString("MMM yyyy"),
-                    Revenue = tickets.Where(t => t.IsPaid && t.IssuedAt.Month == m.Month && t.IssuedAt.Year == m.Year).Sum(t => t.Price)
+                    Revenue = tickets.Where(t => t.IsPaid && !t.IsCancelled && t.IssuedAt.Month == m.Month && t.IssuedAt.Year == m.Year).Sum(t => t.Price + t.TotalAdditionalChargesPaid)
                 })
                 .Reverse()
                 .ToList();
@@ -179,25 +179,25 @@ namespace ParkirajBa.Controllers
                 .Include(t => t.ApplicationUser)
                 .ToListAsync();
 
-            var filtered = allTickets.Where(t => t.IssuedAt.Year == selYear && t.IssuedAt.Month == selMonth).ToList();
+            var filtered = allTickets.Where(t => !t.IsCancelled && t.IssuedAt.Year == selYear && t.IssuedAt.Month == selMonth).ToList();
 
             var revenuePerParking = filtered
                 .Where(t => t.IsPaid)
                 .GroupBy(t => t.ParkingObject?.name ?? "Nepoznato")
-                .Select(g => new { Name = g.Key, Revenue = g.Sum(t => t.Price), Count = g.Count() })
+                .Select(g => new { Name = g.Key, Revenue = g.Sum(t => t.Price + t.TotalAdditionalChargesPaid), Count = g.Count() })
                 .OrderByDescending(x => x.Revenue)
                 .ToList();
 
             var dailyRevenue = filtered
                 .Where(t => t.IsPaid)
                 .GroupBy(t => t.IssuedAt.Day)
-                .Select(g => new { Day = g.Key, Revenue = g.Sum(t => t.Price) })
+                .Select(g => new { Day = g.Key, Revenue = g.Sum(t => t.Price + t.TotalAdditionalChargesPaid) })
                 .OrderBy(x => x.Day)
                 .ToList();
 
             ViewBag.SelYear = selYear;
             ViewBag.SelMonth = selMonth;
-            ViewBag.TotalRevenue = filtered.Where(t => t.IsPaid).Sum(t => t.Price);
+            ViewBag.TotalRevenue = filtered.Where(t => t.IsPaid).Sum(t => t.Price + t.TotalAdditionalChargesPaid);
             ViewBag.TotalRes = filtered.Count;
             ViewBag.PaidRes = filtered.Count(t => t.IsPaid);
             ViewBag.UnpaidRes = filtered.Count(t => !t.IsPaid);
