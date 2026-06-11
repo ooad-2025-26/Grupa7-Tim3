@@ -35,6 +35,9 @@ namespace ParkirajBa.Controllers
             // ENTRY LOGIC
             if (!ticket.EnteredParking)
             {
+                if(ticket.IssuedAt <= DateTime.Now)
+                    return BadRequest(new { message = "Nije aktivan parking" });
+
                 if (!ticket.IsPaid)
                     return BadRequest(new { message = "Nije plaćeno" });
 
