@@ -85,6 +85,30 @@ namespace ParkirajBa.Controllers
                 return View();
             }
 
+            // Provjera maksimalnog trajanja po tipu
+            var span = expiresAt.Value - startsAt.Value;
+            bool prekracuje = pricingType switch
+            {
+                "Yearly" => expiresAt.Value > startsAt.Value.AddYears(1),
+                "Monthly" => expiresAt.Value > startsAt.Value.AddMonths(3),
+                "Daily" => span.TotalDays > 15,
+                _ => span.TotalHours > 24  // Hourly (default)
+            };
+            string maxLabel = pricingType switch
+            {
+                "Yearly" => "1 godinu",
+                "Monthly" => "3 mjeseca",
+                "Daily" => "15 dana",
+                _ => "24 sata"
+            };
+            if (prekracuje)
+            {
+                ViewBag.Error = $"Maksimalno trajanje rezervacije za odabrani tip je {maxLabel}.";
+                ViewBag.Parking = parking;
+                ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(parkingObjectId) ?? new List<Pricing>();
+                return View();
+            }
+
             // resolve pricing type — default to Hourly
             PricingType selectedType = pricingType switch
             {
