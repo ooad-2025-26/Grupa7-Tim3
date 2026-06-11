@@ -35,8 +35,7 @@
 
                     <div class="object-card">
 
-                        <img src="/images/parking.png" alt="Slika parkinga - @parking.name" />
-
+                        <img src="@((ViewBag.Slike as Dictionary<int, string>)?[parking.ID] ?? "/images/parking.png")" alt="Slika parkinga - @parking.name" />
                         <div class="object-card-body">
 
                             <h3>@parking.name</h3>

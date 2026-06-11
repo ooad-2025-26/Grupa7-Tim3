@@ -12,6 +12,7 @@
     double occ = (Model.totalSpots.HasValue && Model.totalSpots.Value > 0)
         ? Math.Min((double)(Model.totalSpots.Value - Model.availableSpots) / Model.totalSpots.Value * 100, 100) : 0;
     string occColor = occ >= 80 ? "#dc3545" : occ >= 50 ? "#fd7e14" : "#28a745";
+    var slika = ViewBag.PrimaryImage as ParkirajBa.Models.ParkingImage;
 }
 
 <div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
@@ -38,10 +39,8 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
 
         <div style="display:flex;flex-direction:column;gap:20px;">
-
-          
             <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
-                <img src="/images/parking.png" alt="@Model.name" style="width:100%;height:200px;object-fit:cover;" />
+                <img src="@(slika?.ImagePath ?? "/images/parking.png")" alt="@Model.name" style="width:100%;height:200px;object-fit:cover;" />
                 <div style="padding:20px 24px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                         <div>
@@ -55,7 +54,6 @@
                             </span>
                         }
                     </div>
-
                     <div style="margin-bottom:16px;">
                         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px;">
                             <span>Zauzetost parkinga</span>
@@ -65,7 +63,6 @@
                             <div style="height:100%;width:@occ.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%;background:@occColor;border-radius:4px;"></div>
                         </div>
                     </div>
-
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                         @if (Model.opensAt.HasValue && Model.closesAt.HasValue)
                         {
@@ -82,7 +79,6 @@
                             </div>
                         }
                     </div>
-
                     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
                         @if (Model.hasCameras == true)
                         {
@@ -117,6 +113,7 @@
                                 "daily" => "Po danu",
                                 "weekly" => "Po sedmici",
                                 "monthly" => "Mjesečno",
+                                "yearly" => "Godišnje",
                                 _ => "Standardno"
                             };
                             <div style="background:#f4f7ff;border-radius:10px;padding:14px;text-align:center;">
@@ -132,8 +129,23 @@
         <div style="background:white;border-radius:16px;padding:28px 32px;box-shadow:0 2px 10px rgba(0,0,0,0.07);display:flex;flex-direction:column;position:sticky;top:28px;">
             <h3 style="margin:0 0 20px;font-size:16px;font-weight:600;color:var(--text);">Uredi podatke</h3>
 
-            <form method="post" action="/Parking/Edit/@Model.ID" style="display:flex;flex-direction:column;flex:1;" id="parkingEditForm" novalidate>
+            <form method="post" action="/Admin/UploadParkingImage?id=@Model.ID" enctype="multipart/form-data" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #f0f0f0;">
                 @Html.AntiForgeryToken()
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Zamijeni sliku</label>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <input type="file" name="Images" accept="image/*"
+                           style="flex:1;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;" />
+                    <button type="submit" style="padding:10px 18px;background:#6287f9;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
+                        Uploadaj
+                    </button>
+                </div>
+            </form>
+
+            <form method="post" action="/Parking/Edit/@Model.ID" id="parkingEditForm" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.ID" />
+                <input type="hidden" name="latitude" value="@Model.latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                <input type="hidden" name="longitude" value="@Model.longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
 
                 <div style="margin-bottom:14px;">
                     <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Naziv parkinga *</label>
@@ -162,6 +174,22 @@
                         <span class="val-err" id="errHeight"></span>
                     </div>
                 </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Otvara se</label>
+                        <input type="time" name="opensAt" id="fieldOpensAt"
+                               value="@(Model.opensAt.HasValue ? Model.opensAt.Value.ToString("HH:mm") : "")"
+                               style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#555;text-transform:uppercase;letter-spacing:0.3px;">Zatvara se</label>
+                        <input type="time" name="closesAt" id="fieldClosesAt"
+                               value="@(Model.closesAt.HasValue ? Model.closesAt.Value.ToString("HH:mm") : "")"
+                               style="width:100%;padding:10px 13px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                    </div>
+                </div>
+                <span class="val-err" id="errTime"></span>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
                     <label style="display:flex;align-items:center;gap:10px;padding:11px;background:#f8f9fa;border-radius:8px;cursor:pointer;">
@@ -246,10 +274,14 @@
         const name = document.getElementById('fieldName');
         const spots = document.getElementById('fieldSpots');
         const height = document.getElementById('fieldHeight');
+        const opensAt = document.getElementById('fieldOpensAt');
+        const closesAt = document.getElementById('fieldClosesAt');
 
-        // reset basic fields
-        ['errName', 'errSpots', 'errHeight'].forEach(id => document.getElementById(id).textContent = '');
-        [name, spots, height].forEach(el => el.style.borderColor = '#e0e0e0');
+        ['errName', 'errSpots', 'errHeight', 'errTime'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '';
+        });
+        [name, spots, height, opensAt, closesAt].forEach(el => { if (el) el.style.borderColor = '#e0e0e0'; });
 
         if (!name.value.trim()) {
             document.getElementById('errName').textContent = 'Naziv parkinga je obavezan.';
@@ -273,13 +305,29 @@
             }
         }
 
-        // validate price fields
+        if (opensAt && closesAt) {
+            const o = opensAt.value.trim();
+            const c = closesAt.value.trim();
+            if (o && !c) {
+                document.getElementById('errTime').textContent = 'Morate unijeti i vrijeme zatvaranja.';
+                closesAt.style.borderColor = '#dc3545';
+                valid = false;
+            } else if (!o && c) {
+                document.getElementById('errTime').textContent = 'Morate unijeti i vrijeme otvaranja.';
+                opensAt.style.borderColor = '#dc3545';
+                valid = false;
+            } else if (o && c && o >= c) {
+                document.getElementById('errTime').textContent = 'Vrijeme zatvaranja mora biti nakon vremena otvaranja.';
+                closesAt.style.borderColor = '#dc3545';
+                valid = false;
+            }
+        }
+
         document.querySelectorAll('input[name="pricingValues"]').forEach(function (input) {
             const errId = 'errPrice_' + input.id.replace('price_', '');
             const errEl = document.getElementById(errId);
             input.style.borderColor = '#e0e0e0';
             if (errEl) errEl.textContent = '';
-
             if (input.value !== '') {
                 const val = parseFloat(input.value);
                 if (isNaN(val) || val < 0) {

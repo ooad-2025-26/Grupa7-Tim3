@@ -37,20 +37,26 @@ namespace ParkirajBa.Controllers
             }
             var pricings = await _parkingRepository.GetPricingsByParkingIdAsync(id);
             ViewBag.Pricings = pricings;
-
+            ViewBag.PrimaryImage = await _parkingRepository.GetPrimaryImageByParkingIDAsync(id);
             return View(parking);
         }
 
         // GET: /Parking/ParkingManagement — Owner only
-        [Authorize(Roles = "Owner")]
+        [Authorize(Roles = "Owner, Admin")]
         public async Task<IActionResult> ParkingManagement()
         {
             var currentUser = await _userManager.GetUserAsync(User);
-
-            if (currentUser == null)
-                return Unauthorized();
+            if (currentUser == null) return Unauthorized();
 
             var parkingObjects = await _parkingRepository.GetByOwnerIdAsync(currentUser.Id);
+
+            var slike = new Dictionary<int, string>();
+            foreach (var parking in parkingObjects)
+            {
+                var slika = await _parkingRepository.GetPrimaryImageByParkingIDAsync(parking.ID);
+                slike[parking.ID] = slika?.ImagePath ?? "/images/parking.jpg";
+            }
+            ViewBag.Slike = slike;
 
             return View(parkingObjects);
         }
@@ -246,24 +252,91 @@ namespace ParkirajBa.Controllers
                 return Json(new { success = false, message = $"Greška pri kreiranju parkinga: {ex.Message}" });
             }
         }
-
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ParkingObject ChangedParking)
+        [Authorize(Roles = "Owner,Admin")]
+        public async Task<IActionResult> Edit(
+            int id, string name, string address,
+            string latitude, string longitude,
+            int? totalSpots, double? maxHeight,
+            bool hasCameras, bool isDisabledAccessible,
+            bool hasEVCharger, bool isUnderground,
+            string? opensAt, string? closesAt,
+            List<PricingCreateDto>? Pricings,
+            List<IFormFile>? Images,        
+            List<int>? ImagePositions)
         {
-            if (!ModelState.IsValid)
+            var parking = await _parkingRepository.GetByIdAsync(id);
+            if (parking == null) return Json(new { success = false, message = "Parking nije pronađen." });
+            if (!double.TryParse(latitude, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out double lat))
+                return Json(new { success = false, message = "Neispravan format geografske širine." });
+
+            if (!double.TryParse(longitude, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out double lon))
+                return Json(new { success = false, message = "Neispravan format geografske dužine." });
+            if (string.IsNullOrWhiteSpace(name))
+                return Json(new { success = false, message = "Naziv parkinga je obavezan." });
+
+            if (!totalSpots.HasValue || totalSpots < 1)
+                return Json(new { success = false, message = "Ukupan broj mjesta mora biti veći od 0." });
+
+            int diff = totalSpots.Value - (parking.totalSpots ?? 0);
+            parking.name = name;
+            parking.address = address;
+            parking.latitude = lat;
+            parking.longitude = lon;
+            parking.totalSpots = totalSpots;
+            parking.availableSpots = Math.Max(0, parking.availableSpots + diff);
+            parking.maxHeight = maxHeight;
+            parking.hasCameras = hasCameras;
+            parking.isDisabledAccessible = isDisabledAccessible;
+            parking.hasEVCharger = hasEVCharger;
+            parking.isUnderground = isUnderground;
+            parking.opensAt = !string.IsNullOrEmpty(opensAt)
+       ? DateTime.Parse(opensAt)
+       : null;
+            parking.closesAt = !string.IsNullOrEmpty(closesAt)
+                ? DateTime.Parse(closesAt)
+                : null;
+
+            await _parkingRepository.ModifyParkingAsync(parking);
+            if (Images != null && Images.Count > 0)
             {
-                return BadRequest("Podaci nisu validni.");
+                try
+                {
+                    await _parkingRepository.SaveAllParkingImagesByIDAsync(Images, ImagePositions ?? new List<int>(), id);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Greška pri snimanju slike: {ex.Message}");
+                }
             }
 
-            ParkingObject parking= await _parkingRepository.ModifyParkingAsync(ChangedParking);
+            if (Pricings != null && Pricings.Count > 0)
+            {
+                var existing = await _parkingRepository.GetPricingsByParkingIdAsync(id);
+                foreach (var p in existing)
+                    _database.Pricing.Remove(p);
 
-            if (parking == null) return NotFound();
+                foreach (var pricingDto in Pricings)
+                {
+                    if (pricingDto.price < 0) continue;
+                    var pricing = new Pricing
+                    {
+                        pricingType = (PricingType)pricingDto.pricingType,
+                        price = pricingDto.price,
+                        ParkingObjectID = id,
+                        validFrom = string.IsNullOrEmpty(pricingDto.validFrom) ? null
+                            : (DateTime.TryParse(pricingDto.validFrom, out var date) ? (DateTime?)date : null)
+                    };
+                    await _parkingRepository.AddPricingAsync(pricing);
+                }
 
-            return Json(new { success = true, message = "Izmjene su uspješno spašene!" });
+                await _database.SaveChangesAsync();
+            }
+
+            return Json(new { success = true, message = "Parking uspješno ažuriran!" });
         }
-
-        //----
 
 
 
