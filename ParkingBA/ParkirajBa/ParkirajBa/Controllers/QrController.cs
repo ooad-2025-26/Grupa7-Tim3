@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
-using ParkirajBa.Models;
-using Microsoft.AspNetCore.SignalR;
 using ParkirajBa.Hubs;
+using ParkirajBa.Models;
+using ParkirajBa.Repositories;
 
 namespace ParkirajBa.Controllers
 {
@@ -13,10 +14,12 @@ namespace ParkirajBa.Controllers
     {
         private readonly ApplicationDbContext _database;
         private readonly IHubContext<ParkingHub> _hub;
-        public QrController(ApplicationDbContext database, IHubContext<ParkingHub> hub)
+        private readonly IParkingRepository _parkingRepository;
+        public QrController(ApplicationDbContext database, IHubContext<ParkingHub> hub, IParkingRepository parkingRepository)
         {
             _database = database;
             _hub = hub;
+            _parkingRepository = parkingRepository;
         }
         [HttpPost("scan")]
         public async Task<IActionResult> Scan([FromBody] QrRequest request)
@@ -56,6 +59,16 @@ namespace ParkirajBa.Controllers
                 ticket.ExitedParking = true;
                 ticket.ExitedAt = DateTime.Now;
                 ticket.QrCodeActive = false;
+
+                //Trebalo bi da radi, ali ne radi
+                var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
+                if (parking != null && ticket.IsPaid && parking.availableSpots < parking.totalSpots)
+                {
+                    parking.availableSpots++;
+
+                }
+                //---------------
+
 
                 await _database.SaveChangesAsync();
                 await _hub.Clients.All.SendAsync("StatusChanged", request.Code);
