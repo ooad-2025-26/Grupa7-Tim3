@@ -32,19 +32,9 @@
         <input type="text" name="address" id="fieldAddress" placeholder="Unesite adresu..." class="form-input" value="@Model.address" autocomplete="street-address" />
     </div>
 
-    <div class="form-grid">
-        <div>
-            <label class="form-label" for="fieldLatitude">Latitude (Širina)</label>
-            <input type="number" name="latitude" id="fieldLatitude" step="0.000001" placeholder="npr. 43.8563" class="form-input" value="@Model.latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
-        </div>
-        <div>
-            <label class="form-label" for="fieldLongitude">Longitude (Dužina)</label>
-            <input type="number" name="longitude" id="fieldLongitude" step="0.000001" placeholder="npr. 18.4075" class="form-input" value="@Model.longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+    <input type="hidden" name="latitude" id="fieldLatitude" value="@Model.latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+    <input type="hidden" name="longitude" id="fieldLongitude" value="@Model.longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
 
-        </div>
-    </div>
-
-    <div class="form-grid">
         <div>
             <label class="form-label" for="fieldSpots">Ukupno mjesta *</label>
             <input type="number" name="totalSpots" id="fieldSpots" min="1" required placeholder="Broj mjesta" class="form-input" value="@Model.totalSpots" />

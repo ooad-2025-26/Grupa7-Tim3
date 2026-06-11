@@ -127,16 +127,16 @@ namespace ParkirajBa.Controllers
             decimal cijena = 0;
             if (pricing != null)
             {
-                var span = expiresAt.Value - startsAt.Value;
+                var trajanje = expiresAt.Value - startsAt.Value;
                 cijena = selectedType switch
                 {
-                    PricingType.Hourly => pricing.price * (decimal)Math.Ceiling(span.TotalHours),
-                    PricingType.Daily => pricing.price * (decimal)Math.Ceiling(span.TotalDays),
+                    PricingType.Hourly => pricing.price * (decimal)Math.Ceiling(trajanje.TotalHours),
+                    PricingType.Daily => pricing.price * (decimal)Math.Ceiling(trajanje.TotalDays),
                     PricingType.Monthly => pricing.price * (decimal)Math.Max(1,
                         (expiresAt.Value.Year - startsAt.Value.Year) * 12 + expiresAt.Value.Month - startsAt.Value.Month),
                     PricingType.Yearly => pricing.price * (decimal)Math.Max(1,
                         expiresAt.Value.Year - startsAt.Value.Year),
-                    _ => pricing.price * (decimal)Math.Ceiling(span.TotalHours)
+                    _ => pricing.price * (decimal)Math.Ceiling(trajanje.TotalHours)
                 };
             }
 

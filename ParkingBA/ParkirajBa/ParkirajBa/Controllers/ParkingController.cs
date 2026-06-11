@@ -45,7 +45,7 @@ namespace ParkirajBa.Controllers
         }
 
         // GET: /Parking/ParkingManagement — Owner only
-        [Authorize(Roles = "Owner, Admin")]
+        [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> ParkingManagement()
         {
             var currentUser = await _userManager.GetUserAsync(User);
@@ -388,8 +388,10 @@ namespace ParkirajBa.Controllers
                 await _database.SaveChangesAsync();
             }
 
-            TempData["Success"] = "Parking je uspješno ažuriran.";
-            return RedirectToAction("ParkingDetails", "Admin", new { id = id });
+            if (User.IsInRole("Admin"))
+                return Json(new { success = true, message = "Parking uspješno ažuriran!" });
+
+            return Json(new { success = true, message = "Parking uspješno ažuriran!" });
         }
 
 
