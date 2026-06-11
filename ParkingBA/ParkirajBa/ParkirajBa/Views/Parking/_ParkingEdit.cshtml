@@ -1,7 +1,20 @@
 ﻿@model ParkirajBa.Models.ParkingObject
 
 <h3>Uredi parking: @Model.name</h3>
-
+<!-- UPLOAD NASLOVNE SLIKE -->
+<div class="form-group" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f0f0f0;">
+    <label class="form-label">Zamijeni naslovnu sliku</label>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="file" id="coverImageInput" accept="image/*"
+               style="flex:1; padding:10px 13px; border:1px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;" />
+        <button type="button" id="btnUploadCover"
+                onclick="uploadCoverImage()"
+                style="padding:10px 18px; background:#6287f9; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">
+            Uploadaj
+        </button>
+    </div>
+    <span id="coverUploadMsg" style="font-size:12px; margin-top:5px; display:block;"></span>
+</div>
 <form method="post" action="/Parking/Edit" class="editor-form" id="parkingEditForm" novalidate>
     @Html.AntiForgeryToken()
 
@@ -44,21 +57,6 @@
         </div>
     </div>
 
-    <!-- SLIKE -->
-    <div class="form-group">
-        <label class="form-label">Slike parkinga (Prva slika će biti naslovna)</label>
-        <div class="upload-row-wrapper">
-            <div id="dropZone" class="drop-zone-square">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" />
-            </div>
-            <div id="previewContainer" class="preview-grid"></div>
-        </div>
-    </div>
 
     <!-- CHECKBOXES -->
     <div class="checkbox-grid">

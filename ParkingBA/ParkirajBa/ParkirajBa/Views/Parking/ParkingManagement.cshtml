@@ -244,7 +244,44 @@
     let selectedFiles = [];
     let draggedItem = null;
     let pricingRows = [];
+    async function uploadCoverImage() {
+        const fileInput = document.getElementById('coverImageInput');
+        const msg = document.getElementById('coverUploadMsg');
+        const idInput = document.querySelector('input[name="id"]');
+        const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
 
+        if (!fileInput || !idInput) return;
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            if (msg) { msg.style.color = '#dc3545'; msg.innerText = 'Molimo odaberite sliku.'; }
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('Images', fileInput.files[0]);
+        formData.append('id', idInput.value);
+
+        try {
+            if (msg) { msg.style.color = '#555'; msg.innerText = 'Uploadovanje...'; }
+
+            const response = await fetch('/Parking/UploadCoverImage', {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': tokenEl?.value ?? '' }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                if (msg) { msg.style.color = '#28a745'; msg.innerText = '✓ Slika uspješno uploadana!'; }
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                if (msg) { msg.style.color = '#dc3545'; msg.innerText = result.message || 'Greška pri uploadu.'; }
+            }
+        } catch (err) {
+            if (msg) { msg.style.color = '#dc3545'; msg.innerText = 'Greška pri komunikaciji sa serverom.'; }
+            console.error(err);
+        }
+    }
     // LOAD PARTIAL FORMS
     async function loadForm(url) {
         try {
@@ -256,7 +293,8 @@
                 selectedFiles = [];
                 pricingRows = [];
 
-                initUploadLogic();
+                const isEditForm = !!document.getElementById('parkingEditForm');
+                if (!isEditForm) initUploadLogic();
                 initPricingLogic();
                 attachValidation();
             }

@@ -260,6 +260,51 @@ namespace ParkirajBa.Controllers
                 return Json(new { success = false, message = $"Greška pri kreiranju parkinga: {ex.Message}" });
             }
         }
+
+        [HttpPost]
+        [Authorize(Roles = "Owner,Admin")]
+        public async Task<IActionResult> UploadCoverImage(int id, IFormFile Images)
+        {
+            // Provjera vlasništva za Owner
+            if (User.IsInRole("Owner"))
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                var parking = await _parkingRepository.GetByIdAsync(id);
+                if (parking == null)
+                    return Json(new { success = false, message = "Parking nije pronađen." });
+                if (parking.OwnerId != currentUser?.Id)
+                    return Json(new { success = false, message = "Nemate pravo mijenjati ovu sliku." });
+            }
+
+            if (Images == null || Images.Length == 0)
+                return Json(new { success = false, message = "Molimo odaberite sliku." });
+
+            // Obriši staru sliku
+            var postojece = await _database.ParkingImages
+                .Where(i => i.ParkingObjectID == id && i.Position == 1)
+                .ToListAsync();
+
+            foreach (var stara in postojece)
+            {
+                if (!string.IsNullOrEmpty(stara.ImagePath))
+                {
+                    var fizickaPutanja = Path.Combine(
+                        Directory.GetCurrentDirectory(), "wwwroot",
+                        stara.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (System.IO.File.Exists(fizickaPutanja))
+                        System.IO.File.Delete(fizickaPutanja);
+                }
+            }
+
+            _database.ParkingImages.RemoveRange(postojece);
+            await _database.SaveChangesAsync();
+
+            // Spremi novu
+            await _parkingRepository.SaveParkingImageByIDAsync(Images, 1, id);
+
+            return Json(new { success = true, message = "Slika uspješno ažurirana." });
+        }
+
         [HttpPost]
         [Authorize(Roles = "Owner,Admin")]
         public async Task<IActionResult> Edit(
