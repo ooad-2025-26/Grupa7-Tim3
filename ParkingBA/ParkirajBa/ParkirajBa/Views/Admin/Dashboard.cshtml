@@ -9,7 +9,6 @@
     int regularCount = ViewBag.RegularCount ?? 0;
     int totalTickets = ViewBag.TotalTickets ?? 0;
     int activeTickets = ViewBag.ActiveTickets ?? 0;
-    int expiredTickets = ViewBag.ExpiredTickets ?? 0;
     int paidTickets = ViewBag.PaidTickets ?? 0;
     decimal totalRevenue = ViewBag.TotalRevenue ?? 0m;
     decimal revenueThisMonth = ViewBag.RevenueThisMonth ?? 0m;
@@ -18,401 +17,269 @@
     int totalSpots = ViewBag.TotalSpots ?? 0;
     int availableSpots = ViewBag.AvailableSpots ?? 0;
     var recentTickets = ViewBag.RecentTickets as List<ParkirajBa.Models.Ticket> ?? new();
-    decimal revChange = revenueLastMonth > 0 ? Math.Round((revenueThisMonth - revenueLastMonth) / revenueLastMonth * 100, 1) : 0;
+    decimal revChange = revenueLastMonth > 0
+        ? Math.Round((revenueThisMonth - revenueLastMonth) / revenueLastMonth * 100, 1) : 0;
 
     var revenueByMonth = ViewBag.RevenueByMonth as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
     var chartLabels = string.Join(",", revenueByMonth.Select(r => $"'{r.Label}'"));
     var chartRevenues = string.Join(",", revenueByMonth.Select(r => ((decimal)r.Revenue).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)));
 }
 
-<style>
-    .dashboard-kpi-card-fix {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
+<partial name="_AdminStyles" />
 
-    .nav-link-custom {
-        color: #2d3748 !important;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        transition: background 0.2s;
-    }
+<div class="adm-wrapper">
+    <partial name="_AdminSidebar" />
 
-        .nav-link-custom:hover {
-            background: #edf2f7;
-        }
+    <main class="adm-content">
 
-    .nav-link-active-custom {
-        background: #6287f9 !important;
-        color: white !important;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-    }
-
-    .adm-alert-success {
-        background: #d4edda;
-        color: #155724;
-        padding: 12px 18px;
-        border-radius: 10px;
-        font-size: 14px;
-        margin-bottom: 20px;
-    }
-
-    .adm-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-        .adm-table th {
-            text-align: left;
-            padding: 12px 16px;
-            background: #f4f7ff;
-            color: #888;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .adm-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f5f5f5;
-            color: #333;
-            font-size: 13px;
-        }
-
-    .adm-badge {
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-
-        .adm-badge.green {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .adm-badge.blue {
-            background: #dce8ff;
-            color: #1a56db;
-        }
-
-        .adm-badge.gray {
-            background: #e9ecef;
-            color: #6c757d;
-        }
-
-        .adm-badge.orange {
-            background: #fff3cd;
-            color: #856404;
-        }
-</style>
-
-<div style="min-height:100vh;background:#f7fafc;padding:28px 36px;">
-
-    @* HEADER *@
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
-        <div>
-            <h1 style="margin:0;font-size:26px;font-weight:700;color:#1a202c;">Admin Panel</h1>
-            <p style="margin:4px 0 0;color:#718096;font-size:14px;">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-            <a href="/Admin/Users" class="nav-link-custom">Korisnici</a>
-            <a href="/Admin/Parkings" class="nav-link-custom">Parkinzi</a>
-            <a href="/Admin/Reservations" class="nav-link-custom">Rezervacije</a>
-            <a href="/Admin/Reports" class="nav-link-custom">Izvještaji</a>
-        </div>
-    </div>
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="adm-alert-success">✓ @TempData["Success"]</div>
-    }
-
-    @* KPI KARTICE *@
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;">
-
-        <div class="dashboard-kpi-card-fix">
-            <div style="background:#eef1ff;padding:12px;border-radius:10px;flex-shrink:0;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#6287f9"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
-            </div>
+        <div class="adm-page-header">
             <div>
-                <div style="font-size:24px;font-weight:700;color:#1a202c;">@userCount</div>
-                <div style="font-size:13px;color:#718096;font-weight:500;">Ukupno korisnika</div>
-                <div style="font-size:11px;color:#a0aec0;">@regularCount obični · @ownerCount vlasnika</div>
+                <h1 class="adm-page-title">Admin panel</h1>
+                <p class="adm-page-sub">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
             </div>
         </div>
 
-        <div class="dashboard-kpi-card-fix">
-            <div style="background:#fff3e0;padding:12px;border-radius:10px;flex-shrink:0;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#ff9800"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" /></svg>
+        @if (TempData["Success"] != null)
+        {
+            <div class="adm-alert-success">✓ @TempData["Success"]</div>
+        }
+
+        <!-- KPI cards -->
+        <div class="adm-kpi-grid">
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#eef1ff;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#4f6ef7"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@userCount</div>
+                    <div class="adm-kpi-label">Ukupno korisnika</div>
+                    <div class="adm-kpi-sub">@regularCount obični · @ownerCount vlasnika</div>
+                </div>
             </div>
-            <div>
-                <div style="font-size:24px;font-weight:700;color:#1a202c;">@totalTickets</div>
-                <div style="font-size:13px;color:#718096;font-weight:500;">Ukupno rezervacija</div>
-                <div style="font-size:11px;color:#a0aec0;">@activeTickets aktivnih · @paidTickets plaćenih</div>
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#fff7ed;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#d97706"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@totalTickets</div>
+                    <div class="adm-kpi-label">Ukupno rezervacija</div>
+                    <div class="adm-kpi-sub">@activeTickets aktivnih · @paidTickets plaćenih</div>
+                </div>
+            </div>
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#ecfdf5;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#059669"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@totalRevenue.ToString("0.00") KM</div>
+                    <div class="adm-kpi-label">Ukupan prihod</div>
+                    <div class="adm-kpi-sub" style="color:@(revChange >= 0 ? "#059669" : "#e11d48");">
+                        @(revChange >= 0 ? "▲" : "▼") @Math.Abs(revChange)% ovaj mjesec
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#f5f3ff;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#7c3aed"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@totalParkings</div>
+                    <div class="adm-kpi-label">Parking objekata</div>
+                    <div class="adm-kpi-sub">@availableSpots slobodnih od @totalSpots mjesta</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Charts row 1 -->
+        <div class="adm-grid-21" style="margin-bottom:20px;">
+
+            <div class="adm-card adm-card-inner">
+                <p class="adm-card-title" style="margin-bottom:18px;">Prihod po mjesecima</p>
+                <div style="position:relative;height:160px;"><canvas id="revenueChart"></canvas></div>
+            </div>
+
+            <div class="adm-card adm-card-inner">
+                <p class="adm-card-title" style="margin-bottom:16px;">Korisnici po ulozi</p>
+                <div style="position:relative;height:140px;"><canvas id="usersChart"></canvas></div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+                    <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--adm-text2);">
+                        <div style="width:10px;height:10px;border-radius:3px;background:#4f6ef7;flex-shrink:0;"></div> Obični — @regularCount
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--adm-text2);">
+                        <div style="width:10px;height:10px;border-radius:3px;background:#059669;flex-shrink:0;"></div> Vlasnici — @ownerCount
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--adm-text2);">
+                        <div style="width:10px;height:10px;border-radius:3px;background:#d97706;flex-shrink:0;"></div> Admini — @adminCount
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Charts row 2 -->
+        <div class="adm-grid-2" style="margin-bottom:20px;">
+
+            <div class="adm-card adm-card-inner">
+                <p class="adm-card-title" style="margin-bottom:14px;">Pregled rezervacija</p>
+                <div class="adm-grid-3" style="margin-bottom:18px;">
+                    <div style="background:#f0f3ff;border-radius:10px;padding:12px;text-align:center;">
+                        <div style="font-size:20px;font-weight:700;color:#4f6ef7;">@totalTickets</div>
+                        <div style="font-size:11px;color:var(--adm-text3);margin-top:2px;">Ukupno</div>
+                    </div>
+                    <div style="background:#ecfdf5;border-radius:10px;padding:12px;text-align:center;">
+                        <div style="font-size:20px;font-weight:700;color:#059669;">@paidTickets</div>
+                        <div style="font-size:11px;color:var(--adm-text3);margin-top:2px;">Plaćenih</div>
+                    </div>
+                    <div style="background:#fffbeb;border-radius:10px;padding:12px;text-align:center;">
+                        <div style="font-size:20px;font-weight:700;color:#d97706;">@(totalTickets - paidTickets)</div>
+                        <div style="font-size:11px;color:var(--adm-text3);margin-top:2px;">Neplaćenih</div>
+                    </div>
+                </div>
+                <div style="position:relative;height:120px;"><canvas id="ticketsChart"></canvas></div>
+            </div>
+
+            <div class="adm-card adm-card-inner">
+                <p class="adm-card-title" style="margin-bottom:14px;">Zauzetost parkinga</p>
+                <div style="position:relative;height:140px;"><canvas id="parkingChart"></canvas></div>
+                <div style="display:flex;justify-content:space-around;margin-top:16px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:19px;font-weight:700;color:#4f6ef7;">@(totalSpots - availableSpots)</div>
+                        <div style="font-size:11px;color:var(--adm-text3);">Zauzeto</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:19px;font-weight:700;color:#059669;">@availableSpots</div>
+                        <div style="font-size:11px;color:var(--adm-text3);">Slobodno</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:19px;font-weight:700;color:var(--adm-text);">@totalSpots</div>
+                        <div style="font-size:11px;color:var(--adm-text3);">Ukupno</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Recent reservations -->
+        <div class="adm-card">
+            <div class="adm-card-header">
+                <h3 class="adm-card-title">Nedavne rezervacije</h3>
+                <a href="/Admin/Reservations" class="adm-btn adm-btn-outline adm-btn-sm">Pogledaj sve →</a>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Korisnik</th>
+                            <th>Parking</th>
+                            <th>Datum</th>
+                            <th>Iznos</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var now = DateTime.Now;
+                        }
+                        @foreach (var t in recentTickets)
+                        {
+                            bool isActive = t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now);
+                            bool isExpired = t.ExpiresAt.HasValue && t.ExpiresAt < now;
+                            <tr>
+                                <td style="color:var(--adm-text3);font-size:12px;">#@t.Id</td>
+                                <td style="font-weight:600;">@(t.ApplicationUser?.FullName ?? "—")</td>
+                                <td style="color:var(--adm-text2);">@(t.ParkingObject?.name ?? "—")</td>
+                                <td style="color:var(--adm-text3);font-size:12px;">@t.IssuedAt.ToString("dd.MM.yy HH:mm")</td>
+                                <td style="font-weight:700;color:#4f6ef7;">@t.Price.ToString("0.00") KM</td>
+                                <td>
+                                    @if (t.IsPaid)
+                                    {
+                                        <span class="adm-badge green">Plaćeno</span>
+                                    }
+                                    else if (isExpired)
+                                    {
+
+                                        <span class="adm-badge gray">Isteklo</span>
+                                    }
+                                    else if (isActive)
+                                    {
+
+                                        <span class="adm-badge orange">U tijeku</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="adm-badge blue">Na čekanju</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="dashboard-kpi-card-fix">
-            <div style="background:#e8f5e9;padding:12px;border-radius:10px;flex-shrink:0;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#48bb78"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" /></svg>
-            </div>
-            <div>
-                <div style="font-size:24px;font-weight:700;color:#1a202c;">@totalRevenue.ToString("0.00") KM</div>
-                <div style="font-size:13px;color:#718096;font-weight:500;">Ukupan prihod</div>
-                <div style="font-size:11px;color:@(revChange >= 0 ? "#48bb78" : "#fc8181");">
-                    @(revChange >= 0 ? "▲" : "▼") @Math.Abs(revChange)% ovaj mjesec
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-kpi-card-fix">
-            <div style="background:#e8eaf6;padding:12px;border-radius:10px;flex-shrink:0;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#5c6bc0"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" /></svg>
-            </div>
-            <div>
-                <div style="font-size:24px;font-weight:700;color:#1a202c;">@totalParkings</div>
-                <div style="font-size:13px;color:#718096;font-weight:500;">Parking objekata</div>
-                <div style="font-size:11px;color:#a0aec0;">@availableSpots slobodnih od @totalSpots</div>
-            </div>
-        </div>
-
-    </div>
-
-    @* CHARTOVI - RED 1 *@
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px;">
-
-        @* Bar chart - prihod po mjesecima *@
-        <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-            <h3 style="margin:0 0 20px;font-size:15px;font-weight:600;color:#1a202c;">Prihod po mjesecima</h3>
-            <canvas id="revenueChart" height="100"></canvas>
-        </div>
-
-        @* Doughnut - korisnici po ulozi *@
-        <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;color:#1a202c;">Korisnici po ulozi</h3>
-            <canvas id="usersChart"></canvas>
-            <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
-                <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
-                    <div style="width:12px;height:12px;border-radius:3px;background:#6287f9;flex-shrink:0;"></div>
-                    <span style="color:#718096;">Obični korisnici — @regularCount</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
-                    <div style="width:12px;height:12px;border-radius:3px;background:#48bb78;flex-shrink:0;"></div>
-                    <span style="color:#718096;">Vlasnici — @ownerCount</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
-                    <div style="width:12px;height:12px;border-radius:3px;background:#ed8936;flex-shrink:0;"></div>
-                    <span style="color:#718096;">Admini — @adminCount</span>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    @* CHARTOVI - RED 2 *@
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-
-        @* Rezervacije pregled *@
-        <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;color:#1a202c;">Pregled rezervacija</h3>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-                <div style="background:#f4f7ff;border-radius:10px;padding:12px;text-align:center;">
-                    <div style="font-size:20px;font-weight:700;color:#6287f9;">@totalTickets</div>
-                    <div style="font-size:11px;color:#718096;margin-top:2px;">Ukupno</div>
-                </div>
-                <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center;">
-                    <div style="font-size:20px;font-weight:700;color:#48bb78;">@paidTickets</div>
-                    <div style="font-size:11px;color:#718096;margin-top:2px;">Plaćenih</div>
-                </div>
-                <div style="background:#fff7ed;border-radius:10px;padding:12px;text-align:center;">
-                    <div style="font-size:20px;font-weight:700;color:#ed8936;">@(totalTickets - paidTickets)</div>
-                    <div style="font-size:11px;color:#718096;margin-top:2px;">Neplaćenih</div>
-                </div>
-            </div>
-            <canvas id="ticketsChart" height="120"></canvas>
-        </div>
-
-        @* Parking zauzetost *@
-        <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;color:#1a202c;">Zauzetost parkinga</h3>
-            <canvas id="parkingChart" height="160"></canvas>
-            <div style="display:flex;justify-content:space-around;margin-top:16px;">
-                <div style="text-align:center;">
-                    <div style="font-size:20px;font-weight:700;color:#6287f9;">@(totalSpots - availableSpots)</div>
-                    <div style="font-size:11px;color:#718096;">Zauzeto</div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:20px;font-weight:700;color:#48bb78;">@availableSpots</div>
-                    <div style="font-size:11px;color:#718096;">Slobodno</div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:20px;font-weight:700;color:#1a202c;">@totalSpots</div>
-                    <div style="font-size:11px;color:#718096;">Ukupno</div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    @* NEDAVNE REZERVACIJE *@
-    <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="margin:0;font-size:15px;font-weight:600;color:#1a202c;">Nedavne rezervacije</h3>
-            <a href="/Admin/Reservations" style="font-size:13px;color:#6287f9;text-decoration:none;font-weight:500;">Pogledaj sve →</a>
-        </div>
-        <table class="adm-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Korisnik</th>
-                    <th>Parking</th>
-                    <th>Datum</th>
-                    <th>Iznos</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    var now = DateTime.Now;
-                }
-                @foreach (var t in recentTickets)
-                {
-                    bool isActive = t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now);
-                    bool isExpired = t.ExpiresAt.HasValue && t.ExpiresAt < now;
-                    <tr>
-                        <td style="color:#a0aec0;">#@t.Id</td>
-                        <td style="font-weight:500;">@(t.ApplicationUser?.FullName ?? "—")</td>
-                        <td>@(t.ParkingObject?.name ?? "—")</td>
-                        <td style="color:#718096;">@t.IssuedAt.ToString("dd.MM.yy HH:mm")</td>
-                        <td style="font-weight:600;color:#6287f9;">@t.Price.ToString("0.00") KM</td>
-                        <td>
-                            @if (t.IsPaid)
-                            {
-                                <span class="adm-badge green">Plaćeno</span>
-                            }
-                            else if (isExpired)
-                            {
-                                <span class="adm-badge gray">Isteklo</span>
-                            }
-                            else if (isActive)
-                            {
-                                <span class="adm-badge orange">U tijeku</span>
-                            }
-                            else
-                            {
-                                <span class="adm-badge blue">Na čekanju</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
+    </main>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Bar chart - prihod po mjesecima
         new Chart(document.getElementById('revenueChart'), {
-            type: 'bar',
-            data: {
-                labels: [@Html.Raw(chartLabels)],
-                datasets: [{
-                    label: 'Prihod (KM)',
-                    data: [@Html.Raw(chartRevenues)],
-                    backgroundColor: 'rgba(98,135,249,0.85)',
-                    borderRadius: 6,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { callback: v => v + ' KM', font: { size: 11 } },
-                        grid: { color: '#f0f0f0' }
-                    },
-                    x: { grid: { display: false } }
-                }
-            }
+        type: 'bar',
+        data: {
+        labels: [@Html.Raw(chartLabels)],
+        datasets: [{ data: [@Html.Raw(chartRevenues)], backgroundColor: 'rgba(79,110,247,0.82)', borderRadius: 6, borderSkipped: false }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v + ' KM', font: { size: 11 } }, grid: { color: '#f0f2f5' } },
+        x: { grid: { display: false } }
+        }
+        }
         });
 
-        // Doughnut - korisnici po ulozi
         new Chart(document.getElementById('usersChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Obični', 'Vlasnici', 'Admini'],
-                datasets: [{
-                    data: [@regularCount, @ownerCount, @adminCount],
-                    backgroundColor: ['#6287f9', '#48bb78', '#ed8936'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '72%',
-                plugins: { legend: { display: false } }
-            }
+        type: 'doughnut',
+        data: {
+        labels: ['Obični', 'Vlasnici', 'Admini'],
+        datasets: [{ data: [@regularCount, @ownerCount, @adminCount], backgroundColor: ['#4f6ef7','#059669','#d97706'], borderWidth: 0, hoverOffset: 4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '74%', plugins: { legend: { display: false } } }
         });
 
-        // Bar chart - rezervacije
         new Chart(document.getElementById('ticketsChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Ukupno', 'Plaćenih', 'Neplaćenih'],
-                datasets: [{
-                    data: [@totalTickets, @paidTickets, @(totalTickets - paidTickets)],
-                    backgroundColor: ['#6287f9', '#48bb78', '#ed8936'],
-                    borderRadius: 6,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: '#f0f0f0' } },
-                    x: { grid: { display: false } }
-                }
-            }
+        type: 'bar',
+        data: {
+        labels: ['Ukupno', 'Plaćenih', 'Neplaćenih'],
+        datasets: [{ data: [@totalTickets, @paidTickets, @(totalTickets - paidTickets)], backgroundColor: ['#4f6ef7','#059669','#d97706'], borderRadius: 6, borderSkipped: false }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+        y: { beginAtZero: true, grid: { color: '#f0f2f5' } },
+        x: { grid: { display: false } }
+        }
+        }
         });
 
-        // Doughnut - parking zauzetost
         new Chart(document.getElementById('parkingChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Zauzeto', 'Slobodno'],
-                datasets: [{
-                    data: [@(totalSpots - availableSpots), @availableSpots],
-                    backgroundColor: ['#6287f9', '#e8edf8'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '72%',
-                plugins: { legend: { display: false } }
-            }
+        type: 'doughnut',
+        data: {
+        labels: ['Zauzeto', 'Slobodno'],
+        datasets: [{ data: [@(totalSpots - availableSpots), @availableSpots], backgroundColor: ['#4f6ef7','#e8edf8'], borderWidth: 0, hoverOffset: 4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '74%', plugins: { legend: { display: false } } }
         });
     </script>
 }

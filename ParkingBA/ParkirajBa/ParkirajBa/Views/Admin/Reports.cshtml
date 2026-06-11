@@ -13,123 +13,142 @@
     string[] monthNames = { "Januar", "Februar", "Mart", "April", "Maj", "Juni", "Juli", "August", "Septembar", "Oktobar", "Novembar", "Decembar" };
 }
 
-<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
+<partial name="_AdminStyles" />
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-        <div>
-            <a href="/Admin/Dashboard" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na panel</a>
-            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Izvještaji</h1>
-        </div>
-        <form method="get" style="display:flex;gap:10px;align-items:center;">
-            <select name="year" style="padding:9px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;outline:none;">
-                @foreach (var y in years)
-                {
-                    <option value="@y" selected="@(y == selYear ? "selected" : null)">@y</option>
-                }
-            </select>
-            <select name="month" style="padding:9px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;font-size:13px;outline:none;">
-                @for (int i = 1; i <= 12; i++)
-                {
-                    <option value="@i" selected="@(i == selMonth ? "selected" : null)">@monthNames[i - 1]</option>
-                }
-            </select>
-            <button type="submit" style="padding:9px 20px;background:#6c757d;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Filtriraj</button>
-        </form>
-    </div>
+<div class="adm-wrapper">
+    <partial name="_AdminSidebar" />
 
-    <h3 style="margin:0 0 20px;font-size:15px;color:var(--text2);">@monthNames[selMonth - 1] @selYear</h3>
+    <main class="adm-content">
 
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
-        <div style="background:white;border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💰</div>
+        <!-- Header -->
+        <div class="adm-page-header">
             <div>
-                <div style="font-size:22px;font-weight:700;color:var(--text);">@totalRevenue.ToString("0.00") KM</div>
-                <div style="font-size:12px;color:var(--text3);margin-top:2px;">Ukupan prihod</div>
+                <h1 class="adm-page-title">Izvještaji</h1>
+                <p class="adm-page-sub">@monthNames[selMonth - 1] @selYear</p>
             </div>
-        </div>
-        <div style="background:white;border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:#eef1ff;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📋</div>
-            <div>
-                <div style="font-size:22px;font-weight:700;color:var(--text);">@totalRes</div>
-                <div style="font-size:12px;color:var(--text3);margin-top:2px;">Ukupno rezervacija</div>
-            </div>
-        </div>
-        <div style="background:white;border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:#d4edda;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✓</div>
-            <div>
-                <div style="font-size:22px;font-weight:700;color:var(--text);">@paidRes</div>
-                <div style="font-size:12px;color:var(--text3);margin-top:2px;">Plaćenih</div>
-            </div>
-        </div>
-        <div style="background:white;border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:#fff3cd;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⏳</div>
-            <div>
-                <div style="font-size:22px;font-weight:700;color:var(--text);">@unpaidRes</div>
-                <div style="font-size:12px;color:var(--text3);margin-top:2px;">Neplaćenih</div>
-            </div>
-        </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-
-        <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-            <h3 style="margin:0 0 18px;font-size:15px;font-weight:600;color:var(--text);">Prihod po parkingu</h3>
-            @if (!revenuePerParking.Any())
-            {
-                <p style="color:var(--text3);text-align:center;padding:30px 0;font-size:13px;">Nema podataka za ovaj period.</p>
-            }
-            else
-            {
-                decimal maxP = 1;
-                foreach (var p in revenuePerParking) { if ((decimal)p.Revenue > maxP) maxP = (decimal)p.Revenue; }
-                <div style="display:flex;flex-direction:column;gap:14px;">
-                    @foreach (var p in revenuePerParking)
+            <form method="get" style="display:flex;gap:10px;align-items:center;">
+                <select name="year" class="adm-input">
+                    @foreach (var y in years)
                     {
-                        double pct = (double)((decimal)p.Revenue / maxP * 100);
-                        <div>
-                            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
-                                <span style="color:var(--text);font-weight:500;">@p.Name</span>
-                                <span style="color:var(--accent);font-weight:600;">@(((decimal)p.Revenue).ToString("0.00")) KM · @p.Count rez.</span>
-                            </div>
-                            <div style="height:8px;background:#f0f2f8;border-radius:4px;overflow:hidden;">
-                                <div style="height:100%;width:@pct.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%;background:var(--accent);border-radius:4px;transition:width 0.4s;"></div>
-                            </div>
-                        </div>
+                        <option value="@y" selected="@(y == selYear ? "selected" : null)">@y</option>
                     }
-                </div>
-            }
-        </div>
-
-        <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
-            <h3 style="margin:0 0 18px;font-size:15px;font-weight:600;color:var(--text);">Dnevni prihod</h3>
-            @if (!dailyRevenue.Any())
-            {
-                <p style="color:var(--text3);text-align:center;padding:30px 0;font-size:13px;">Nema podataka za ovaj period.</p>
-            }
-            else
-            {
-                decimal maxD = 1;
-                foreach (var d in dailyRevenue) { if ((decimal)d.Revenue > maxD) maxD = (decimal)d.Revenue; }
-                int daysInMonth = DateTime.DaysInMonth(selYear, selMonth);
-                var dailyDict = dailyRevenue.ToDictionary(d => (int)d.Day, d => (decimal)d.Revenue);
-                <div style="display:flex;align-items:flex-end;gap:4px;height:150px;">
-                    @for (int d = 1; d <= daysInMonth; d++)
+                </select>
+                <select name="month" class="adm-input">
+                    @for (int i = 1; i <= 12; i++)
                     {
-                        decimal rev = dailyDict.ContainsKey(d) ? dailyDict[d] : 0;
-                        double pct = maxD > 0 ? (double)(rev / maxD * 100) : 0;
-                        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;"
-                             title="@d. @monthNames[selMonth-1] — @rev.ToString("0.00") KM">
-                            <div style="width:100%;background:@(rev > 0 ? "var(--accent)" : "#e8eaf0");border-radius:3px 3px 0 0;height:@(Math.Max(pct, 3).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture))%;min-height:3px;"></div>
-                            <div style="font-size:8px;color:var(--text3);line-height:1;">@d</div>
-                        </div>
+                        <option value="@i" selected="@(i == selMonth ? "selected" : null)">@monthNames[i - 1]</option>
                     }
-                </div>
-            }
+                </select>
+                <button type="submit" class="adm-btn adm-btn-primary">Filtriraj</button>
+            </form>
         </div>
 
-    </div>
+        <!-- KPI -->
+        <div class="adm-kpi-grid" style="margin-bottom:24px;">
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#ecfdf5;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#059669"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@totalRevenue.ToString("0.00") KM</div>
+                    <div class="adm-kpi-label">Ukupan prihod</div>
+                </div>
+            </div>
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#eef1ff;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#4f6ef7"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@totalRes</div>
+                    <div class="adm-kpi-label">Ukupno rezervacija</div>
+                </div>
+            </div>
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#ecfdf5;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#059669"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@paidRes</div>
+                    <div class="adm-kpi-label">Plaćenih</div>
+                </div>
+            </div>
+
+            <div class="adm-kpi-card">
+                <div class="adm-kpi-icon" style="background:#fffbeb;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#d97706"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
+                </div>
+                <div>
+                    <div class="adm-kpi-value">@unpaidRes</div>
+                    <div class="adm-kpi-label">Neplaćenih</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Charts -->
+        <div class="adm-grid-2">
+
+            <!-- income per parking -->
+            <div class="adm-card adm-card-inner">
+                <p class="adm-card-title" style="margin-bottom:18px;">Prihod po parkingu</p>
+                @if (!revenuePerParking.Any())
+                {
+                    <p style="color:var(--adm-text3);text-align:center;padding:30px 0;font-size:13px;">Nema podataka za ovaj period.</p>
+                }
+                else
+                {
+                    decimal maxP = 1;
+                    foreach (var p in revenuePerParking) { if ((decimal)p.Revenue > maxP) maxP = (decimal)p.Revenue; }
+                    <div style="display:flex;flex-direction:column;gap:14px;">
+                        @foreach (var p in revenuePerParking)
+                        {
+                            double pct = (double)((decimal)p.Revenue / maxP * 100);
+                            <div>
+                                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+                                    <span style="font-weight:500;color:var(--adm-text);">@p.Name</span>
+                                    <span style="color:var(--adm-accent);font-weight:600;">@(((decimal)p.Revenue).ToString("0.00")) KM · @p.Count rez.</span>
+                                </div>
+                                <div style="height:6px;background:var(--adm-border);border-radius:3px;overflow:hidden;">
+                                    <div style="height:100%;width:@pct.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)%;background:var(--adm-accent);border-radius:3px;"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- daily income -->
+            <div class="adm-card adm-card-inner">
+                <p class="adm-card-title" style="margin-bottom:18px;">Dnevni prihod</p>
+                @if (!dailyRevenue.Any())
+                {
+                    <p style="color:var(--adm-text3);text-align:center;padding:30px 0;font-size:13px;">Nema podataka za ovaj period.</p>
+                }
+                else
+                {
+                    decimal maxD = 1;
+                    foreach (var d in dailyRevenue) { if ((decimal)d.Revenue > maxD) maxD = (decimal)d.Revenue; }
+                    int daysInMonth = DateTime.DaysInMonth(selYear, selMonth);
+                    var dailyDict = dailyRevenue.ToDictionary(d => (int)d.Day, d => (decimal)d.Revenue);
+                    <div style="display:flex;align-items:flex-end;gap:3px;height:150px;">
+                        @for (int d = 1; d <= daysInMonth; d++)
+                        {
+                            decimal rev = dailyDict.ContainsKey(d) ? dailyDict[d] : 0;
+                            double pct = maxD > 0 ? (double)(rev / maxD * 100) : 0;
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;height:100%;"
+                                 title="@d. @monthNames[selMonth - 1] — @rev.ToString("0.00") KM">
+                                <div style="width:100%;background:@(rev > 0 ? "var(--adm-accent)" : "var(--adm-border)");border-radius:2px 2px 0 0;height:@(Math.Max(pct, 2).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture))%;min-height:2px;"></div>
+                                <div style="font-size:7px;color:var(--adm-text3);">@d</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+        </div>
+
+    </main>
 </div>
-
-@section Scripts {
-    <partial name="_AdminStyles" />
-}

@@ -1,91 +1,105 @@
 @model IEnumerable<ParkirajBa.Models.Ticket>
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Sve rezervacije";
+    ViewData["Title"] = "Rezervacije";
     string statusFilter = ViewBag.StatusFilter ?? "";
     var now = DateTime.Now;
 }
-<div style="min-height:100vh;background:var(--bg);padding:28px 36px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-        <div>
-            <a href="/Admin/Dashboard" style="color:var(--accent);font-size:13px;text-decoration:none;">← Nazad na panel</a>
-            <h1 style="margin:4px 0 0;font-size:24px;font-weight:700;color:var(--text);">Sve rezervacije</h1>
+
+<partial name="_AdminStyles" />
+
+<div class="adm-wrapper">
+    <partial name="_AdminSidebar" />
+
+    <main class="adm-content">
+
+        <div class="adm-page-header">
+            <div>
+                <h1 class="adm-page-title">Rezervacije</h1>
+                <p class="adm-page-sub">Pregled svih rezervacija u sistemu</p>
+            </div>
+            <span class="adm-badge blue" style="font-size:13px;padding:6px 14px;">@Model.Count() ukupno</span>
         </div>
-        <span style="background:var(--accent);color:white;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">@Model.Count() ukupno</span>
-    </div>
-    @if (TempData["Success"] != null)
-    {
-        <div class="adm-alert-success">✓ @TempData["Success"]</div>
-    }
 
-    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-        @foreach (var (label, value) in new[] { ("Sve", ""), ("Aktivne", "active"), ("Istekle", "expired"), ("Plaćene", "paid"), ("Neplaćene", "unpaid") })
+        @if (TempData["Success"] != null)
         {
-            bool active = statusFilter == value;
-            <a href="/Admin/Reservations@(value == "" ? "" : "?status=" + value)" style="padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;background:@(active ? "var(--accent)" : "var(--surface)");color:@(active ? "white" : "var(--text2)");border:1px solid @(active ? "var(--accent)" : "var(--border)");">@label</a>
+            <div class="adm-alert-success">✓ @TempData["Success"]</div>
         }
-    </div>
 
-    <div class="adm-card" style="padding:0;overflow:hidden;">
-        <table class="adm-table">
-            <thead><tr><th>#</th><th>Korisnik</th><th>Parking</th><th>Kreirano</th><th>Ističe</th><th>Iznos</th><th>Status</th><th>Akcije</th></tr></thead>
-            <tbody>
-                @foreach (var t in Model)
-                {
-                    bool isActive = t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now);
-                    bool isExpired = t.ExpiresAt.HasValue && t.ExpiresAt < now;
+        <!-- Filter pills -->
+        <div class="adm-filters">
+            @foreach (var (label, value) in new[] { ("Sve", ""), ("Aktivne", "active"), ("Istekle", "expired"), ("Plaćene", "paid"), ("Neplaćene", "unpaid") })
+            {
+                <a href="/Admin/Reservations@(value == "" ? "" : "?status=" + value)"
+                   class="adm-filter-pill @(statusFilter == value ? "active" : "")">@label</a>
+            }
+        </div>
+
+        <div class="adm-card" style="overflow:hidden;">
+            <table class="adm-table">
+                <thead>
                     <tr>
-                        <td style="color:var(--text3);font-size:12px;">#@t.Id</td>
-                        <td>
-                            <div style="font-weight:600;color:var(--text);">@(t.ApplicationUser?.FullName ?? "—")</div>
-                            <div style="font-size:11px;color:var(--text3);">@(t.ApplicationUser?.Email ?? "")</div>
-                        </td>
-                        <td style="color:var(--text);">@(t.ParkingObject?.name ?? "—")</td>
-                        <td style="font-size:12px;color:var(--text2);">@t.IssuedAt.ToString("dd.MM.yy HH:mm")</td>
-                        <td style="font-size:12px;color:var(--text2);">@(t.ExpiresAt.HasValue ? t.ExpiresAt.Value.ToString("dd.MM.yy HH:mm") : "—")</td>
-                        <td style="font-weight:600;color:var(--accent);">@t.Price.ToString("0.00") KM</td>
-                        <td>
-                            @if (t.IsPaid)
-                            {
-                                <span class="adm-badge green">Plaćeno</span>
-                            }
-                            else if (isActive)
-                            {
-                                if (t.IsPaid)
+                        <th>#</th>
+                        <th>Korisnik</th>
+                        <th>Parking</th>
+                        <th>Kreirano</th>
+                        <th>Ističe</th>
+                        <th>Iznos</th>
+                        <th>Status</th>
+                        <th>Akcije</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        bool isActive = t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now);
+                        bool isExpired = t.ExpiresAt.HasValue && t.ExpiresAt < now;
+                        <tr>
+                            <td style="color:var(--adm-text3);font-size:12px;">#@t.Id</td>
+                            <td>
+                                <div style="font-weight:600;">@(t.ApplicationUser?.FullName ?? "—")</div>
+                                <div style="font-size:11px;color:var(--adm-text3);">@(t.ApplicationUser?.Email ?? "")</div>
+                            </td>
+                            <td>@(t.ParkingObject?.name ?? "—")</td>
+                            <td style="font-size:12px;color:var(--adm-text2);">@t.IssuedAt.ToString("dd.MM.yy HH:mm")</td>
+                            <td style="font-size:12px;color:var(--adm-text2);">@(t.ExpiresAt.HasValue ? t.ExpiresAt.Value.ToString("dd.MM.yy HH:mm") : "—")</td>
+                            <td style="font-weight:700;color:var(--adm-accent);">@t.Price.ToString("0.00") KM</td>
+                            <td>
+                                @if (t.IsPaid)
                                 {
-                                    <span class="adm-badge blue">Aktivno</span>
+                                    <span class="adm-badge green">Plaćeno</span>
+                                }
+                                else if (isExpired)
+                                {
+
+                                    <span class="adm-badge gray">Isteklo</span>
+                                }
+                                else if (isActive)
+                                {
+
+                                    <span class="adm-badge orange">U tijeku</span>
                                 }
                                 else
                                 {
-                                    <span class="adm-badge orange">U tijeku</span>
+
+                                    <span class="adm-badge blue">Na čekanju</span>
                                 }
-                            }
-                            else if (isExpired)
-                            {
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    <a href="/Admin/ReservationDetails/@t.Id" class="adm-btn adm-btn-outline adm-btn-sm">Pregledaj</a>
+                                    <form asp-action="DeleteReservation" method="post"
+                                          onsubmit="event.preventDefault();admConfirm(this,'Brisanje rezervacije','Jeste li sigurni da želite obrisati rezervaciju #@t.Id?');">
+                                        <input type="hidden" name="id" value="@t.Id" />
+                                        <button type="submit" class="adm-btn adm-btn-danger adm-btn-sm">Obriši</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-                                <span class="adm-badge gray">Isteklo</span>
-                            }
-                            else
-                            {
-
-                                <span class="adm-badge orange">Na čekanju</span>
-                            }
-                        </td>
-                        <td>
-                            <div style="display:flex;gap:6px;">
-                                <a href="/Admin/ReservationDetails/@t.Id" style="padding:5px 12px;background:var(--surface2);color:var(--accent);border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;">Pregledaj</a>                                <form asp-action="DeleteReservation" method="post" onsubmit="event.preventDefault();admConfirm(this,'Brisanje rezervacije','Jeste li sigurni da želite obrisati rezervaciju #@t.Id?');">
-                                    <input type="hidden" name="id" value="@t.Id" />
-                                    <button type="submit" style="padding:5px 12px;background:#fdf0f0;color:#dc3545;border:1px solid #f5c6cb;border-radius:6px;font-size:12px;cursor:pointer;">Obriši</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    </main>
 </div>
-
-@section Scripts {
-    <partial name="_AdminStyles" />
-}

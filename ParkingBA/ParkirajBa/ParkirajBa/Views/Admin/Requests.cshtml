@@ -1,0 +1,175 @@
+﻿@model List<ParkirajBa.Models.ParkingRequest>
+@using ParkirajBa.Models
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Zahtjevi za odobrenje";
+    var parkings = ViewBag.Parkings as Dictionary<int, ParkirajBa.Models.ParkingObject>
+                   ?? new Dictionary<int, ParkirajBa.Models.ParkingObject>();
+}
+
+<partial name="_AdminStyles" />
+
+<div class="adm-wrapper">
+    <partial name="_AdminSidebar" />
+
+    <main class="adm-content">
+
+        <div class="adm-page-header">
+            <div>
+                <h1 class="adm-page-title">Zahtjevi za odobrenje</h1>
+                <p class="adm-page-sub">Parking objekti čekaju pregled i odobrenje</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="adm-badge orange" style="font-size:13px;padding:6px 14px;">
+                    @Model.Count na čekanju
+                </span>
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="adm-alert-success">✓ @TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:11px 16px;border-radius:8px;margin-bottom:20px;font-size:13.5px;font-weight:500;">
+                ✕ @TempData["Error"]
+            </div>
+        }
+
+        @if (!Model.Any())
+        {
+            <div class="adm-card adm-card-inner" style="text-align:center;padding:48px 24px;">
+                <div style="font-size:36px;margin-bottom:12px;">✅</div>
+                <div style="font-weight:600;color:var(--adm-text);margin-bottom:6px;">Nema zahtjeva na čekanju</div>
+                <div style="color:var(--adm-text3);font-size:13px;">Svi parking objekti su obrađeni.</div>
+            </div>
+        }
+        else
+        {
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                @foreach (var req in Model.OrderBy(r => r.TimeSent))
+                {
+                    parkings.TryGetValue(req.ParkingID, out var parking);
+
+                    <div class="adm-card">
+                        <div style="padding:22px 26px;">
+
+                            <!-- Header -->
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:12px;flex-wrap:wrap;">
+                                <div>
+                                    <div style="font-size:16px;font-weight:700;color:var(--adm-text);margin-bottom:4px;">
+                                        @(parking?.name ?? "Nepoznat parking")
+                                    </div>
+                                    <div style="font-size:12px;color:var(--adm-text3);">
+                                        Zahtjev poslan: @req.TimeSent.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                    </div>
+                                </div>
+                                <span class="adm-badge orange">Na čekanju</span>
+                            </div>
+
+                            @if (parking != null)
+                            {
+                                <!-- Parking details -->
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px;">
+
+                                    <div style="background:var(--adm-surface2);border-radius:8px;padding:12px 14px;">
+                                        <div style="font-size:10.5px;color:var(--adm-text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Adresa</div>
+                                        <div style="font-size:13px;color:var(--adm-text);font-weight:500;">@(parking.address ?? "—")</div>
+                                    </div>
+
+                                    <div style="background:var(--adm-surface2);border-radius:8px;padding:12px 14px;">
+                                        <div style="font-size:10.5px;color:var(--adm-text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Vlasnik</div>
+                                        <div style="font-size:13px;color:var(--adm-text);font-weight:500;">@(parking.Owner?.FullName ?? parking.Owner?.Email ?? "—")</div>
+                                    </div>
+
+                                    <div style="background:var(--adm-surface2);border-radius:8px;padding:12px 14px;">
+                                        <div style="font-size:10.5px;color:var(--adm-text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Ukupno mjesta</div>
+                                        <div style="font-size:13px;color:var(--adm-text);font-weight:500;">@(parking.totalSpots?.ToString() ?? "—")</div>
+                                    </div>
+
+                                    <div style="background:var(--adm-surface2);border-radius:8px;padding:12px 14px;">
+                                        <div style="font-size:10.5px;color:var(--adm-text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Oprema</div>
+                                        <div style="font-size:12px;color:var(--adm-text2);display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
+                                            @if (parking.hasCameras == true)
+                                            {
+                                                <span class="adm-badge blue">Kamere</span>
+                                            }
+                                            @if (parking.hasEVCharger == true)
+                                            {
+                                                <span class="adm-badge green">EV punjač</span>
+                                            }
+                                            @if (parking.isDisabledAccessible == true)
+                                            {
+                                                <span class="adm-badge blue">Invalidski pristup</span>
+                                            }
+                                            @if (parking.isUnderground == true)
+                                            {
+                                                <span class="adm-badge gray">Podzemni</span>
+                                            }
+                                            @if (parking.hasCameras != true && parking.hasEVCharger != true && parking.isDisabledAccessible != true && parking.isUnderground != true)
+                                            {
+                                                <span style="color:var(--adm-text3);font-size:12px;">Nema dodatne opreme</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Pricings -->
+                                @if (parking.Pricings != null && parking.Pricings.Any())
+                                {
+                                    <div style="margin-bottom:18px;">
+                                        <div style="font-size:11px;color:var(--adm-text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Cjenovnik</div>
+                                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                            @foreach (var price in parking.Pricings)
+                                            {
+                                                <div style="background:#f0f3ff;border:1px solid #dde3ff;border-radius:8px;padding:7px 14px;font-size:12.5px;">
+                                                    <span style="color:var(--adm-text2);">@price.pricingType</span>
+                                                    <span style="font-weight:700;color:var(--adm-accent);margin-left:6px;">@price.price.ToString("0.00") KM</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+
+                            <!-- Action buttons -->
+                            <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--adm-border);">
+                                <!-- Decline -->
+                                <form method="post" asp-action="RejectRequest" onsubmit="return confirmReject(this, '@(parking?.name ?? "ovaj parking")')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="requestId" value="@req.ID" />
+                                    <button type="submit" class="adm-btn adm-btn-danger">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+                                        Odbij i obriši
+                                    </button>
+                                </form>
+
+                                <!-- Accept -->
+                                <form method="post" asp-action="ApproveRequest">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="requestId" value="@req.ID" />
+                                    <button type="submit" class="adm-btn adm-btn-primary">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
+                                        Odobri parking
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+    </main>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmReject(form, name) {
+            return confirm(`Jeste li sigurni da želite odbiti i trajno obrisati parking "${name}" zajedno sa svim slikama i cjenovnikom?`);
+        }
+    </script>
+}

@@ -15,16 +15,19 @@ namespace ParkirajBa.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IParkingRepository _parkingRepository;
+        private readonly IRequestRepository _requestRepository;
 
         public AdminController(
             ApplicationDbContext database,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
+            IRequestRepository requestRepository,
             IParkingRepository parkingRepository)
         {
             _database = database;
             _userManager = userManager;
             _roleManager = roleManager;
+            _requestRepository = requestRepository;
             _parkingRepository = parkingRepository;
         }
 
@@ -229,14 +232,12 @@ namespace ParkirajBa.Controllers
         {
             if (Images != null && Images.Length > 0)
             {
-                // Obriši postojeću primarnu sliku iz baze
                 var postojeceSlike = await _database.ParkingImages
                     .Where(i => i.ParkingObjectID == id && i.Position == 1)
                     .ToListAsync();
                 _database.ParkingImages.RemoveRange(postojeceSlike);
                 await _database.SaveChangesAsync();
 
-                // Spremi novu sliku na poziciju 1
                 await _parkingRepository.SaveParkingImageByIDAsync(Images, 1, id);
 
                 TempData["Success"] = "Slika je uspješno ažurirana.";
@@ -318,6 +319,105 @@ namespace ParkirajBa.Controllers
             TempData["Success"] = "Rezervacija je uspješno obrisana, a parking mjesto oslobođeno.";
             return RedirectToAction("Reservations");
         }
+
+        public async Task<IActionResult> Requests()
+        {
+            var requests = await _requestRepository.GetAllAsync();
+
+            var parkingIds = requests.Select(r => r.ParkingID).ToList();
+            var parkings = await _database.ParkingObject
+                .Where(p => parkingIds.Contains(p.ID))
+                .Include(p => p.Owner)
+                .Include(p => p.Pricings)
+                .ToListAsync();
+
+            ViewBag.Parkings = parkings.ToDictionary(p => p.ID);
+            return View(requests);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveRequest(int requestId)
+        {
+            var request = await _requestRepository.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                TempData["Error"] = "Zahtjev nije pronađen.";
+                return RedirectToAction("Requests");
+            }
+
+            var parking = await _database.ParkingObject.FindAsync(request.ParkingID);
+            if (parking == null)
+            {
+                TempData["Error"] = "Parking objekat nije pronađen.";
+                return RedirectToAction("Requests");
+            }
+
+            // approve parking
+            parking.isApproved = true;
+            _database.ParkingObject.Update(parking);
+
+            // delete request
+            await _requestRepository.DeleteAsync(requestId);
+
+            await _database.SaveChangesAsync();
+
+            TempData["Success"] = $"Parking \"{parking.name}\" je uspješno odobren.";
+            return RedirectToAction("Requests");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectRequest(int requestId)
+        {
+            var request = await _requestRepository.GetByIdAsync(requestId);
+            if (request == null)
+            {
+                TempData["Error"] = "Zahtjev nije pronađen.";
+                return RedirectToAction("Requests");
+            }
+
+            var parking = await _database.ParkingObject
+                .Include(p => p.Pricings)
+                .FirstOrDefaultAsync(p => p.ID == request.ParkingID);
+
+            if (parking == null)
+            {
+                TempData["Error"] = "Parking objekat nije pronađen.";
+                return RedirectToAction("Requests");
+            }
+
+            string parkingName = parking.name;
+
+            // delete images from the database
+            var images = await _database.ParkingImages
+                .Where(i => i.ParkingObjectID == parking.ID)
+                .ToListAsync();
+
+            foreach (var image in images)
+            {
+                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImagePath.TrimStart('/'));
+                if (System.IO.File.Exists(fullPath))
+                    System.IO.File.Delete(fullPath);
+            }
+
+            _database.ParkingImages.RemoveRange(images);
+
+            // delete pricings 
+            _database.Pricing.RemoveRange(parking.Pricings);
+
+            // delete parking
+            _database.ParkingObject.Remove(parking);
+
+            // delete request
+            await _requestRepository.DeleteAsync(requestId);
+
+            await _database.SaveChangesAsync();
+
+            TempData["Success"] = $"Zahtjev za parking \"{parkingName}\" je odbijen i objekat je obrisan.";
+            return RedirectToAction("Requests");
+        }
+
     }
 
     // ── VIEW MODELS ───────────────────────────────────────────
