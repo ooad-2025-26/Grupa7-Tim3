@@ -59,7 +59,45 @@ namespace ParkirajBa.Repositories
             return await query.ToListAsync();
         }
 
+        public async Task<List<ParkingObject>> FilterApprovedParkings(
+            string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice)
+        {
+            var query = _Database.ParkingObject.AsQueryable();
 
+            if (!string.IsNullOrEmpty(searchText))
+                query = query.Where(p => p.name.Contains(searchText));
+
+            if (hasGarage)
+                query = query.Where(p => p.isUnderground ?? false);
+
+            if (hasEVCharger)
+                query = query.Where(p => p.hasEVCharger ?? false);
+
+            if (hasCameras)
+                query = query.Where(p => p.hasCameras ?? false);
+
+            if (isDisabledAccessible)
+                query = query.Where(p => p.isDisabledAccessible ?? false);
+
+            PricingType typeByRegime = regime switch
+            {
+                "Day" => PricingType.Daily,
+                "Week" => PricingType.Weekly,
+                "Month" => PricingType.Monthly,
+                "Year" => PricingType.Yearly,
+                _ => PricingType.Hourly
+            };
+
+            query = query.Where(p =>
+                _Database.Pricing.Any(pricing =>
+                    pricing.ParkingObjectID == p.ID &&
+                    pricing.pricingType == typeByRegime &&
+                    pricing.price < maxPrice));
+
+            query = query.Where(p => p.isApproved ?? false);
+
+            return await query.ToListAsync();
+        }
         //----
 
         //-- Parking --
@@ -73,6 +111,11 @@ namespace ParkirajBa.Repositories
         {
             return await _Database.ParkingObject
                 .ToListAsync();
+        }
+
+        public async Task<List<ParkingObject>> GetAllApprovedAsync()
+        {   
+            return await _Database.ParkingObject.Where(p=>p.isApproved ?? false).ToListAsync();
         }
 
         public async Task<List<ParkingObject>> GetAllWithPricingsAsync()
