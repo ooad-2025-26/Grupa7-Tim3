@@ -15,6 +15,7 @@ namespace ParkirajBa.Data
 
         public DbSet<ParkingImage> ParkingImages { get; set; }
 
+        public DbSet<ParkingRequest> ParkingRequest { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -24,6 +25,8 @@ namespace ParkirajBa.Data
             modelBuilder.Entity<OwnerProfile>().ToTable("Owner");
             modelBuilder.Entity<AdminProfile>().ToTable("Administrator");
             modelBuilder.Entity<ParkingImage>().ToTable("ParkingImage");
+
+            modelBuilder.Entity<ParkingRequest>().ToTable("ParkingRequest");
 
             modelBuilder.Entity<Ticket>()
                 .Property(t => t.Price)
