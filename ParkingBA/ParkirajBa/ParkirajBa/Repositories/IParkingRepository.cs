@@ -5,11 +5,16 @@ namespace ParkirajBa.Repositories
     public interface IParkingRepository
     {
         // ── Filtering and searching
-        Task<List<ParkingObject>> FilterParkings(string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice);
-        Task<ParkingObject> AddParking(ParkingObject newParking);
+        Task<List<ParkingObject>> FilterParkings
+            (string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice);
+        
+        Task<List<ParkingObject>> FilterApprovedParkings
+            (string searchText, bool hasGarage, bool hasEVCharger, bool hasCameras, bool isDisabledAccessible, string regime, int maxPrice);
 
         // ── Getting parkings and related data
+        Task<ParkingObject> AddParking(ParkingObject newParking);
         Task<List<ParkingObject>> GetAllAsync();
+        Task<List<ParkingObject>> GetAllApprovedAsync();
         Task<bool> IncrementAvailableSpotsAsync(int parkingId);
         Task<List<ParkingObject>> GetAllWithPricingsAsync();
         Task<List<ParkingObject>> GetAllWithOwnerAsync();
@@ -20,6 +25,8 @@ namespace ParkirajBa.Repositories
         Task<ParkingObject?> GetByIdWithOwnerAsync(int id);
 
         Task<ParkingObject?> ModifyParkingAsync(ParkingObject ChangedParking);
+
+
 
         //--Parking Images
         Task<List<string?>> GetImagePathsByParkingIDAsync(int parkingID);

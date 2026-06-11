@@ -79,7 +79,7 @@ namespace ParkirajBa.Controllers
             ViewBag.FullName = await GetFullNameAsync();
             ViewData["GoogleMapsApiKey"] = _configuration["GoogleMaps:ApiKey"];
 
-            var parkingObjekti = await _parkingRepository.GetAllAsync();
+            var parkingObjekti = await _parkingRepository.GetAllApprovedAsync();
 
             return View(parkingObjekti);
         }
@@ -89,7 +89,7 @@ namespace ParkirajBa.Controllers
         {
             ViewBag.FullName = await GetFullNameAsync();
 
-            var objekti = await _parkingRepository.GetAllAsync();
+            var objekti = await _parkingRepository.GetAllApprovedAsync();
 
             // Dohvati primarne slike za svaki parking
             var slike = new Dictionary<int, string>();
@@ -203,7 +203,7 @@ namespace ParkirajBa.Controllers
         {
             // Execute query and fetch data
             var results =
-                await _parkingRepository.FilterParkings(searchText, hasGarage, hasEVCharger, hasCameras, isDisabledAccessible, regime, maxPrice);
+                await _parkingRepository.FilterApprovedParkings(searchText, hasGarage, hasEVCharger, hasCameras, isDisabledAccessible, regime, maxPrice);
 
             // Return filtered results as JSON to the frontend
             return Json(results);
