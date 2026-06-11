@@ -273,13 +273,14 @@ namespace ParkirajBa.Controllers
                 .AsQueryable();
 
             if (status == "active")
-                query = query.Where(t => t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
+                query = query.Where(t => !t.IsCancelled && t.IsPaid &&
+                                         t.IssuedAt <= now && (!t.ExpiresAt.HasValue || t.ExpiresAt >= now));
             else if (status == "expired")
-                query = query.Where(t => t.ExpiresAt.HasValue && t.ExpiresAt < now);
+                query = query.Where(t => !t.IsCancelled && t.ExpiresAt.HasValue && t.ExpiresAt < now);
             else if (status == "paid")
-                query = query.Where(t => t.IsPaid);
+                query = query.Where(t => t.IsPaid && !t.IsCancelled);
             else if (status == "unpaid")
-                query = query.Where(t => !t.IsPaid);
+                query = query.Where(t => !t.IsPaid && !t.IsCancelled);
 
             var tickets = await query.OrderByDescending(t => t.IssuedAt).ToListAsync();
             ViewBag.StatusFilter = status;

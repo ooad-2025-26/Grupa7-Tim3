@@ -316,7 +316,10 @@ namespace ParkirajBa.Controllers
             string? opensAt, string? closesAt,
             List<PricingCreateDto>? Pricings,
             List<IFormFile>? Images,        
-            List<int>? ImagePositions)
+            List<int>? ImagePositions,
+             List<int>? pricingIds,        
+            List<decimal>? pricingValues) 
+
         {
             var parking = await _parkingRepository.GetByIdAsync(id);
             if (parking == null) return Json(new { success = false, message = "Parking nije pronađen." });
@@ -353,6 +356,19 @@ namespace ParkirajBa.Controllers
                 : null;
 
             await _parkingRepository.ModifyParkingAsync(parking);
+            if (pricingIds != null && pricingValues != null)
+            {
+                for (int i = 0; i < pricingIds.Count && i < pricingValues.Count; i++)
+                {
+                    var pricing = await _database.Pricing.FindAsync(pricingIds[i]);
+                    if (pricing != null && pricing.ParkingObjectID == id)
+                    {
+                        pricing.price = pricingValues[i];
+                        _database.Pricing.Update(pricing);
+                    }
+                }
+                await _database.SaveChangesAsync();
+            }
             if (Images != null && Images.Count > 0)
             {
                 try
@@ -389,7 +405,10 @@ namespace ParkirajBa.Controllers
             }
 
             if (User.IsInRole("Admin"))
-                return Json(new { success = true, message = "Parking uspješno ažuriran!" });
+            {
+                TempData["Success"] = "Parking uspješno ažuriran!";
+                return RedirectToAction("ParkingDetails", "Admin", new { id });
+            }
 
             return Json(new { success = true, message = "Parking uspješno ažuriran!" });
         }
