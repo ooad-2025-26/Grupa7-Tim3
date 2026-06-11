@@ -4,7 +4,7 @@
 
 ## O projektu
 
-**ParkirajBa** je sveobuhvatan sistem dizajniran za pronalaženje i rezervisanje parking mjetsa. Omogućava:
+**ParkirajBa** je sveobuhvatan sistem dizajniran za pronalaženje i rezervisanje parking mjesta. Omogućava:
 
 - Pregled dostupnih parking objekata na interaktivnoj Google Maps karti
 - Filtriranje parkinga po lokaciji, cijeni, opremljenosti (EV punjač, kamere, pristup za osobe s invaliditetom)
@@ -14,10 +14,10 @@
 - Automatski obračun prekoračenja i dodatnih naknada
 - Upravljanje vlastitim parking objektima za vlasnike (dodavanje, editovanje, slike, cjenovnik)
 - Admin panel s pregledom korisnika, parkinga, rezervacija i finansijskih izvještaja
-- Izvoz izvještaja u PDF i Excel format
+- Preuzimanje izvještaja u PDF i Excel formatu
 
 
-Cilj sistema je da poveća efikasnost i poboljša iskustvo pronalaženja parking mjesta.
+Cilj sistema je da poveća efikasnost, uštedi vrijeme i poboljša iskustvo pronalaženja parking mjesta.
 
 ---
 
