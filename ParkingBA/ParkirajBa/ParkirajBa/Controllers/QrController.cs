@@ -32,14 +32,21 @@ namespace ParkirajBa.Controllers
             if (ticket == null)
                 return BadRequest(new { message = "Nevažeći QR kod" });
 
-            // ENTRY LOGIC
+            // ulaz na parking
             if (!ticket.EnteredParking)
             {
-                if(ticket.IssuedAt <= DateTime.Now)
+                if(DateTime.Now < ticket.IssuedAt)
                     return BadRequest(new { message = "Nije aktivan parking" });
 
                 if (!ticket.IsPaid)
                     return BadRequest(new { message = "Nije plaćeno" });
+
+
+                if ((ticket.ExpiresAt.Value - ticket.IssuedAt).TotalHours > 24 && ticket.ExpiresAt <= DateTime.Now)
+                {
+                    ticket.ExitedParking = false;
+                    ticket.QrCodeActive = true;
+                }
 
                 ticket.EnteredParking = true;
                 ticket.EnteredAt = DateTime.Now;
@@ -50,8 +57,8 @@ namespace ParkirajBa.Controllers
                 return Ok(new { message = "Ulaz dozvoljen" });
             }
 
-            // EXIT LOGIC
-            if (ticket.EnteredParking && !ticket.ExitedParking)
+            // izlaz sa parkinga
+            if (ticket.EnteredParking && ticket.QrCodeActive)
             {
                 if (ticket.ExpiresAt < DateTime.Now)
                     return BadRequest(new { message = "Rezervacija istekla" });
@@ -63,10 +70,18 @@ namespace ParkirajBa.Controllers
                 ticket.ExitedAt = DateTime.Now;
                 ticket.QrCodeActive = false;
 
-                if (ticket.IsPaid)
-                    await _parkingRepository.IncrementAvailableSpotsAsync(ticket.ParkingObjectId);
+                if ((ticket.ExpiresAt.Value - ticket.IssuedAt).TotalHours > 24)
+                {
+                    ticket.EnteredParking = false;
+                    ticket.QrCodeActive = true;
+                }
+                else
+                {
+                    if (ticket.IsPaid)
+                        await _parkingRepository.IncrementAvailableSpotsAsync(ticket.ParkingObjectId);
+                }
 
-                await _database.SaveChangesAsync();
+                    await _database.SaveChangesAsync();
                 await _hub.Clients.All.SendAsync("StatusChanged", request.Code);
                 return Ok(new { message = "Izlaz dozvoljen" });
             }

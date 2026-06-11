@@ -12,7 +12,7 @@
         statusClass = "expired";
         statusLabel = "Otkazana";
     }
-    else if (Model.ExitedParking)
+    else if (Model.ExitedParking && !Model.QrCodeActive)
     {
         statusClass = "expired";
         statusLabel = "Završena";
