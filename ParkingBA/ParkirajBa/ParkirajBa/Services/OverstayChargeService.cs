@@ -87,16 +87,12 @@ public class OverstayChargeService : BackgroundService
         decimal additionalPrice =
             overtimeHours * parkingPricing.price;
 
-        if (ticket.AdditionalCharge != additionalPrice)
+        if (ticket.AdditionalCharge != additionalPrice && !ticket.AdditionalChargePaid)
         {
             ticket.AdditionalCharge = additionalPrice;
+            ticket.AdditionalChargePaid = false;
+            ticket.QrCodeActive = false;
         }
-
-        ticket.AdditionalChargePaid =
-            false;
-
-        ticket.QrCodeActive =
-            false;
 
         await db.SaveChangesAsync();
 
