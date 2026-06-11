@@ -65,6 +65,14 @@ namespace ParkirajBa.Controllers
                 return View();
             }
 
+            // Provjeri je li profil zaključan od strane admina
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                ViewBag.Error = "Vaš profil je zaključan. Kontaktirajte administratora.";
+                ViewBag.HideHeader = true;
+                return View();
+            }
+
             var result = await _signInManager.PasswordSignInAsync(
                 user.UserName, password, isPersistent: false, lockoutOnFailure: false);
 
@@ -267,7 +275,7 @@ namespace ParkirajBa.Controllers
                 return View(user);
             }
 
-  
+
             if (!string.IsNullOrWhiteSpace(newPassword) || !string.IsNullOrWhiteSpace(currentPassword) || !string.IsNullOrWhiteSpace(confirmPassword))
             {
                 if (string.IsNullOrWhiteSpace(currentPassword))
@@ -316,7 +324,7 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Profile");
         }
 
-         
+
 
         // Dev helper
         public async Task<IActionResult> TestUsers()
