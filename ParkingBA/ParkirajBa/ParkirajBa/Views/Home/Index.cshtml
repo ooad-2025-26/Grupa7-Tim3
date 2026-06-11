@@ -6,7 +6,7 @@
     var apiKey = ViewData["GoogleMapsApiKey"] as string;
 }
 
-<div class="app-container">
+<div class="app-container" id="appContainer">
 
     <div class="tabs">
         <div class="tab active">
@@ -368,6 +368,12 @@
             background: #eee;
         }
 
+    .card.selected {
+        background-color: #e3f2fd; 
+        border: 2px solid #2196f3; 
+    }
+
+
     .spots-badge {
         display: inline-block;
         padding: 4px 8px;
@@ -490,15 +496,25 @@
 
                 const info = new InfoWindow({
                     content: `
-                                <div style="color: black; padding: 5px;">
-                                    <h5 style="margin: 0 0 5px 0;">${location.name}</h5>
-                                    <p style="margin: 0;">Status: <strong>${statusTekstMape}</strong></p>
-                                </div>
+                                <a href='/Parking/Details/${location.id}'>
+                                    <div style="color: black; padding: 5px;">
+                                        <h5 style="margin: 0 0 5px 0;">${location.name}</h5>
+                                        <p style="margin: 0;">Status: <strong>${statusTekstMape}</strong></p>
+                                    </div>
+                                </a>
                             `
                 });
 
                 marker.addListener("click", () => {
+                    if(selectedInfoPanel!=null)
+                        selectedInfoPanel.close();
                     info.open(map, marker);
+                    selectedInfoPanel=info;
+                    MoveCardToTop(location.id);
+                });
+
+                info.addListener("closeclick", () => {
+                    UnselectParking();
                 });
             });
         }
@@ -579,7 +595,7 @@
             const imageSrc = (Image && Image.imagePath) ? Image.imagePath : "/images/Parkings/NoImageAvailable.png";
 
             return `
-                        <a href="/Parking/Details/${Parking.id}" class="card">
+                        <a href="/Parking/Details/${Parking.id}" class="card" id="CardForId${Parking.id}">
                             <img src="${imageSrc}" alt="${Parking.name}" />
                             <div>
                                 <h4>${Parking.name || 'Nepoznat naziv'}</h4>
@@ -590,6 +606,34 @@
                             </div>
                         </a>
                     `;
+        }
+
+
+        function UnselectParking(){
+            if(selectedCard==null)
+                return;
+            selectedCard.classList.remove('selected');
+            selectedCard=null;
+        }
+
+        function SelectParking(){
+            if(selectedCard==null)
+                return;
+            selectedCard.classList.add('selected');
+        }
+
+        function MoveCardToTop(ParkingID) {
+            UnselectParking();
+
+            const cardToMove = document.getElementById(`CardForId${ParkingID}`);
+            
+            const sidebar = document.getElementById("ParkingSidebar");
+         
+            if (cardToMove && sidebar) {
+                sidebar.insertAdjacentElement('afterbegin', cardToMove);
+            }
+            selectedCard=cardToMove;
+            SelectParking();
         }
 
         async function LoadSidebar(Locations) {
@@ -618,6 +662,10 @@
         LoadSidebar(parkingLocations);
 
         let map;
+
+        let selectedInfoPanel;
+        let selectedCard;
+
         let AllowMap = 1;
 
         if (AllowMap != 0) {
@@ -650,5 +698,22 @@
         }
 
         let searchText, hasGarage, hasEVCharger, hasCameras, isDisabledAccessible, regime, maxPrice;
+
+        document.getElementById("appContainer").addEventListener('click', function(event) {
+
+            const isInfoPanel = event.target.closest('.gm-style-iw');
+
+            const isMapOrMarker = event.target.closest('.gm-style');
+
+            if (!isInfoPanel && !isMapOrMarker) {
+                UnselectParking();
+
+                if (selectedInfoPanel) {
+                    selectedInfoPanel.close();
+                    selectedInfoPanel = null;
+                }
+            }
+        });
+        
     </script>
 }

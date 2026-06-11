@@ -125,7 +125,17 @@
                                             @foreach (var price in parking.Pricings)
                                             {
                                                 <div style="background:#f0f3ff;border:1px solid #dde3ff;border-radius:8px;padding:7px 14px;font-size:12.5px;">
-                                                    <span style="color:var(--adm-text2);">@price.pricingType</span>
+                                                    <span style="color:var(--adm-text2);">
+                                                        @(price.pricingType.ToString() switch
+                                                        {
+                                                            "Hourly" => "Po satu",
+                                                            "Daily" => "Po danu",
+                                                            "Weekly" => "Sedmično",
+                                                            "Monthly" => "Mjesečno",
+                                                            "Yearly" => "Godišnje",
+                                                            _ => price.pricingType.ToString()
+                                                        })
+                                                    </span>
                                                     <span style="font-weight:700;color:var(--adm-accent);margin-left:6px;">@price.price.ToString("0.00") KM</span>
                                                 </div>
                                             }
