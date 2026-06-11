@@ -58,7 +58,7 @@
                 string status, statusLabel;
                 if (ticket.IsCancelled)
                 { status = "expired"; statusLabel = "Otkazana"; }
-                else if ((ticket.ExpiresAt.HasValue && ticket.ExpiresAt < now) || ticket.ExitedParking)
+                else if ((ticket.ExpiresAt.HasValue && ticket.ExpiresAt < now) || (ticket.ExitedParking && !ticket.QrCodeActive))
                 { status = "expired"; statusLabel = "Istekla"; }
                 else if (ticket.IssuedAt <= now && (!ticket.ExpiresAt.HasValue || ticket.ExpiresAt >= now))
                 {

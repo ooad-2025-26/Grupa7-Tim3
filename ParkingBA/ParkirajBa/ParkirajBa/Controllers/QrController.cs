@@ -41,9 +41,11 @@ namespace ParkirajBa.Controllers
                 if (!ticket.IsPaid)
                     return BadRequest(new { message = "Nije plaćeno" });
 
-                if ((ticket.ExpiresAt.Value - ticket.IssuedAt).TotalHours > 24)
+
+                if ((ticket.ExpiresAt.Value - ticket.IssuedAt).TotalHours > 24 && ticket.ExpiresAt <= DateTime.Now)
                 {
                     ticket.ExitedParking = false;
+                    ticket.QrCodeActive = true;
                 }
 
                 ticket.EnteredParking = true;
@@ -56,7 +58,7 @@ namespace ParkirajBa.Controllers
             }
 
             // izlaz sa parkinga
-            if (ticket.EnteredParking && !ticket.ExitedParking)
+            if (ticket.EnteredParking && ticket.QrCodeActive)
             {
                 if (ticket.ExpiresAt < DateTime.Now)
                     return BadRequest(new { message = "Rezervacija istekla" });
