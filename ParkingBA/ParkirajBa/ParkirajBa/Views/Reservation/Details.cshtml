@@ -77,7 +77,8 @@
                         @if (Model.IsPaid
                               && !string.IsNullOrEmpty(Model.ReservationCode)
                               && Model.QrCodeActive
-                              && Model.AdditionalChargePaid)
+                              && Model.AdditionalChargePaid
+                              && statusClass == "active")
                         {
                             <button type="button"
                                     onclick="prikaziQrModal()"
