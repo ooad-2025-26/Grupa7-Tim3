@@ -40,11 +40,12 @@ public class OverstayChargeService : BackgroundService
         var tickets = await db.Tickets
             .Include(t => t.ApplicationUser)
             .Include(t => t.ParkingObject)
-            .Where(t =>
-                   t.EnteredParking &&
-                   !t.ExitedParking &&
-                   t.ExpiresAt != null &&
-                   t.ExpiresAt < DateTime.Now)
+           .Where(t =>
+       t.EnteredParking &&
+       !t.ExitedParking &&
+       !t.IsCancelled &&
+       t.ExpiresAt != null &&
+       t.ExpiresAt < DateTime.Now)
             .ToListAsync();
 
         foreach (var ticket in tickets)
@@ -78,6 +79,9 @@ public class OverstayChargeService : BackgroundService
             (int)Math.Ceiling(overtime.TotalHours);
 
         if (overtimeHours <= 0)
+            return;
+     
+        if (ticket.ExitedParking)
             return;
 
         decimal additionalPrice =
