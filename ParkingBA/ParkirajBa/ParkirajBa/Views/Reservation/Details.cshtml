@@ -7,11 +7,17 @@
     var now = DateTime.Now;
     string statusClass, statusLabel;
 
-    if (Model.ExitedParking)
+    if (Model.IsCancelled)
+    {
+        statusClass = "expired";
+        statusLabel = "Otkazana";
+    }
+    else if (Model.ExitedParking)
     {
         statusClass = "expired";
         statusLabel = "Završena";
     }
+
     else if (Model.ExpiresAt.HasValue && Model.ExpiresAt < now)
     {
         statusClass = "expired";
@@ -314,9 +320,13 @@
                 Preuzmi PDF karte
             </a>
 
-            @if (statusLabel != "Istekla")
+            @if (statusLabel != "Istekla"
+            && statusLabel != "Otkazana"
+            && statusLabel != "Završena"
+            && !Model.EnteredParking
+            && ViewBag.IsAdminView != true)
             {
-                <button type="button" class="btn-gray" onclick="prikaziOtkaziModal()" style="color: #dc3545; background: #fdf0f0; border: 1px solid #f5c6cb; font-weight:600; cursor:pointer;">
+                <button type="button" id="btnOtkazi" class="btn-gray" onclick="prikaziOtkaziModal()" style="color: #dc3545; background: #fdf0f0; border: 1px solid #f5c6cb; font-weight:600; cursor:pointer;">
                     Otkaži rezervaciju
                 </button>
             }
@@ -634,6 +644,11 @@
             exit.innerHTML = data.exited
                 ? '<span style="color:green;">✓ Vozilo izašlo</span>'
                 : '<span style="color:orange;">Nije evidentiran izlazak</span>';
+        }
+            if (data.entered) {
+                const otkaziBtn = document.getElementById('btnOtkazi');
+                if (otkaziBtn) otkaziBtn.style.display = 'none';
+            
         }
     }
 </script>

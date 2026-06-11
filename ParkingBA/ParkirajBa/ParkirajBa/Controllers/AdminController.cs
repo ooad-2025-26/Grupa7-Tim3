@@ -303,7 +303,19 @@ namespace ParkirajBa.Controllers
             return View("~/Views/Reservation/Details.cshtml", ticket);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveParking(int id)
+        {
+            var parking = await _database.ParkingObject.FindAsync(id);
+            if (parking == null) return NotFound();
 
+            parking.isApproved = true;
+            await _database.SaveChangesAsync();
+
+            TempData["Success"] = $"Parking \"{parking.name}\" je uspješno odobren.";
+            return RedirectToAction("Parkings");
+        }
         [HttpPost]
         public async Task<IActionResult> DeleteReservation(int id)
         {

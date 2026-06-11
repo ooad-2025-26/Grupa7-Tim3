@@ -56,7 +56,9 @@
             {
                 var now = DateTime.Now;
                 string status, statusLabel;
-                if ((ticket.ExpiresAt.HasValue && ticket.ExpiresAt < now) || ticket.ExitedParking)
+                if (ticket.IsCancelled)
+                { status = "expired"; statusLabel = "Otkazana"; }
+                else if ((ticket.ExpiresAt.HasValue && ticket.ExpiresAt < now) || ticket.ExitedParking)
                 { status = "expired"; statusLabel = "Istekla"; }
                 else if (ticket.IssuedAt <= now && (!ticket.ExpiresAt.HasValue || ticket.ExpiresAt >= now))
                 {

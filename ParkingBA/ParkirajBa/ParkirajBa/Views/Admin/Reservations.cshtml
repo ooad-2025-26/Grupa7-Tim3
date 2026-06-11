@@ -65,23 +65,24 @@
                             <td style="font-size:12px;color:var(--adm-text2);">@(t.ExpiresAt.HasValue ? t.ExpiresAt.Value.ToString("dd.MM.yy HH:mm") : "—")</td>
                             <td style="font-weight:700;color:var(--adm-accent);">@t.Price.ToString("0.00") KM</td>
                             <td>
-                                @if (t.IsPaid)
+                                @if (t.IsCancelled)
+                                {
+                                    <span class="adm-badge red">Otkazana</span>
+                                }
+                                else if (t.IsPaid)
                                 {
                                     <span class="adm-badge green">Plaćeno</span>
                                 }
                                 else if (isExpired)
                                 {
-
                                     <span class="adm-badge gray">Isteklo</span>
                                 }
                                 else if (isActive)
                                 {
-
                                     <span class="adm-badge orange">U tijeku</span>
                                 }
                                 else
                                 {
-
                                     <span class="adm-badge blue">Na čekanju</span>
                                 }
                             </td>

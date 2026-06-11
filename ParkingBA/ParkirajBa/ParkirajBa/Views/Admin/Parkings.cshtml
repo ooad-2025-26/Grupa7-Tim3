@@ -92,6 +92,14 @@
                             <td>
                                 <div style="display:flex;gap:6px;">
                                     <a href="/Admin/ParkingDetails/@p.ID" class="adm-btn adm-btn-warning adm-btn-sm">Uredi</a>
+                                    @if (p.isApproved != true)
+                                    {
+                                        <form asp-action="ApproveParking" method="post" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@p.ID" />
+                                            <button type="submit" class="adm-btn adm-btn-success adm-btn-sm">Odobri</button>
+                                        </form>
+                                    }
                                     <form asp-action="DeleteParking" method="post"
                                           onsubmit="event.preventDefault();admConfirm(this,'Brisanje parkinga','Jeste li sigurni da želite obrisati parking &quot;@p.name&quot;?');">
                                         <input type="hidden" name="id" value="@p.ID" />

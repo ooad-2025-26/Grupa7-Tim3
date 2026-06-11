@@ -148,8 +148,6 @@ namespace ParkirajBa.Controllers
 
             return View(ticket);
         }
-
-        // POST: /Reservation/Cancel
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -170,14 +168,23 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Details", new { id });
             }
 
+            // Blokiranje otkazivanja ako je ulaz već evidentiran
+            if (ticket.EnteredParking)
+            {
+                TempData["Error"] = "Nije moguće otkazati rezervaciju nakon što je ulazak evidentiran.";
+                return RedirectToAction("Details", new { id });
+            }
+
             string parkingName = ticket.ParkingObject?.name ?? "ParkirajBa Parking";
             string vrijediDo = ticket.ExpiresAt.HasValue
-                ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm")
-                : "—";
+                ? ticket.ExpiresAt.Value.ToString("dd.MM.yyyy HH:mm") : "—";
             decimal cijena = ticket.Price;
             string korisnikIme = user.FullName ?? user.Email ?? "Korisnik";
 
-            _database.Tickets.Remove(ticket);
+            // Označi kao otkazana umjesto brisanja
+            ticket.IsCancelled = true;
+            ticket.QrCodeActive = false;
+
             var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
             if (parking != null && ticket.IsPaid && parking.availableSpots < parking.totalSpots)
                 parking.availableSpots++;
@@ -198,7 +205,7 @@ namespace ParkirajBa.Controllers
                     $"<p>Hvala što koristite ParkirajBa!</p>"
                 );
             }
-            catch { /* ne blokiraj otkazivanje ako mail ne stigne */ }
+            catch { }
 
             TempData["Success"] = "Rezervacija je uspješno otkazana.";
             return RedirectToAction("Rezervacije", "Home");

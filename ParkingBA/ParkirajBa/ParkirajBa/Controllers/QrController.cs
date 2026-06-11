@@ -60,13 +60,12 @@ namespace ParkirajBa.Controllers
                 ticket.ExitedAt = DateTime.Now;
                 ticket.QrCodeActive = false;
 
-                //Trebalo bi da radi, ali ne radi
-                var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
-                if (parking != null && ticket.IsPaid && parking.availableSpots < parking.totalSpots)
-                {
-                    parking.availableSpots++;
+                if (ticket.IsPaid)
+                    await _parkingRepository.IncrementAvailableSpotsAsync(ticket.ParkingObjectId);
 
-                }
+                await _database.SaveChangesAsync();
+                await _hub.Clients.All.SendAsync("StatusChanged", request.Code);
+                return Ok(new { message = "Izlaz dozvoljen" });
                 //---------------
 
 

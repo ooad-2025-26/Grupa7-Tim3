@@ -343,7 +343,8 @@ namespace ParkirajBa.Controllers
                 await _database.SaveChangesAsync();
             }
 
-            return Json(new { success = true, message = "Parking uspješno ažuriran!" });
+            TempData["Success"] = "Parking je uspješno ažuriran.";
+            return RedirectToAction("ParkingDetails", "Admin", new { id = id });
         }
 
 

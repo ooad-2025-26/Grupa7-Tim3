@@ -267,6 +267,21 @@ namespace ParkirajBa.Repositories
                 .FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
         }
 
+
+        public async Task<bool> IncrementAvailableSpotsAsync(int parkingId)
+        {
+            var parking = await _Database.ParkingObject
+                .FirstOrDefaultAsync(p => p.ID == parkingId);
+
+            if (parking == null || parking.availableSpots >= parking.totalSpots)
+                return false;
+
+            parking.availableSpots++;
+            await _Database.SaveChangesAsync();
+            return true;
+        }
+
+
         public async Task<List<Pricing>>
             GetParkingPricings(int ParkingObjectID)
         {

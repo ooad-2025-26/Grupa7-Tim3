@@ -17,6 +17,7 @@ namespace ParkirajBa.Models
         public decimal Price { get; set; }
 
         public bool IsPaid { get; set; } = false;
+        public bool IsCancelled { get; set; } = false;
 
         public string? ReservationCode { get; set; }
 

@@ -10,6 +10,7 @@ namespace ParkirajBa.Repositories
 
         // ── Getting parkings and related data
         Task<List<ParkingObject>> GetAllAsync();
+        Task<bool> IncrementAvailableSpotsAsync(int parkingId);
         Task<List<ParkingObject>> GetAllWithPricingsAsync();
         Task<List<ParkingObject>> GetAllWithOwnerAsync();
         Task<List<ParkingObject>> GetByOwnerIdAsync(string ownerId);
@@ -40,5 +41,6 @@ namespace ParkirajBa.Repositories
         Task<List<Ticket>> GetTicketsByUserIdAsync(string userId);
         Task<List<Ticket>> GetTicketsByParkingIdsAsync(List<int> parkingIds);
         Task<Ticket?> GetTicketByIdAsync(int id, string userId);
+
     }
 }
