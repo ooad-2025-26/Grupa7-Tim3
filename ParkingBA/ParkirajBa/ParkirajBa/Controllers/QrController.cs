@@ -66,13 +66,6 @@ namespace ParkirajBa.Controllers
                 await _database.SaveChangesAsync();
                 await _hub.Clients.All.SendAsync("StatusChanged", request.Code);
                 return Ok(new { message = "Izlaz dozvoljen" });
-                //---------------
-
-
-                await _database.SaveChangesAsync();
-                await _hub.Clients.All.SendAsync("StatusChanged", request.Code);
-
-                return Ok(new { message = "Izlaz dozvoljen" });
             }
 
             return BadRequest(new { message = "Parking već završen" });

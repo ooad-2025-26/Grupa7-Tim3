@@ -186,15 +186,6 @@
 
         @if (Model.AdditionalCharge > 0 && !Model.AdditionalChargePaid)
         {
-            <div style="display:flex;justify-content:center;margin-top:20px;">
-
-                <a href="/Payment/Checkout?ticketId=@Model.Id&additionalCharge=true"
-                   class="btn-blue">
-                    Plati doplatu
-                </a>
-
-            </div>
-
             <div style="background:#fff3cd;
                     border:1px solid #ffeeba;
                     border-radius:12px;
@@ -228,6 +219,15 @@
                         Nije plaćena
                     </span>
                 }
+
+                <div style="display:flex;justify-content:center;margin-top:20px;">
+
+                    <a href="/Payment/Checkout?ticketId=@Model.Id&additionalCharge=true"
+                       class="btn-blue">
+                        Plati doplatu
+                    </a>
+
+                </div>
             </div>
         }
 
@@ -624,7 +624,7 @@
         }
     });
 
-       async function updateStatus() {
+    async function updateStatus() {
 
         const code = '@Model.ReservationCode';
 
