@@ -470,11 +470,11 @@
                 };
 
                 let backgroundColor;
-                let statusTekstMape = "Slobodno";
+                let mapStatusText = "Slobodno";
 
                 if (location.availableSpots <= 0) {
                     backgroundColor = "#FF0000";
-                    statusTekstMape = "Popunjeno";
+                    mapStatusText = "Popunjeno";
                 } else {
                     backgroundColor = "#28a745";
                 }
@@ -494,16 +494,56 @@
 
                 parkingMarkers.push(marker);
 
-                const info = new InfoWindow({
-                    content: `
-                                <a href='/Parking/Details/${location.id}'>
-                                    <div style="color: black; padding: 5px;">
-                                        <h5 style="margin: 0 0 5px 0;">${location.name}</h5>
-                                        <p style="margin: 0;">Status: <strong>${statusTekstMape}</strong></p>
-                                    </div>
-                                </a>
-                            `
-                });
+                        
+            const formatTime = (timeString) => {
+                if (!timeString) return null;
+
+                const date = new Date(timeString);
+
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit' });
+                }
+
+                return timeString.substring(0, 5);
+            };
+
+            const openingTime = formatTime(location.opensAt) || '00:00';
+            const closingTime = formatTime(location.closesAt) || '24:00';
+
+            const info = new InfoWindow({
+                content: `
+                    <a href='/Parking/Details/${location.id}' style="text-decoration: none; color: inherit; display: block;">
+                        <div style="min-width: 170px; padding: 4px; font-family: system-ui, -apple-system, sans-serif;">
+
+                            <h5 style="margin: 0 0 10px 0; font-size: 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+                                ${location.name}
+                            </h5>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 13px; color: #64748b;">Status:</span>
+                                <strong style="color: ${backgroundColor}; font-size: 13px;">
+                                    ${mapStatusText}
+                                </strong>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-size: 13px; color: #64748b;">Otvoreno:</span>
+                                <strong style="font-size: 13px; color: #334155;">
+                                    🕒 ${openingTime}
+                                </strong>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 13px; color: #64748b;">Zatvoreno:</span>
+                                <strong style="font-size: 13px; color: #334155;">
+                                    🚪 ${closingTime}
+                                </strong>
+                            </div>
+
+                        </div>
+                    </a>
+                `
+            });
 
                 marker.addListener("click", () => {
                     if(selectedInfoPanel!=null)
