@@ -40,6 +40,8 @@ namespace ParkirajBa.Models
         public DateTime? opensAt { get; set; }
         public DateTime? closesAt { get; set; }
 
+        public bool? isApproved {  get; set; }
+
         public string? OwnerId { get; set; }
 
         [ValidateNever]

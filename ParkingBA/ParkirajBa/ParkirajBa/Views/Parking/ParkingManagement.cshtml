@@ -24,10 +24,13 @@
     <div class="management-container">
 
         <div class="sidebar">
+            @{
+                var slike = ViewBag.Slike as Dictionary<int, string>;
+            }
             @foreach (var parking in Model)
             {
                 <div class="parking-card" data-id="@parking.ID">
-                    <img src="~/images/parking.jpg" />
+                    <img src="@(slike != null && slike.ContainsKey(parking.ID) ? slike[parking.ID] : "/images/parking.jpg")" />
                     <div class="parking-info">
                         <h4>@parking.name</h4>
                         <p>@parking.address</p>
@@ -35,7 +38,6 @@
                     </div>
                 </div>
             }
-
             <button class="add-button" id="btnOpenCreate">
                 + Dodaj parking
             </button>
@@ -550,45 +552,45 @@
                 }
             }
             if (valid) {
-                // NOVI PRISTUP - Ručno skupi sve podatke
                 const latValue = document.getElementById('fieldLatitude').value;
                 const lonValue = document.getElementById('fieldLongitude').value;
                 const heightValue = document.getElementById('fieldHeight').value;
+                const idInput = form.querySelector('[name="id"]');
+                const opensAtInput = document.getElementById('fieldOpensAt');
+                const closesAtInput = document.getElementById('fieldClosesAt');
 
                 const parkingData = {
+                    id: idInput ? parseInt(idInput.value) : 0,
                     name: document.getElementById('fieldName').value,
-                    address: document.getElementById('fieldAddress').value,
-                    latitude: latValue ? parseFloat(latValue) : 0,
-                    longitude: lonValue ? parseFloat(lonValue) : 0,
+                    address: document.getElementById('fieldAddress').value || '',
+                    latitude: latValue ? parseFloat(latValue.replace(',', '.')) : 0,
+                    longitude: lonValue ? parseFloat(lonValue.replace(',', '.')) : 0,
                     totalSpots: parseInt(document.getElementById('fieldSpots').value),
                     maxHeight: heightValue ? parseFloat(heightValue) : null,
-                    hasCameras: document.querySelector('[name="hasCameras"]') ? document.querySelector('[name="hasCameras"]').checked : false,
-                    isDisabledAccessible: document.querySelector('[name="isDisabledAccessible"]') ? document.querySelector('[name="isDisabledAccessible"]').checked : false,
-                    hasEVCharger: document.querySelector('[name="hasEVCharger"]') ? document.querySelector('[name="hasEVCharger"]').checked : false,
-                    isUnderground: document.querySelector('[name="isUnderground"]') ? document.querySelector('[name="isUnderground"]').checked : false,
-                    opensAt: document.getElementById('fieldOpensAt')?.value || null,
-                    closesAt: document.getElementById('fieldClosesAt')?.value || null,
+                    hasCameras: document.querySelector('[name="hasCameras"]')?.checked ?? false,
+                    isDisabledAccessible: document.querySelector('[name="isDisabledAccessible"]')?.checked ?? false,
+                    hasEVCharger: document.querySelector('[name="hasEVCharger"]')?.checked ?? false,
+                    isUnderground: document.querySelector('[name="isUnderground"]')?.checked ?? false,
+                    opensAt: opensAtInput?.value ? `${new Date().toISOString().split('T')[0]}T${opensAtInput.value}:00` : null,
+                    closesAt: closesAtInput?.value ? `${new Date().toISOString().split('T')[0]}T${closesAtInput.value}:00` : null
                 };
 
                 const formData = new FormData();
 
-                // Dodaj parking podatke
                 Object.keys(parkingData).forEach(key => {
                     if (parkingData[key] !== null && parkingData[key] !== undefined) {
                         formData.append(key, parkingData[key]);
                     }
                 });
 
-                // Dodaj slike sa pozicijama
                 selectedFiles.forEach((file, index) => {
                     formData.append('Images', file);
                     formData.append(`ImagePositions[${index}]`, index + 1);
                 });
 
-                // Dodaj pricing podatke
-                const pricingRows = document.querySelectorAll('.pricing-row');
+                const pricingRowsEl = document.querySelectorAll('.pricing-row');
                 let pricingIndex = 0;
-                pricingRows.forEach((row) => {
+                pricingRowsEl.forEach((row) => {
                     const type = row.querySelector('[name="pricingType"]').value;
                     const price = row.querySelector('[name="price"]').value;
                     const validFrom = row.querySelector('[name="validFrom"]').value;
@@ -596,12 +598,9 @@
                     if (type && price) {
                         formData.append(`Pricings[${pricingIndex}].pricingType`, parseInt(type));
                         formData.append(`Pricings[${pricingIndex}].price`, parseFloat(price));
-
-                        // Samo dodaj validFrom ako je popunjeno
                         if (validFrom && validFrom.trim() !== "") {
                             formData.append(`Pricings[${pricingIndex}].validFrom`, validFrom);
                         }
-
                         pricingIndex++;
                     }
                 });
@@ -622,12 +621,14 @@
                         if (result.success) {
                             window.location.reload();
                         } else {
+                            alert(result.message || "Došlo je do greške. Molimo pokušajte ponovo.");
                         }
                     } else {
-                        const errorText = await response.text();
+                        alert("Greška pri slanju podataka. Molimo pokušajte ponovo.");
                     }
                 } catch (err) {
                     console.error("Greška:", err);
+                    alert("Greška pri komunikaciji sa serverom.");
                 }
             }
         });

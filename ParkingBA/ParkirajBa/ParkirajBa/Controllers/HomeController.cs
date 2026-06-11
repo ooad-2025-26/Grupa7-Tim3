@@ -90,6 +90,16 @@ namespace ParkirajBa.Controllers
             ViewBag.FullName = await GetFullNameAsync();
 
             var objekti = await _parkingRepository.GetAllAsync();
+
+            // Dohvati primarne slike za svaki parking
+            var slike = new Dictionary<int, string>();
+            foreach (var parking in objekti)
+            {
+                var slika = await _parkingRepository.GetPrimaryImageByParkingIDAsync(parking.ID);
+                slike[parking.ID] = slika?.ImagePath ?? "/images/parking.png";
+            }
+            ViewBag.Slike = slike;
+
             return View(objekti);
         }
 

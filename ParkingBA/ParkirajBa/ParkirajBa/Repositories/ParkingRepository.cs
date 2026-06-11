@@ -140,7 +140,8 @@ namespace ParkirajBa.Repositories
             DatabaseParking.hasEVCharger = ChangedParking.hasEVCharger;
             DatabaseParking.isDisabledAccessible = ChangedParking.isDisabledAccessible;
             DatabaseParking.isUnderground = ChangedParking.isUnderground;
-
+            DatabaseParking.opensAt = ChangedParking.opensAt;
+            DatabaseParking.closesAt = ChangedParking.closesAt;
             _Database.SaveChanges();
             return DatabaseParking;
         }

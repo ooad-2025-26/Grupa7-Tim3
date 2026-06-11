@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
+
+
 namespace ParkirajBa.Models
 {
     public class ParkingImage

@@ -89,7 +89,8 @@ namespace ParkirajBa
             // 4. Repository
             builder.Services.AddScoped<ParkirajBa.Repositories.IParkingRepository, ParkirajBa.Repositories.ParkingRepository>();
 
-           
+            builder.Services.AddScoped<ParkirajBa.Repositories.IRequestRepository, ParkirajBa.Repositories.RequestRepository>();
+
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();

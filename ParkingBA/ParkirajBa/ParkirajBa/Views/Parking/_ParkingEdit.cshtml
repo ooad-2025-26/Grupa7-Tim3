@@ -22,11 +22,12 @@
     <div class="form-grid">
         <div>
             <label class="form-label" for="fieldLatitude">Latitude (Širina)</label>
-            <input type="number" name="latitude" id="fieldLatitude" step="0.000001" placeholder="npr. 43.8563" class="form-input" value="@Model.latitude" />
+            <input type="number" name="latitude" id="fieldLatitude" step="0.000001" placeholder="npr. 43.8563" class="form-input" value="@Model.latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
         </div>
         <div>
             <label class="form-label" for="fieldLongitude">Longitude (Dužina)</label>
-            <input type="number" name="longitude" id="fieldLongitude" step="0.000001" placeholder="npr. 18.4075" class="form-input" value="@Model.longitude" />
+            <input type="number" name="longitude" id="fieldLongitude" step="0.000001" placeholder="npr. 18.4075" class="form-input" value="@Model.longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+
         </div>
     </div>
 

@@ -220,7 +220,33 @@ namespace ParkirajBa.Controllers
             }
 
             ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(id);
-            return View(parking); // koristi Views/Admin/ParkingDetails.cshtml
+            ViewBag.PrimaryImage = await _parkingRepository.GetPrimaryImageByParkingIDAsync(id);  
+            return View(parking);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadParkingImage(int id, IFormFile Images)
+        {
+            if (Images != null && Images.Length > 0)
+            {
+                // Obriši postojeću primarnu sliku iz baze
+                var postojeceSlike = await _database.ParkingImages
+                    .Where(i => i.ParkingObjectID == id && i.Position == 1)
+                    .ToListAsync();
+                _database.ParkingImages.RemoveRange(postojeceSlike);
+                await _database.SaveChangesAsync();
+
+                // Spremi novu sliku na poziciju 1
+                await _parkingRepository.SaveParkingImageByIDAsync(Images, 1, id);
+
+                TempData["Success"] = "Slika je uspješno ažurirana.";
+            }
+            else
+            {
+                TempData["Error"] = "Molimo odaberite sliku za upload.";
+            }
+
+            return RedirectToAction("ParkingDetails", new { id });
         }
         [HttpPost]
         public async Task<IActionResult> DeleteParking(int id)
