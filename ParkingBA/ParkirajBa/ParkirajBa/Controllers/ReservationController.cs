@@ -148,6 +148,87 @@ namespace ParkirajBa.Controllers
 
             return View(ticket);
         }
+        // GET: /Reservation/Extend/5
+        [HttpGet]
+        public async Task<IActionResult> Extend(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
+
+            if (ticket == null || !ticket.IsPaid || ticket.IsCancelled)
+            {
+                TempData["Error"] = "Rezervacija nije pronađena ili nije dostupna za produženje.";
+                return RedirectToAction("Rezervacije", "Home");
+            }
+
+            if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt.Value < DateTime.Now)
+            {
+                TempData["Error"] = "Nije moguće produžiti isteklu rezervaciju.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            ViewBag.Ticket = ticket;
+            ViewBag.Parking = ticket.ParkingObject;
+            ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(ticket.ParkingObjectId) ?? new List<Pricing>();
+            return View();
+        }
+
+        // POST: /Reservation/Extend
+        [HttpPost]
+        public async Task<IActionResult> Extend(int id, int extraHours)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "User");
+
+            var ticket = await _parkingRepository.GetTicketByIdAsync(id, user.Id);
+
+            if (ticket == null || !ticket.IsPaid || ticket.IsCancelled)
+            {
+                TempData["Error"] = "Rezervacija nije pronađena.";
+                return RedirectToAction("Rezervacije", "Home");
+            }
+
+            if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt.Value < DateTime.Now)
+            {
+                TempData["Error"] = "Nije moguće produžiti isteklu rezervaciju.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            if (extraHours < 1 || extraHours > 24)
+            {
+                TempData["Error"] = "Broj sati mora biti između 1 i 24.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            var pricing = await _parkingRepository.GetActivePricingAsync(ticket.ParkingObjectId, PricingType.Hourly);
+            decimal extraPrice = pricing != null ? pricing.price * extraHours : 0;
+
+            // Kreirati novi ticket koji predstavlja produženje
+            var extensionTicket = new Ticket
+            {
+                ApplicationUserId = user.Id,
+                ParkingObjectId = ticket.ParkingObjectId,
+                IssuedAt = ticket.ExpiresAt ?? DateTime.Now,
+                ExpiresAt = (ticket.ExpiresAt ?? DateTime.Now).AddHours(extraHours),
+                Price = extraPrice,
+                // Označiti kao produženje — čuva vezu ka originalnom ticketu kroz ReservationCode prefix
+                ReservationCode = null // generira se nakon plaćanja
+            };
+
+            // Privremeno sačuvati informaciju o produženju u session/TempData
+            // Koristimo poseban TempData key da PaymentController zna da produžuje ExpiresAt originalnog ticketa
+            TempData["ExtensionForTicketId"] = id;
+            TempData["ExtensionHours"] = extraHours;
+            TempData["ExtensionExpiresAt"] = extensionTicket.ExpiresAt?.ToString("o");
+
+            _database.Tickets.Add(extensionTicket);
+            await _database.SaveChangesAsync();
+
+            return RedirectToAction("Checkout", "Payment", new { ticketId = extensionTicket.Id, isExtension = true, originalTicketId = id });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Cancel(int id)
         {

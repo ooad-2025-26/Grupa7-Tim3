@@ -71,7 +71,9 @@ namespace ParkirajBa.Services
                         ticket.ApplicationUser.Email!,
                         "⏰ Rezervacija uskoro ističe",
                         $@"
-                        <h2>Podsjetnik na rezervaciju</h2>
+                        <div style='font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto;'>
+
+                        <h2 style='color: #e67e22;'>⏰ Podsjetnik na rezervaciju</h2>
 
                         <p>Poštovani/a <strong>{ticket.ApplicationUser.FullName}</strong>,</p>
 
@@ -86,14 +88,27 @@ namespace ParkirajBa.Services
                             {ticket.ExpiresAt:dd.MM.yyyy HH:mm}
                         </p>
 
-                        <p>
-                            Ukoliko želite nastaviti koristiti parking,
-                            produžite rezervaciju prije isteka.
+                        <p>Ukoliko želite nastaviti koristiti parking, produžite rezervaciju prije isteka klikom na dugme ispod:</p>
+
+                        <div style='text-align: center; margin: 28px 0;'>
+                            <a href='https://parkirajba.com/Reservation/Extend/{ticket.Id}'
+                               style='background: #6287f9; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; display: inline-block;'>
+                                🕐 Produži rezervaciju
+                            </a>
+                        </div>
+
+                        <p style='color: #999; font-size: 13px;'>
+                            Ako ne možete kliknuti dugme, otvorite sljedeći link u browseru:<br/>
+                            <a href='https://parkirajba.com/Reservation/Extend/{ticket.Id}' style='color: #6287f9;'>
+                                https://parkirajba.com/Reservation/Extend/{ticket.Id}
+                            </a>
                         </p>
 
                         <br/>
 
                         <p>Hvala što koristite ParkirajBa!</p>
+
+                        </div>
                         ");
 
                     ticket.ExpirationReminderSent = true;
