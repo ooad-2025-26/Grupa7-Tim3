@@ -47,6 +47,14 @@ namespace ParkirajBa.Controllers
             var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
             if (ticket == null) return RedirectToAction("Reservations");
 
+        
+            if (!additionalCharge && ticket.AdditionalCharge > 0 && !ticket.AdditionalChargePaid && !ticket.EnteredParking)
+            {
+                ticket.AdditionalCharge = 0;
+                ticket.ExpiresAt = ticket.ExpiresAt; 
+                await _database.SaveChangesAsync();
+            }
+
             ViewBag.Ticket = ticket;
             ViewBag.UserFullName = user.FullName;
             ViewBag.IsAdditionalCharge = additionalCharge;
