@@ -9,13 +9,12 @@ namespace ParkirajBa.Models
         [Required(ErrorMessage = "Ime je obavezno.")]
         [MinLength(2, ErrorMessage = "Ime mora imati najmanje 2 slova.")]
         [MaxLength(50, ErrorMessage = "Ime ne smije biti duže od 50 slova.")]
-        [RegularExpression(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$", ErrorMessage = "Ime može sadržavati samo slova, razmak i crticu.")]
-        public string FirstName { get; set; }
+        [RegularExpression(@"^[a-zA-ZčćžšđČĆŽŠĐ]+([ -][a-zA-ZčćžšđČĆŽŠĐ]+)?$", ErrorMessage = "Ime može sadržavati samo slova i maksimalno jednu crticu ili razmak.")] public string FirstName { get; set; }
 
         [Required(ErrorMessage = "Prezime je obavezno.")]
         [MinLength(2, ErrorMessage = "Prezime mora imati najmanje 2 slova.")]
         [MaxLength(50, ErrorMessage = "Prezime ne smije biti duže od 50 slova.")]
-        [RegularExpression(@"^[a-zA-ZčćžšđČĆŽŠĐ\s\-]+$", ErrorMessage = "Prezime može sadržavati samo slova, razmak i crticu.")]
+        [RegularExpression(@"^[a-zA-ZčćžšđČĆŽŠĐ]+([ -][a-zA-ZčćžšđČĆŽŠĐ]+)?$", ErrorMessage = "Prezime može sadržavati samo slova i maksimalno jednu crticu ili razmak.")]
         public string LastName { get; set; }
 
         //date of creation of the user account
