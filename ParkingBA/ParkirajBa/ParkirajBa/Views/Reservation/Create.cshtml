@@ -136,6 +136,7 @@
                             <input type="number"
                                    id="durationValue"
                                    min="1"
+                                   max="24"
                                    value="1"
                                    style="width:120px;padding:12px;">
 
@@ -225,17 +226,24 @@
                 switch (pill.dataset.type) {
                     case "Hourly":
                         unitSpan.innerText = "sat(i)";
+                        durationInput.max = 24;
                         break;
                     case "Daily":
                         unitSpan.innerText = "dan(a)";
+                        durationInput.max = 15;
                         break;
                     case "Monthly":
                         unitSpan.innerText = "mjesec(i)";
+                        durationInput.max = 3;
                         break;
                     case "Yearly":
                         unitSpan.innerText = "godina(e)";
+                        durationInput.max = 1;
                         break;
                 }
+                // Clamp current value to new max
+                const newMax = parseInt(durationInput.max);
+                if (parseInt(durationInput.value) > newMax) durationInput.value = newMax;
 
                 // Prvo izračunaj novi istek, pa onda osvježi prikaz cijene
                 calculateExpiry();
@@ -352,6 +360,17 @@
             if (!duration || parseInt(duration) < 1) {
                 e.preventDefault();
                 alert("Molimo unesite ispravno trajanje rezervacije.");
+                durationInput.focus();
+                return;
+            }
+
+            const type = activePill ? activePill.dataset.type : "Hourly";
+            const maxMap = { Hourly: 24, Daily: 15, Monthly: 3, Yearly: 1 };
+            const labelMap = { Hourly: "24 sata", Daily: "15 dana", Monthly: "3 mjeseca", Yearly: "1 godinu" };
+            const max = maxMap[type];
+            if (parseInt(duration) > max) {
+                e.preventDefault();
+                alert("Maksimalno trajanje rezervacije za odabrani tip je " + labelMap[type] + ".");
                 durationInput.focus();
                 return;
             }
