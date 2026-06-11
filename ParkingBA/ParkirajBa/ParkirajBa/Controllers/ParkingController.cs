@@ -14,15 +14,18 @@ namespace ParkirajBa.Controllers
         private readonly IParkingRepository _parkingRepository;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _database;
+        private readonly IRequestRepository _requestRepository;
 
         public ParkingController(
             IParkingRepository parkingRepository,
             UserManager<ApplicationUser> userManager,
-            ApplicationDbContext database)
+            ApplicationDbContext database,
+            IRequestRepository requestRepository)
         {
             _parkingRepository = parkingRepository;
             _userManager = userManager;
             _database = database;
+            _requestRepository = requestRepository;
         }
 
         // GET: /Parking/Details/5 — everyone
@@ -211,6 +214,8 @@ namespace ParkirajBa.Controllers
                 parkingObject.OwnerId = owner.Id;
                 parkingObject.availableSpots = parkingObject.totalSpots ?? 0;
 
+                parkingObject.isApproved = false;
+
                 await _parkingRepository.AddParking(parkingObject);
 
                 if (Images != null && Images.Count > 0)
@@ -237,6 +242,9 @@ namespace ParkirajBa.Controllers
                         await _parkingRepository.AddPricingAsync(pricing);
                     }
                 }
+
+                //Sending approval request to admin
+                await _requestRepository.AddParkingRequestAsync(parkingObject.ID);
 
                 return Json(new { success = true, message = "Parking uspješno kreiran!" });
             }
