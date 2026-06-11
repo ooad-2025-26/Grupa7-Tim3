@@ -23,7 +23,7 @@ namespace ParkirajBa.Repositories
         Task<ParkingObject?> GetByIdAsync(int id);
         Task<ParkingObject?> GetByIdWithPricingsAsync(int id);
         Task<ParkingObject?> GetByIdWithOwnerAsync(int id);
-
+        Task<bool> ApproveParkingAsync(int id);
         Task<ParkingObject?> ModifyParkingAsync(ParkingObject ChangedParking);
 
 
