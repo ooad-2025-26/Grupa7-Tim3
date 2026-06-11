@@ -223,7 +223,7 @@ namespace ParkirajBa.Controllers
             }
 
             ViewBag.Pricings = await _parkingRepository.GetPricingsByParkingIdAsync(id);
-            ViewBag.PrimaryImage = await _parkingRepository.GetPrimaryImageByParkingIDAsync(id);  
+            ViewBag.PrimaryImage = await _parkingRepository.GetPrimaryImageByParkingIDAsync(id);
             return View(parking);
         }
 
@@ -299,7 +299,7 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Reservations");
             }
 
-            ViewBag.IsAdminView = true; 
+            ViewBag.IsAdminView = true;
             return View("~/Views/Reservation/Details.cshtml", ticket);
         }
 
@@ -307,11 +307,15 @@ namespace ParkirajBa.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveParking(int id)
         {
-            var parking = await _database.ParkingObject.FindAsync(id);
+            var parking = await _parkingRepository.GetByIdAsync(id);
             if (parking == null) return NotFound();
 
-            parking.isApproved = true;
-            await _database.SaveChangesAsync();
+            var approved = await _parkingRepository.ApproveParkingAsync(id);
+            if (!approved)
+            {
+                TempData["Error"] = "Greška pri odobravanju parkinga.";
+                return RedirectToAction("Parkings");
+            }
 
             TempData["Success"] = $"Parking \"{parking.name}\" je uspješno odobren.";
             return RedirectToAction("Parkings");
@@ -358,7 +362,7 @@ namespace ParkirajBa.Controllers
                 return RedirectToAction("Requests");
             }
 
-            var parking = await _database.ParkingObject.FindAsync(request.ParkingID);
+            var parking = await _parkingRepository.GetByIdAsync(request.ParkingID);
             if (parking == null)
             {
                 TempData["Error"] = "Parking objekat nije pronađen.";
@@ -366,13 +370,15 @@ namespace ParkirajBa.Controllers
             }
 
             // approve parking
-            parking.isApproved = true;
-            _database.ParkingObject.Update(parking);
+            var approved = await _parkingRepository.ApproveParkingAsync(request.ParkingID);
+            if (!approved)
+            {
+                TempData["Error"] = "Greška pri odobravanju parkinga.";
+                return RedirectToAction("Requests");
+            }
 
             // delete request
             await _requestRepository.DeleteAsync(requestId);
-
-            await _database.SaveChangesAsync();
 
             TempData["Success"] = $"Parking \"{parking.name}\" je uspješno odobren.";
             return RedirectToAction("Requests");

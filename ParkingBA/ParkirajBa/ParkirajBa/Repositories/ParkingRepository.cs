@@ -100,6 +100,16 @@ namespace ParkirajBa.Repositories
         }
         //----
 
+        public async Task<bool> ApproveParkingAsync(int id)
+        {
+            var parking = await _Database.ParkingObject.FindAsync(id);
+            if (parking == null) return false;
+
+            parking.isApproved = true;
+            await _Database.SaveChangesAsync();
+            return true;
+        }
+
         //-- Parking --
         public async Task<ParkingObject> AddParking(ParkingObject newParking)
         {
