@@ -91,6 +91,8 @@ namespace ParkirajBa
 
             builder.Services.AddScoped<ParkirajBa.Repositories.IRequestRepository, ParkirajBa.Repositories.RequestRepository>();
 
+            //Za provjeru ticket-a da li treba rezervisat
+            builder.Services.AddHostedService<ParkingReservationBackgroundService>();
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
