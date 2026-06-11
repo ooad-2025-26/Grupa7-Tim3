@@ -7,7 +7,12 @@
     var now = DateTime.Now;
     string statusClass, statusLabel;
 
-    if (Model.ExpiresAt.HasValue && Model.ExpiresAt < now)
+    if (Model.ExitedParking)
+    {
+        statusClass = "expired";
+        statusLabel = "Završena";
+    }
+    else if (Model.ExpiresAt.HasValue && Model.ExpiresAt < now)
     {
         statusClass = "expired";
         statusLabel = "Istekla";
