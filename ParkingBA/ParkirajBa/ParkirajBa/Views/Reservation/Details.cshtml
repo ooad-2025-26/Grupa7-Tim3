@@ -375,9 +375,8 @@
 @* KORISTI SE ZA TESTIRANJE ULAZA/IZLAZA SA PARKINGA - IZBRISATI *@
 @if (!string.IsNullOrEmpty(Model.ReservationCode) && ViewBag.IsAdminView != true)
 {
-    <div style="margin-top:20px;">
-
-        <h4>QR Test sistem (Single Scan)</h4>
+    <div class="qr-test-box">
+        <h4>QR Code Scanner - Test sistem </h4>
 
         <button type="button"
                 class="btn-blue"
@@ -385,10 +384,7 @@
             Skeniraj QR (Ulaz / Izlaz)
         </button>
 
-        <div id="testResult"
-             style="margin-top:10px;font-weight:bold;">
-        </div>
-
+        <div id="testResult"></div>
     </div>
 }
 @*------------------------------------------------------- *@
@@ -579,6 +575,29 @@
         .btn-qr svg {
             flex-shrink: 0;
         }
+
+    .qr-test-box {
+        margin-top: 20px;
+        padding: 25px;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        text-align: center;
+    }
+
+        .qr-test-box h4 {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .qr-test-box #testResult {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
 
     @@keyframes modalLaganiUlaz {
         from {
