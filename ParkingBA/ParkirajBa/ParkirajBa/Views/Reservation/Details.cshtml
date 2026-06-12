@@ -375,9 +375,8 @@
 @* KORISTI SE ZA TESTIRANJE ULAZA/IZLAZA SA PARKINGA - IZBRISATI *@
 @if (!string.IsNullOrEmpty(Model.ReservationCode) && ViewBag.IsAdminView != true)
 {
-    <div style="margin-top:20px;">
-
-        <h4>QR Test sistem (Single Scan)</h4>
+    <div class="qr-test-box">
+        <h4>QR Code Scanner - Test sistem </h4>
 
         <button type="button"
                 class="btn-blue"
@@ -385,10 +384,7 @@
             Skeniraj QR (Ulaz / Izlaz)
         </button>
 
-        <div id="testResult"
-             style="margin-top:10px;font-weight:bold;">
-        </div>
-
+        <div id="testResult"></div>
     </div>
 }
 @*------------------------------------------------------- *@
@@ -398,32 +394,26 @@
     && Model.QrCodeActive
     && Model.AdditionalChargePaid)
 {
-    <div style="background: white;
-                    border-radius: 16px;
-                    padding: 28px 32px;
-                    box-shadow: 0 3px 14px rgba(0,0,0,0.07);
-                    margin-top: 20px;">
+    <div id="qrModal" class="custom-modal-overlay" style="display:none;">
+        <div class="qr-modal-box">
 
-        <h3 style="margin:0 0 12px; font-size:16px; color:#333; font-weight:600;">
-            QR Test sistem
-        </h3>
+            <button type="button"
+                    class="qr-close-btn"
+                    onclick="sakrijQrModal()">
+                ✕
+            </button>
 
-        <p style="margin:0 0 20px; color:#777; font-size:14px;">
-            Simulacija skeniranja QR koda za ulazak i izlazak vozila.
-        </p>
+            <h3>QR kod rezervacije</h3>
 
-        <button type="button"
-                class="btn-blue"
-                onclick="scanQr()">
-            Skeniraj QR
-        </button>
+            <img src="/Payment/GenerateQr?ticketId=@Model.Id"
+                 alt="QR Kod"
+                 style="width:250px; height:250px; margin:20px auto; display:block;" />
 
-        <div id="testResult"
-             style="margin-top:15px;
-                        font-weight:600;
-                        min-height:20px;">
+            <p style="margin-top:10px;">
+                <strong>@Model.ReservationCode</strong>
+            </p>
+
         </div>
-
     </div>
 }
 
@@ -585,6 +575,29 @@
         .btn-qr svg {
             flex-shrink: 0;
         }
+
+    .qr-test-box {
+        margin-top: 20px;
+        padding: 25px;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        text-align: center;
+    }
+
+        .qr-test-box h4 {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .qr-test-box #testResult {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
 
     @@keyframes modalLaganiUlaz {
         from {
