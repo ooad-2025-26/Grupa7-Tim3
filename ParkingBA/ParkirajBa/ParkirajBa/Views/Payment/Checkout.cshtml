@@ -66,7 +66,8 @@
 
 @section Scripts {
     <script>
-        const ticketId = @(ticket?.Id ?? 0);
+        const ticketId = @(ViewBag.FromSession == true ? 0 : (ticket?.Id ?? 0));
+        const fromSession = @(ViewBag.FromSession == true ? "true" : "false");
 
         document.getElementById('btnSubmit').addEventListener('click', function () {
             const cardName = document.getElementById('cardName');
@@ -95,7 +96,7 @@
             if (!/^[0-9]{3,4}$/.test(cvv.value)) { cvv.classList.add('input-error'); isValid = false; }
 
             if (isValid) {
-                window.location.href = '/Payment/Confirm?cardName=' + encodeURIComponent(cardName.value) + '&ticketId=' + ticketId;
+                window.location.href = '/Payment/Confirm?cardName=' + encodeURIComponent(cardName.value) + '&ticketId=' + ticketId + '&fromSession=' + fromSession;
             }
         });
 

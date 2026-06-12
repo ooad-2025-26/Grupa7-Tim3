@@ -37,28 +37,81 @@ namespace ParkirajBa.Controllers
                 ?? throw new InvalidOperationException("EmailSettings:AppPassword is not configured.");
         }
 
-        // GET: /Payment/Checkout?ticketId=5
+        // GET: /Payment/Checkout
         [HttpGet]
-        public async Task<IActionResult> Checkout(int ticketId, bool additionalCharge = false)
+        public async Task<IActionResult> Checkout(int ticketId = 0, bool additionalCharge = false, bool fromSession = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
 
+            if (fromSession)
+            {
+                var json = HttpContext.Session.GetString("PendingReservation");
+                if (string.IsNullOrEmpty(json)) return RedirectToAction("Objekti", "Home");
+
+                var data = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+                var parking = await _parkingRepository.GetByIdAsync(data.GetProperty("ParkingObjectId").GetInt32());
+
+                var tempTicket = new Ticket
+                {
+                    Id = 0,
+                    ApplicationUserId = user.Id,
+                    ParkingObjectId = data.GetProperty("ParkingObjectId").GetInt32(),
+                    IssuedAt = DateTime.Parse(data.GetProperty("IssuedAt").GetString()!),
+                    ExpiresAt = DateTime.Parse(data.GetProperty("ExpiresAt").GetString()!),
+                    Price = data.GetProperty("Price").GetDecimal(),
+                    ParkingObject = parking
+                };
+
+                ViewBag.Ticket = tempTicket;
+                ViewBag.UserFullName = user.FullName;
+                ViewBag.IsAdditionalCharge = false;
+                ViewBag.FromSession = true;
+                return View();
+            }
+
             var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
-            if (ticket == null) return RedirectToAction("Reservations");
+            if (ticket == null) return RedirectToAction("Rezervacije", "Home");
 
             ViewBag.Ticket = ticket;
             ViewBag.UserFullName = user.FullName;
             ViewBag.IsAdditionalCharge = additionalCharge;
+            ViewBag.FromSession = false;
             return View();
         }
 
-        // GET: /Payment/Confirm?cardName=...&ticketId=5
+        // GET: /Payment/Confirm
         [HttpGet]
-        public async Task<IActionResult> Confirm(string cardName, int ticketId, bool additionalCharge = false)
+        public async Task<IActionResult> Confirm(string cardName, int ticketId = 0, bool additionalCharge = false, bool fromSession = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "User");
+
+            if (fromSession)
+            {
+                var json = HttpContext.Session.GetString("PendingReservation");
+                if (string.IsNullOrEmpty(json)) return RedirectToAction("Objekti", "Home");
+
+                var data = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+                var parking = await _parkingRepository.GetByIdAsync(data.GetProperty("ParkingObjectId").GetInt32());
+
+                var tempTicket = new Ticket
+                {
+                    Id = 0,
+                    ApplicationUserId = user.Id,
+                    ParkingObjectId = data.GetProperty("ParkingObjectId").GetInt32(),
+                    IssuedAt = DateTime.Parse(data.GetProperty("IssuedAt").GetString()!),
+                    ExpiresAt = DateTime.Parse(data.GetProperty("ExpiresAt").GetString()!),
+                    Price = data.GetProperty("Price").GetDecimal(),
+                    ParkingObject = parking
+                };
+
+                ViewBag.CardName = cardName;
+                ViewBag.Ticket = tempTicket;
+                ViewBag.IsAdditionalCharge = false;
+                ViewBag.FromSession = true;
+                return View();
+            }
 
             var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
             if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
@@ -66,50 +119,65 @@ namespace ParkirajBa.Controllers
             ViewBag.CardName = cardName;
             ViewBag.Ticket = ticket;
             ViewBag.IsAdditionalCharge = additionalCharge;
+            ViewBag.FromSession = false;
             return View();
         }
 
         // POST: /Payment/SendConfirmationEmail
         [HttpPost]
-        public async Task<IActionResult> SendConfirmationEmail(string cardName, int ticketId, bool additionalCharge = false)
+        public async Task<IActionResult> SendConfirmationEmail(string cardName, int ticketId = 0, bool additionalCharge = false)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
 
-            var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
-            if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
+            Ticket ticket;
 
+            var sessionJson = HttpContext.Session.GetString("PendingReservation");
+            if (!string.IsNullOrEmpty(sessionJson) && ticketId == 0)
+            {
+                var data = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(sessionJson);
 
-            //Damir changes
+                ticket = new Ticket
+                {
+                    ApplicationUserId = user.Id,
+                    ParkingObjectId = data.GetProperty("ParkingObjectId").GetInt32(),
+                    IssuedAt = DateTime.Parse(data.GetProperty("IssuedAt").GetString()!),
+                    ExpiresAt = DateTime.Parse(data.GetProperty("ExpiresAt").GetString()!),
+                    Price = data.GetProperty("Price").GetDecimal()
+                };
+
+                _database.Tickets.Add(ticket);
+                await _database.SaveChangesAsync();
+
+                ticket.ParkingObject = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
+
+                HttpContext.Session.Remove("PendingReservation");
+            }
+            else
+            {
+                ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
+                if (ticket == null) return RedirectToAction("Checkout", new { ticketId });
+            }
+
             string reservationCode = "PB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
-            // Mark ticket as paid + save QR data
             bool isAdditionalCharge = ticket.AdditionalCharge > 0 && !ticket.AdditionalChargePaid;
-
             decimal paidAmount = ticket.Price;
 
             if (isAdditionalCharge)
             {
                 paidAmount = ticket.AdditionalCharge;
-
                 ticket.TotalAdditionalChargesPaid += ticket.AdditionalCharge;
-
                 ticket.AdditionalCharge = 0;
-
                 ticket.AdditionalChargePaid = true;
-
                 ticket.QrCodeActive = true;
-
                 ticket.ReservationCode = reservationCode;
-
                 ticket.OverstayEmailSent = false;
             }
             else
             {
                 ticket.IsPaid = true;
-
                 ticket.PaidAt = DateTime.Now;
-
                 ticket.ReservationCode = reservationCode;
 
                 var parking = await _parkingRepository.GetByIdAsync(ticket.ParkingObjectId);
@@ -121,7 +189,6 @@ namespace ParkirajBa.Controllers
             }
 
             await _database.SaveChangesAsync();
-            //Damir changes
 
             string parkingName = ticket.ParkingObject?.name ?? "ParkirajBa Parking";
             string userEmail = user.Email!;
@@ -162,7 +229,7 @@ namespace ParkirajBa.Controllers
                 TempData["EmailError"] = "Plaćanje potvrđeno, ali email nije mogao biti poslan: " + ex.Message;
             }
 
-            return RedirectToAction("Success", new { code = reservationCode, ticketId });
+            return RedirectToAction("Success", new { code = reservationCode, ticketId = ticket.Id });
         }
 
         // GET: /Payment/Success
@@ -182,26 +249,18 @@ namespace ParkirajBa.Controllers
         public async Task<IActionResult> GenerateQr(int ticketId)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
+            if (user == null) return Unauthorized();
 
             var ticket = await _parkingRepository.GetTicketByIdAsync(ticketId, user.Id);
-
             if (ticket == null || string.IsNullOrEmpty(ticket.ReservationCode))
                 return NotFound();
 
             using var qrGenerator = new QRCodeGenerator();
-            using var qrData = qrGenerator.CreateQrCode(
-                ticket.ReservationCode,
-                QRCodeGenerator.ECCLevel.Q);
-
+            using var qrData = qrGenerator.CreateQrCode(ticket.ReservationCode, QRCodeGenerator.ECCLevel.Q);
             using var qrCode = new PngByteQRCode(qrData);
-
             byte[] qrBytes = qrCode.GetGraphic(20);
 
             return File(qrBytes, "image/png");
         }
-
-
     }
 }

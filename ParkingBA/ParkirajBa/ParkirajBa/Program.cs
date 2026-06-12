@@ -100,7 +100,13 @@ namespace ParkirajBa
             //Checks status of Ticket
             builder.Services.AddHostedService<OverstayChargeService>();
             builder.Services.AddSignalR(); // za slanje signala pri promjeni baze podataka
-
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             //Za testiranje ulaza na parking preko mobitela
             //builder.WebHost.UseUrls("http://0.0.0.0:5100");
@@ -129,6 +135,7 @@ namespace ParkirajBa
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "default",
