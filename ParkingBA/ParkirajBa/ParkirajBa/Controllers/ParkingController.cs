@@ -356,7 +356,7 @@ namespace ParkirajBa.Controllers
                 : null;
 
             await _parkingRepository.ModifyParkingAsync(parking);
-            if (pricingIds != null && pricingValues != null)
+            if ((Pricings == null || Pricings.Count == 0) && pricingIds != null && pricingValues != null)
             {
                 for (int i = 0; i < pricingIds.Count && i < pricingValues.Count; i++)
                 {
@@ -384,21 +384,35 @@ namespace ParkirajBa.Controllers
             if (Pricings != null && Pricings.Count > 0)
             {
                 var existing = await _parkingRepository.GetPricingsByParkingIdAsync(id);
-                foreach (var p in existing)
-                    _database.Pricing.Remove(p);
 
                 foreach (var pricingDto in Pricings)
                 {
                     if (pricingDto.price < 0) continue;
-                    var pricing = new Pricing
+
+                    var tip = (PricingType)pricingDto.pricingType;
+                    var postojeca = existing.FirstOrDefault(p => p.pricingType == tip);
+
+                    if (postojeca != null)
                     {
-                        pricingType = (PricingType)pricingDto.pricingType,
-                        price = pricingDto.price,
-                        ParkingObjectID = id,
-                        validFrom = string.IsNullOrEmpty(pricingDto.validFrom) ? null
-                            : (DateTime.TryParse(pricingDto.validFrom, out var date) ? (DateTime?)date : null)
-                    };
-                    await _parkingRepository.AddPricingAsync(pricing);
+                        postojeca.price = pricingDto.price;
+                        if (!string.IsNullOrEmpty(pricingDto.validFrom) &&
+                            DateTime.TryParse(pricingDto.validFrom, out var date))
+                            postojeca.validFrom = date;
+
+                        _database.Pricing.Update(postojeca);
+                    }
+                    else
+                    {
+                        var novaCijena = new Pricing
+                        {
+                            pricingType = tip,
+                            price = pricingDto.price,
+                            ParkingObjectID = id,
+                            validFrom = string.IsNullOrEmpty(pricingDto.validFrom) ? null
+                                : (DateTime.TryParse(pricingDto.validFrom, out var d) ? (DateTime?)d : null)
+                        };
+                        await _parkingRepository.AddPricingAsync(novaCijena);
+                    }
                 }
 
                 await _database.SaveChangesAsync();

@@ -105,7 +105,7 @@
                 <div style="background:white;border-radius:16px;padding:22px 24px;box-shadow:0 2px 10px rgba(0,0,0,0.07);">
                     <h3 style="margin:0 0 14px;font-size:15px;font-weight:600;color:var(--text);">Cjenovnik</h3>
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
-                        @foreach (var p in pricings)
+                        @foreach (var p in pricings.OrderBy(p => p.pricingType))
                         {
                             string prevedeniTip = p.pricingType.ToString().ToLower() switch
                             {
@@ -210,38 +210,42 @@
                     </label>
                 </div>
 
-                @if (pricings.Any())
-                {
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:10px;">Cjenovnik</div>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            @foreach (var p in pricings)
+                <div style="margin-bottom:20px;">
+                    <div style="font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:10px;">Cjenovnik</div>
+
+                    <div style="display:flex;flex-direction:column;gap:8px;" id="existingPricings">
+                        @foreach (var p in pricings.OrderBy(p => p.pricingType))
+                        {
+                            string prevedeniTip = p.pricingType.ToString().ToLower() switch
                             {
-                                string prevedeniTip = p.pricingType.ToString().ToLower() switch
-                                {
-                                    "hourly" => "Po satu",
-                                    "daily" => "Po danu",
-                                    "weekly" => "Po sedmici",
-                                    "monthly" => "Mjesečno",
-                                    "yearly" => "Godišnje",
-                                    _ => "Standardno"
-                                };
-                                <div style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border-radius:8px;padding:10px 13px;">
-                                    <span style="font-size:13px;color:#555;min-width:90px;font-weight:500;">@prevedeniTip</span>
-                                    <input type="hidden" name="pricingIds" value="@p.ID" />
-                                    <div style="position:relative;flex:1;">
-                                        <input type="number" name="pricingValues" id="price_@p.ID"
-                                               value="@p.price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
-                                               step="0.01" min="0"
-                                               style="width:100%;padding:8px 36px 8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
-                                        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#aaa;pointer-events:none;">KM</span>
-                                    </div>
-                                    <span class="val-err" id="errPrice_@p.ID" style="min-height:0;"></span>
+                                "hourly" => "Po satu",
+                                "daily" => "Po danu",
+                                "weekly" => "Po sedmici",
+                                "monthly" => "Mjesečno",
+                                "yearly" => "Godišnje",
+                                _ => "Standardno"
+                            };
+                            <div style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border-radius:8px;padding:10px 13px;">
+                                <span style="font-size:13px;color:#555;min-width:90px;font-weight:500;">@prevedeniTip</span>
+                                <input type="hidden" name="pricingIds" value="@p.ID" />
+                                <div style="position:relative;flex:1;">
+                                    <input type="number" name="pricingValues" id="price_@p.ID"
+                                           value="@p.price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                                           step="0.01" min="0"
+                                           style="width:100%;padding:8px 36px 8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;" />
+                                    <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#aaa;pointer-events:none;">KM</span>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
                     </div>
-                }
+
+                    <div id="adminNewPricings" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+
+                    <button type="button" onclick="adminDodajCijenu()"
+                            style="width:100%;margin-top:10px;padding:9px;background:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">
+                        + Dodaj novu cijenu
+                    </button>
+                </div>
 
                 <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:auto;padding-top:10px;">
                     <a href="/Admin/Parkings" style="padding:10px 22px;background:#f1f3f5;color:#555;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">
@@ -268,6 +272,40 @@
 </style>
 
 <script>
+    function adminDodajCijenu() {
+        const container = document.getElementById('adminNewPricings');
+        const rowId = Date.now();
+        const row = document.createElement('div');
+        row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;background:#f0fff4;border-radius:8px;padding:10px 13px;margin-top:8px;';
+        row.setAttribute('data-id', rowId);
+        row.innerHTML = `
+                <select name="newPricingType_${rowId}" style="padding:8px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;">
+                    <option value="">-- Tip --</option>
+                    <option value="0">Po satu</option>
+                    <option value="1">Po danu</option>
+                    <option value="2">Po sedmici</option>
+                    <option value="3">Mjesečno</option>
+                    <option value="4">Godišnje</option>
+                </select>
+                <div style="position:relative;">
+                    <input type="number" name="newPricingValue_${rowId}" placeholder="0.00"
+                           step="0.01" min="0"
+                           style="width:100%;padding:8px 36px 8px 10px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;box-sizing:border-box;" />
+                    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12px;color:#aaa;pointer-events:none;">KM</span>
+                </div>
+                <button type="button" onclick="adminUkloniCijenu(${rowId})"
+                        style="padding:7px 12px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">
+                    Obriši
+                </button>
+            `;
+        container.appendChild(row);
+    }
+
+    function adminUkloniCijenu(rowId) {
+        const row = document.querySelector(`[data-id="${rowId}"]`);
+        if (row) row.remove();
+    }
+
     document.getElementById('parkingEditForm').addEventListener('submit', function (e) {
         let valid = true;
 
@@ -336,6 +374,38 @@
                     valid = false;
                 }
             }
+        });
+
+        const noviRedovi = document.querySelectorAll('#adminNewPricings [data-id]');
+        const form = document.getElementById('parkingEditForm');
+
+        noviRedovi.forEach(function (row) {
+            const rowId = row.getAttribute('data-id');
+            const tipEl = row.querySelector(`[name="newPricingType_${rowId}"]`);
+            const cijenaEl = row.querySelector(`[name="newPricingValue_${rowId}"]`);
+
+            if (!tipEl.value) {
+                tipEl.style.borderColor = '#dc3545';
+                valid = false;
+                return;
+            }
+            if (!cijenaEl.value || parseFloat(cijenaEl.value) < 0) {
+                cijenaEl.style.borderColor = '#dc3545';
+                valid = false;
+                return;
+            }
+
+            const idxInput = document.createElement('input');
+            idxInput.type = 'hidden';
+            idxInput.name = 'Pricings[' + rowId + '].pricingType';
+            idxInput.value = tipEl.value;
+            form.appendChild(idxInput);
+
+            const priceInput = document.createElement('input');
+            priceInput.type = 'hidden';
+            priceInput.name = 'Pricings[' + rowId + '].price';
+            priceInput.value = cijenaEl.value;
+            form.appendChild(priceInput);
         });
 
         if (!valid) e.preventDefault();

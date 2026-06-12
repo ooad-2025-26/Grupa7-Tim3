@@ -136,7 +136,7 @@
             <div style="background: white; border-radius: 16px; padding: 28px 32px; box-shadow: 0 3px 14px rgba(0,0,0,0.07); margin-bottom: 20px;">
                 <h3 style="margin: 0 0 18px; font-size: 16px; color: #333; font-weight: 600;">Cjenovnik</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
-                    @foreach (var p in pricings)
+                    @foreach (var p in pricings.OrderBy(p => p.pricingType))
                     {
                         string tipString = p.pricingType.ToString().ToLower();
 
@@ -146,6 +146,7 @@
                             "daily" or "podanu" or "po danu" => "Po danu",
                             "weekly" or "posedmici" or "po sedmici" => "Sedmično",
                             "monthly" or "mjesecno" or "mjesečno" => "Mjesečno",
+                            "yearly" or "godisnje" or "godišnje" => "Godišnje",
                             _ => "Standardno"
                         };
 
