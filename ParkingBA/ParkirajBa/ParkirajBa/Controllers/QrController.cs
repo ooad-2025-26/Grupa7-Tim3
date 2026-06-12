@@ -35,7 +35,7 @@ namespace ParkirajBa.Controllers
             // ulaz na parking
             if (!ticket.EnteredParking)
             {
-                if(DateTime.Now < ticket.IssuedAt)
+                if (DateTime.Now < ticket.IssuedAt)
                     return BadRequest(new { message = "Nije aktivan parking" });
 
                 if (!ticket.IsPaid)
@@ -56,7 +56,7 @@ namespace ParkirajBa.Controllers
             // izlaz sa parkinga
             if (ticket.EnteredParking && ticket.QrCodeActive)
             {
-                if (ticket.ExpiresAt < DateTime.Now)
+                if (ticket.ExpiresAt.HasValue && ticket.ExpiresAt.Value < DateTime.Now)
                     return BadRequest(new { message = "Rezervacija istekla" });
 
                 if (!ticket.AdditionalChargePaid)
@@ -77,7 +77,7 @@ namespace ParkirajBa.Controllers
                         await _parkingRepository.IncrementAvailableSpotsAsync(ticket.ParkingObjectId);
                 }
 
-                    await _database.SaveChangesAsync();
+                await _database.SaveChangesAsync();
                 await _hub.Clients.All.SendAsync("StatusChanged", request.Code);
                 return Ok(new { message = "Izlaz dozvoljen" });
             }

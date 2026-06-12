@@ -153,10 +153,10 @@ namespace ParkirajBa.Controllers
                 System.Text.Json.JsonSerializer.Serialize(rezervacijaData));
 
             return RedirectToAction("Checkout", "Payment", new { fromSession = true });
-            }
+        }
 
-            // GET: /Reservation/Details/5
-            [HttpGet]
+        // GET: /Reservation/Details/5
+        [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -233,6 +233,8 @@ namespace ParkirajBa.Controllers
             ticket.ExpiresAt = (ticket.ExpiresAt ?? DateTime.Now).AddHours(extraHours);
             ticket.AdditionalCharge = extraPrice;
             ticket.AdditionalChargePaid = false;
+            ticket.QrCodeActive = false;
+            ticket.OverstayEmailSent = false;
 
             await _database.SaveChangesAsync();
 
