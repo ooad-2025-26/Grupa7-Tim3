@@ -152,6 +152,7 @@ namespace ParkirajBa.Controllers
             return View("EmailConfirmationSent");
         }
 
+        /*
         [HttpPost]
         public async Task<IActionResult> RegisterOwner(ExtendedRegisterViewModel model)
         {
@@ -193,6 +194,7 @@ namespace ParkirajBa.Controllers
 
             return View("EmailConfirmationSent");
         }
+        */
 
         // GET: /User/ConfirmEmail?userId=...&token=...
         [HttpGet]
@@ -215,13 +217,15 @@ namespace ParkirajBa.Controllers
             ViewBag.Error = "Link za potvrdu nije validan ili je istekao.";
             return View("Login");
         }
-
+        
+        /*
         [HttpGet]
         public IActionResult RegisterOwner()
         {
             ViewBag.HideHeader = true;
             return View();
         }
+        */
 
         [HttpGet]
         public async Task<IActionResult> Profile()
@@ -324,16 +328,13 @@ namespace ParkirajBa.Controllers
             return RedirectToAction("Profile");
         }
 
-
-
-        // Dev helper
+        /* Dev helper
         public async Task<IActionResult> TestUsers()
         {
             var users = _userManager.Users.ToList();
             return Json(users);
         }
-
-        // ── Helper ───────────────────────────────────────────────────
+        */
 
         private async Task SendConfirmationEmailAsync(ApplicationUser user)
         {
