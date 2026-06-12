@@ -118,7 +118,12 @@ namespace ParkirajBa
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en-US"),
+                SupportedCultures = new[] { System.Globalization.CultureInfo.InvariantCulture },
+                SupportedUICultures = new[] { System.Globalization.CultureInfo.InvariantCulture }
+            });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();

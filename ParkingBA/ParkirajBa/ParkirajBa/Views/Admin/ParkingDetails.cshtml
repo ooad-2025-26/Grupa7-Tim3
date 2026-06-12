@@ -375,9 +375,9 @@
                 }
             }
         });
-
         const noviRedovi = document.querySelectorAll('#adminNewPricings [data-id]');
         const form = document.getElementById('parkingEditForm');
+        let pricingIndex = 0;
 
         noviRedovi.forEach(function (row) {
             const rowId = row.getAttribute('data-id');
@@ -397,15 +397,16 @@
 
             const idxInput = document.createElement('input');
             idxInput.type = 'hidden';
-            idxInput.name = 'Pricings[' + rowId + '].pricingType';
+            idxInput.name = `Pricings[${pricingIndex}].pricingType`;
             idxInput.value = tipEl.value;
             form.appendChild(idxInput);
 
             const priceInput = document.createElement('input');
             priceInput.type = 'hidden';
-            priceInput.name = 'Pricings[' + rowId + '].price';
-            priceInput.value = cijenaEl.value;
+            priceInput.name = `Pricings[${pricingIndex}].price`;
+            priceInput.value = cijenaEl.value.replace(',', '.');
             form.appendChild(priceInput);
+            pricingIndex++;
         });
 
         if (!valid) e.preventDefault();
