@@ -210,11 +210,33 @@ namespace ParkirajBa.Controllers
         }
 
         [HttpGet]
-        public async Task<decimal> GetMaxPriceForRegime(PricingType type)
+        public async Task<decimal> GetMaxPriceForRegime(string regime)
         {
-            return await _parkingRepository.GetMaxPricingForRegimeAsync(type);
+            PricingType typeByRegime = regime switch
+            {
+                "Day" => PricingType.Daily,
+                "Week" => PricingType.Weekly,
+                "Month" => PricingType.Monthly,
+                "Year" => PricingType.Yearly,
+                _ => PricingType.Hourly
+            };
+            return await _parkingRepository.GetMaxPricingForRegimeAsync(typeByRegime);
         }
+        [HttpGet]
+        public async Task<decimal> GetParkingPrice(int parkingId, string regime)
+        {
+            PricingType type = regime switch
+            {
+                "Day" => PricingType.Daily,
+                "Week" => PricingType.Weekly,
+                "Month" => PricingType.Monthly,
+                "Year" => PricingType.Yearly,
+                _ => PricingType.Hourly
+            };
 
+            var pricing = await _parkingRepository.GetActivePricingAsync(parkingId, type);
+            return pricing?.price ?? 0m;
+        }
         //----
 
         //-- Parking Image --

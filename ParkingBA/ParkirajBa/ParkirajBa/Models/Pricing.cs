@@ -12,6 +12,7 @@ namespace ParkirajBa.Models {
         Monthly,
         Yearly,
         InitialFreebie
+        
     }
     public class Pricing
     {
@@ -26,6 +27,8 @@ namespace ParkirajBa.Models {
 
         [ForeignKey("ParkingObject")]
         public int ParkingObjectID { get; set; }
+
+        
 
         [ValidateNever]
         public ParkingObject ParkingObject { get; set; }
