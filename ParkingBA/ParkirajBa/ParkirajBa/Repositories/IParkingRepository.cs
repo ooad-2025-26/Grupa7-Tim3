@@ -44,6 +44,8 @@ namespace ParkirajBa.Repositories
         Task<Pricing?> AddPricingAsync(Pricing pricing);
         Task<List<Pricing?>?> AddAllPricingsAsync(List<Pricing> Pricings);
 
+        Task<decimal> GetMaxPricingForRegimeAsync(PricingType type);
+
         // ── Ticket
         Task<List<Ticket>> GetTicketsByUserIdAsync(string userId);
         Task<List<Ticket>> GetTicketsByParkingIdsAsync(List<int> parkingIds);

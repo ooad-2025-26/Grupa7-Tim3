@@ -294,6 +294,11 @@ namespace ParkirajBa.Repositories
             return Pricings;
         }
 
+        public async Task<decimal> GetMaxPricingForRegimeAsync(PricingType type)
+        {
+            return (await _Database.Pricing.Where(p=> p.pricingType.Equals(type)).OrderBy(p=>p.price).FirstOrDefaultAsync()).price;
+        }
+
         // ── Tiket
 
         public async Task<List<Ticket>> GetTicketsByUserIdAsync(string userId)

@@ -209,6 +209,11 @@ namespace ParkirajBa.Controllers
             return Json(results);
         }
 
+        [HttpGet]
+        public async Task<decimal> GetMaxPriceForRegime(PricingType type)
+        {
+            return await _parkingRepository.GetMaxPricingForRegimeAsync(type);
+        }
 
         //----
 
