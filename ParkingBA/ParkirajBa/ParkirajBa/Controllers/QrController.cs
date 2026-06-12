@@ -41,12 +41,8 @@ namespace ParkirajBa.Controllers
                 if (!ticket.IsPaid)
                     return BadRequest(new { message = "Nije plaćeno" });
 
-
-                if ((ticket.ExpiresAt.Value - ticket.IssuedAt).TotalHours > 24 && ticket.ExpiresAt <= DateTime.Now)
-                {
-                    ticket.ExitedParking = false;
-                    ticket.QrCodeActive = true;
-                }
+                ticket.ExitedParking = false;
+                ticket.ExitedAt = null;
 
                 ticket.EnteredParking = true;
                 ticket.EnteredAt = DateTime.Now;
@@ -94,8 +90,7 @@ namespace ParkirajBa.Controllers
         [HttpGet("status/{code}")]
         public async Task<IActionResult> Status(string code)
         {
-            var ticket = await _database.Tickets
-                .FirstOrDefaultAsync(t => t.ReservationCode == code);
+            var ticket = await _database.Tickets.FirstOrDefaultAsync(t => t.ReservationCode == code);
 
             if (ticket == null)
                 return NotFound();
