@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ParkirajBa.Data;
 using ParkirajBa.Models;
 using ParkirajBa.Services;
+using System.Drawing;
 
 namespace ParkirajBa.Repositories
 {
@@ -54,7 +55,7 @@ namespace ParkirajBa.Repositories
                 _Database.Pricing.Any(pricing =>
                     pricing.ParkingObjectID == p.ID &&
                     pricing.pricingType == typeByRegime &&
-                    pricing.price < maxPrice));
+                    pricing.price <= maxPrice));
 
             return await query.ToListAsync();
         }
@@ -92,7 +93,7 @@ namespace ParkirajBa.Repositories
                 _Database.Pricing.Any(pricing =>
                     pricing.ParkingObjectID == p.ID &&
                     pricing.pricingType == typeByRegime &&
-                    pricing.price < maxPrice));
+                    pricing.price <= maxPrice));
 
             query = query.Where(p => p.isApproved ?? false);
 
@@ -296,7 +297,8 @@ namespace ParkirajBa.Repositories
 
         public async Task<decimal> GetMaxPricingForRegimeAsync(PricingType type)
         {
-            return (await _Database.Pricing.Where(p=> p.pricingType.Equals(type)).OrderBy(p=>p.price).FirstOrDefaultAsync()).price;
+            
+            return (await _Database.Pricing.Where(p=> p.pricingType.Equals(type)).OrderByDescending(p=>p.price).FirstOrDefaultAsync()).price;
         }
 
         // ── Tiket
