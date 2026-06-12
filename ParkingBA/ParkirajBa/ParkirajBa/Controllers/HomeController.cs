@@ -35,6 +35,7 @@ namespace ParkirajBa.Controllers
         }
 
         // db testing
+        [Authorize(Roles = "Admin")]
         public IActionResult databaseTest()
         {
             ParkingObject parkingObject = new ParkingObject
@@ -154,8 +155,10 @@ namespace ParkirajBa.Controllers
                 if (string.IsNullOrEmpty(userEmail))
                     return RedirectToAction("Login");
 
-                var parkingBaEmail = "parkirajba.service@gmail.com";
-                var parkingBaEmailConnection = "iplx fham rnwz oajz";
+                var parkingBaEmail = _configuration["EmailSettings:SenderEmail"]
+                    ?? throw new InvalidOperationException("EmailSettings:SenderEmail nije konfigurisan.");
+                var parkingBaEmailConnection = _configuration["EmailSettings:AppPassword"]
+                    ?? throw new InvalidOperationException("EmailSettings:AppPassword nije konfigurisan.");
 
                 var smtpClient = new SmtpClient("smtp.gmail.com")
                 {
