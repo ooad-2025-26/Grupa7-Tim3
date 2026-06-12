@@ -104,7 +104,6 @@ namespace ParkirajBa.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            return RedirectToAction("Index");
             ViewBag.HideHeader = true;
             return View();
         }
