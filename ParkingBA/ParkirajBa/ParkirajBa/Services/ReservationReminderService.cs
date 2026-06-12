@@ -60,7 +60,8 @@ namespace ParkirajBa.Services
                     !t.ExpirationReminderSent &&
                     t.ExpiresAt.HasValue &&
                     t.ExpiresAt.Value > now &&
-                    t.ExpiresAt.Value <= reminderTime)
+                    t.ExpiresAt.Value <= reminderTime &&
+                    !t.ExitedParking)
                 .ToListAsync();
 
             foreach (var ticket in tickets)
