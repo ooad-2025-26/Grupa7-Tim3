@@ -140,23 +140,23 @@ namespace ParkirajBa.Controllers
                 };
             }
 
-            var ticket = new Ticket
+            var rezervacijaData = new
             {
                 ApplicationUserId = user.Id,
                 ParkingObjectId = parkingObjectId,
-                IssuedAt = startsAt.Value,
-                ExpiresAt = expiresAt.Value,
+                IssuedAt = startsAt.Value.ToString("o"),
+                ExpiresAt = expiresAt.Value.ToString("o"),
                 Price = cijena
             };
 
-            _database.Tickets.Add(ticket);
-            await _database.SaveChangesAsync();
+            HttpContext.Session.SetString("PendingReservation",
+                System.Text.Json.JsonSerializer.Serialize(rezervacijaData));
 
-            return RedirectToAction("Checkout", "Payment", new { ticketId = ticket.Id });
-        }
+            return RedirectToAction("Checkout", "Payment", new { fromSession = true });
+            }
 
-        // GET: /Reservation/Details/5
-        [HttpGet]
+            // GET: /Reservation/Details/5
+            [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var user = await _userManager.GetUserAsync(User);
